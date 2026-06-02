@@ -1,0 +1,774 @@
+/* ============================================
+   Admin Priscilla - Layout e redesign
+   ============================================ */
+
+.admin-body {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  font-family: var(--font-body);
+}
+
+/* ---------- Sidebar ---------- */
+.admin-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--color-bg-dark);
+  color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+}
+
+.admin-sidebar-brand {
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.admin-sidebar-logo {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+  color: var(--color-white);
+  text-decoration: none;
+  display: block;
+}
+
+.admin-sidebar-logo:hover {
+  color: var(--color-accent-light);
+}
+
+.admin-sidebar-tag {
+  font-size: 0.75rem;
+  color: var(--color-accent-light);
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 0.15rem;
+  display: block;
+}
+
+.admin-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius);
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.admin-nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+}
+
+.admin-nav-link--active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-white);
+}
+
+.admin-nav-icon {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.admin-sidebar-footer {
+  padding: 1rem 1.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.admin-back-link {
+  font-size: 0.875rem;
+  color: var(--color-accent-light);
+  text-decoration: none;
+}
+
+.admin-back-link:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Main content ---------- */
+.admin-main {
+  flex: 1;
+  margin-left: 260px;
+  padding: 2rem 2.5rem 4rem;
+  max-width: 720px;
+}
+
+.admin-page-header {
+  margin-bottom: 2rem;
+}
+
+.admin-page-header h1 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin-bottom: 0.35rem;
+}
+
+.admin-page-desc {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+/* ---------- Dashboard cards ---------- */
+.admin-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.admin-card {
+  display: block;
+  background: var(--color-white);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow var(--transition), transform var(--transition);
+  border: 1px solid transparent;
+}
+
+.admin-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+  border-color: var(--color-accent-soft);
+}
+
+.admin-card-icon {
+  font-size: 1.75rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.admin-card h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 0.35rem;
+}
+
+.admin-card p {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* ---------- Dashboard stats ---------- */
+.admin-dashboard-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.admin-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-stat-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+}
+
+.admin-stat-label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Content blocks (pagine dedicate) ---------- */
+.admin-main .admin-block {
+  background: var(--color-white);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(42, 38, 36, 0.06);
+}
+
+.admin-main .admin-block h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.admin-main .admin-block > p {
+  color: var(--color-text-muted);
+  margin-bottom: 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  max-width: 52ch;
+}
+
+.admin-main .admin-block form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 480px;
+}
+
+.admin-main .admin-block label {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+.admin-main .admin-block input[type="text"],
+.admin-main .admin-block input[type="password"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  border: 1px solid var(--color-accent-soft);
+  border-radius: var(--radius);
+  background: var(--color-white);
+}
+
+.admin-main .admin-block textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  border: 1px solid var(--color-accent-soft);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.admin-main .admin-block input:focus,
+.admin-main .admin-block textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.admin-main .admin-block--blog form,
+.admin-main .admin-block--ricette form {
+  max-width: 100%;
+}
+
+/* ---------- Ricette: form layout e select moderni ---------- */
+.admin-block--ricette .admin-block-intro {
+  margin-bottom: 1.5rem;
+}
+
+.admin-form--ricette {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 560px) {
+  .form-row--split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  margin-bottom: 0;
+}
+
+.label-hint {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.form-group--alt {
+  margin-top: -0.5rem;
+}
+
+/* Select moderno: wrapper + chevron */
+.select-wrap {
+  position: relative;
+  display: block;
+}
+
+.select-wrap .select-modern {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  border: 1px solid var(--color-accent-soft);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  color: var(--color-text);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.select-wrap .select-modern:hover {
+  border-color: var(--color-accent-light);
+}
+
+.select-wrap .select-modern:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(154, 146, 140, 0.15);
+}
+
+.select-chevron {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: translateY(-60%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color var(--transition);
+}
+
+.select-wrap .select-modern:focus + .select-chevron,
+.select-wrap:hover .select-chevron {
+  border-color: var(--color-accent);
+}
+
+/* Filtri moderni (barra ricette/blog) */
+.admin-list-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-accent-soft);
+}
+
+.admin-filters--modern {
+  margin-bottom: 1rem;
+}
+
+.admin-filters-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-label {
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.select-wrap--filter .select-modern--filter {
+  min-width: 160px;
+  padding: 0.6rem 2rem 0.6rem 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.filter-input-modern {
+  min-width: 200px;
+  padding: 0.6rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-accent-soft);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  transition: border-color var(--transition);
+}
+
+.filter-input-modern::placeholder {
+  color: var(--color-text-muted);
+}
+
+.filter-input-modern:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.lista-articoli-admin--ricette li {
+  padding: 0.85rem 0;
+}
+
+.ricetta-cat-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.admin-subtitle {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text);
+  margin: 2rem 0 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-accent-soft);
+}
+
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-filters label {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.admin-filter-select {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-accent-soft);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  font-family: var(--font-heading);
+  min-width: 160px;
+}
+
+.admin-filter-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-accent-soft);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  font-family: var(--font-body);
+  min-width: 180px;
+}
+
+.admin-filter-select:focus,
+.admin-filter-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.ricetta-cat-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.articolo-title--with-badge {
+  display: flex;
+  align-items: center;
+}
+
+.articolo-title--with-badge .articolo-title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* ---------- Liste (articoli, PDF, ricette) ---------- */
+.lista-articoli-admin,
+.lista-pdf-admin {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-articoli-admin li,
+.lista-pdf-admin li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-accent-soft);
+}
+
+.lista-articoli-admin li:last-child,
+.lista-pdf-admin li:last-child {
+  border-bottom: none;
+}
+
+.lista-articoli-admin .articolo-title,
+.lista-pdf-admin .pdf-title {
+  font-weight: 500;
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lista-articoli-admin .articolo-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.lista-articoli-admin .btn-edit,
+.lista-articoli-admin .btn-remove,
+.lista-pdf-admin .btn-remove {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-heading);
+}
+
+.lista-articoli-admin .btn-edit {
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+.lista-articoli-admin .btn-edit:hover {
+  background: var(--color-accent-soft);
+}
+
+.lista-articoli-admin .btn-remove,
+.lista-pdf-admin .btn-remove,
+.btn-remove-cv {
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  color: var(--color-text-muted);
+}
+
+.lista-articoli-admin .btn-remove:hover,
+.lista-pdf-admin .btn-remove:hover,
+.btn-remove-cv:hover {
+  background: #fde8e8;
+  border-color: #c0392b;
+  color: #c0392b;
+}
+
+.lista-articoli-admin .empty,
+.lista-pdf-admin .empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* ---------- Upload zone ---------- */
+.admin-block input[type="file"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-zone {
+  position: relative;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border: 2px dashed var(--color-accent-soft);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.upload-zone:hover,
+.upload-zone--dragover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.upload-zone-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.upload-zone-icon {
+  font-size: 2rem;
+}
+
+.upload-zone-files {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-zone-files[hidden] {
+  display: none;
+}
+
+/* ---------- Messaggi e stato ---------- */
+.msg-ok {
+  color: #27ae60;
+}
+
+.msg-error {
+  color: #c0392b;
+}
+
+.cv-status {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.cv-status--ok {
+  color: #27ae60;
+  font-weight: 500;
+}
+
+.btn-remove-cv {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+/* ---------- Responsive: sidebar diventa top bar ---------- */
+@media (max-width: 768px) {
+  .admin-body {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    min-width: 0;
+    position: relative;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .admin-sidebar-brand {
+    padding: 0;
+    border: none;
+    margin: 0;
+    margin-right: auto;
+  }
+
+  .admin-nav {
+    flex: 1 1 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0.5rem 0 0;
+    gap: 0.35rem;
+    order: 3;
+  }
+
+  .admin-nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .admin-sidebar-footer {
+    padding: 0;
+    border: none;
+    margin: 0;
+    order: 2;
+  }
+
+  .admin-main {
+    margin-left: 0;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .admin-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-stats {
+    gap: 1.5rem;
+  }
+}
