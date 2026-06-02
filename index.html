@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/favicon.ico" sizes="any">
+  <link rel="icon" href="assets/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="assets/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <title>Priscilla Castellani Tarabini | Nutrizionista Sportiva – Piano alimentare e materiale nutrizionale</title>
   <meta name="description" content="Priscilla Castellani Tarabini - Biologa Nutrizionista. Piani alimentari personalizzati, consulenze e ricette per atleti e sportivi. Studio a Milano, Trezzo sull'Adda, Modena.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://calendly.com">
   <link rel="preconnect" href="https://assets.calendly.com" crossorigin>
   <link rel="preload" href="https://assets.calendly.com/assets/external/widget.js" as="script">
@@ -16,33 +20,43 @@
 <body>
   <header class="header">
     <div class="container header-inner">
-      <button class="nav-toggle" aria-label="Apri menu" id="navToggle">
+      <a href="#home" class="header-logo" aria-label="Torna alla home">
+        <img src="assets/logo-pct-header.png" alt="Priscilla Castellani Tarabini" class="logo-img" width="44" height="44">
+      </a>
+      <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false">
         <span></span>
         <span></span>
         <span></span>
       </button>
       <nav class="nav" id="mainNav">
         <ul>
-          <li><a href="#home">Home</a></li>
+          <li><a href="#home" class="is-active">Home</a></li>
           <li><a href="#chi-siamo">Chi sono</a></li>
           <li><a href="#servizi">Servizi</a></li>
           <li><a href="#prenota">Prenota</a></li>
           <li><a href="#blog">Blog</a></li>
-          <li><a href="#ricette">Ricette</a></li>
-          <li><a href="scarica.html" class="nav-link-scarica">Materiale</a></li>
+          <li><a href="scarica.html">Materiale</a></li>
         </ul>
       </nav>
+      <a href="#prenota" class="btn btn-header-cta">Prenota una consulenza</a>
     </div>
   </header>
 
   <main>
     <!-- Home / Hero -->
     <section id="home" class="hero">
-      <div class="hero-bg"></div>
+      <div class="hero-bg" aria-hidden="true">
+        <div class="hero-bg-orb hero-bg-orb--1"></div>
+        <div class="hero-bg-orb hero-bg-orb--2"></div>
+        <div class="hero-bg-orb hero-bg-orb--3"></div>
+      </div>
       <div class="container hero-inner">
         <div class="hero-content reveal">
           <p class="hero-label">Biologa Nutrizionista</p>
-          <h1 class="hero-title">Nutrizione sportiva e clinica</h1>
+          <h1 class="hero-title">
+            <span class="hero-title-line"><span>Nutrizione sportiva</span></span>
+            <span class="hero-title-line"><span>e clinica</span></span>
+          </h1>
           <p class="hero-risultati-intro">Risultati del percorso nutrizionale</p>
           <ul class="hero-risultati reveal-stagger" aria-label="Risultati del percorso con Priscilla">
             <li class="hero-risultato">Un rapporto più sereno con il cibo</li>
@@ -50,15 +64,376 @@
             <li class="hero-risultato">Performance sportiva ottimizzata</li>
             <li class="hero-risultato">Un’alimentazione gestita con consapevolezza</li>
           </ul>
-          <a href="#servizi" class="btn btn-primary">Scopri i servizi</a>
+          <div class="hero-actions">
+            <a href="#servizi" class="btn btn-primary">Scopri i servizi</a>
+            <a href="#prenota" class="btn btn-outline">Prenota ora</a>
+          </div>
         </div>
         <div class="hero-image reveal reveal-delay-2">
           <img src="assets/priscilla-portrait.png?v=4" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" class="hero-photo" width="400" height="500">
         </div>
       </div>
-      <div class="hero-scroll">
-        <span>Scorri</span>
-        <div class="scroll-line"></div>
+    </section>
+
+
+    <!-- Value proposition -->
+    <section class="features-bar" aria-label="Perché scegliere il percorso">
+      <div class="container">
+        <ul class="features-bar-grid reveal-stagger">
+          <li class="feature-item">
+            <span class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <h2 class="feature-title">Approccio personalizzato</h2>
+            <p class="feature-desc">Ogni percorso è costruito sulle tue esigenze.</p>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                <path d="M9 14l2 2 4-4"/>
+              </svg>
+            </span>
+            <h2 class="feature-title">Approccio scientifico</h2>
+            <p class="feature-desc">Basati su evidenze scientifiche e aggiornate.</p>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 20V10"/>
+                <path d="M12 20V4"/>
+                <path d="M6 20v-6"/>
+              </svg>
+            </span>
+            <h2 class="feature-title">Performance e risultati</h2>
+            <p class="feature-desc">Migliora energia, composizione corporea e performance.</p>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z"/>
+              </svg>
+            </span>
+            <h2 class="feature-title">Benessere a 360°</h2>
+            <p class="feature-desc">Alimentazione, stile di vita ed equilibrio.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Recensioni -->
+    <section class="journey-cta" aria-label="Recensioni">
+      <div class="journey-reviews">
+        <div class="container">
+          <p class="journey-reviews-label reveal">Recensioni</p>
+        </div>
+        <div class="reviews-slider" aria-label="Recensioni dei pazienti">
+          <div class="reviews-track" id="reviewsTrack">
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Durante la visita è stata estremamente attenta: ha raccolto tutti i dati necessari e mi ha fatto molte domande per comprendere a fondo la mia situazione. Ho apprezzato molto anche il fatto che mi abbia spiegato in modo chiaro tutte le informazioni raccolte e il percorso che andremo a seguire. Consigliata!</p>
+              </blockquote>
+              <footer class="review-author">Federica</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Dottoressa molto gentile, professionale e brava. La cosa che preferisco è la capacità di venire incontro a tutte le esigenze.</p>
+              </blockquote>
+              <footer class="review-author">Valeria</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Molto professionale, ha ascoltato dettagliatamente le nostre esigenze mettendoci a nostro agio.</p>
+              </blockquote>
+              <footer class="review-author">Ludovico</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Dottoressa competente e visita dettagliata sotto ogni punto di vista. Ha rispecchiato pienamente le aspettative consentendomi di seguire il piano nutrizionale in modo semplice e soddisfacente.</p>
+              </blockquote>
+              <footer class="review-author">Maria</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>La Dottoressa Castellani è riuscita a guidarmi con pazienza e dedizione, offrendomi non solo supporto professionale ma anche motivazione continua. Grazie ai suoi preziosi consigli e alla personalizzazione del piano nutrizionale, ho raggiunto risultati eccezionali che non avrei mai pensato possibile.</p>
+              </blockquote>
+              <footer class="review-author">Lucia</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Dottoressa molto carina nei modi e nello spiegare le cose, puntuale nell'appuntamento. È stata una visita molto tranquilla e senza alcuna premura.</p>
+              </blockquote>
+              <footer class="review-author">Valeria</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Atteggiamento positivo ed empatico. Mi ha messo a mio agio.</p>
+              </blockquote>
+              <footer class="review-author">Salvatore</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Ottima spiegazione, domande mirate e soprattutto molto chiare.</p>
+              </blockquote>
+              <footer class="review-author">Massimo</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>È puntuale, ben preparata, chiara e disponibile. La cura e l'attenzione che ho riscontrato sono di una vera e propria professionista. Molto preparata anche per quanto riguarda la celiachia, fondamentale per me dato che ne soffro. Sono contenta di aver intrapreso un percorso con lei.</p>
+              </blockquote>
+              <footer class="review-author">Fabio</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Sono paziente della dottoressa Tarabini da agosto e mi sono trovato da subito benissimo sia dal lato professionale che dal lato umano. Dopo aver in pochi mesi ottenuto ottimi risultati grazie alla nuova dieta ho, per motivi personali, abbandonato il percorso e in poco tempo reso vano tutto il lavoro fatto fino a quel punto. Devo dire che è proprio a questo punto che la dottoressa mi ha stupito, comprendendo bene la situazione e ponendosi oltre il suo ruolo, analizzando la persona dietro il semplice paziente. Abbiamo da qui ripreso il percorso e ad oggi sono suo paziente da più di 7 mesi e non potrei essere più soddisfatto, la consiglio vivamente.</p>
+              </blockquote>
+              <footer class="review-author">Francesco</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Sono molto soddisfatto del percorso intrapreso con la Dott.ssa. Da subito molto empatica, ha capito ed ascoltato le mie esigenze, adattando perfettamente il piano alimentare al mio stile di vita, rendendolo sostenibile nel tempo!</p>
+              </blockquote>
+              <footer class="review-author">Francesco</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>La visita ha corrisposto pienamente all'aspettativa; disponibilità, attenzione e cortesia hanno contrassegnato un incontro molto articolato durante il quale, senza fretta, si sono svolti gli approfondimenti ritenuti utili all'inquadramento dello stato di fatto e delle conseguenti necessità.</p>
+              </blockquote>
+              <footer class="review-author">Marzia</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Dottoressa molto disponibile e preparata, visita accurata.</p>
+              </blockquote>
+              <footer class="review-author">Marco</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Dottoressa altamente specializzata. Cortesia, professionalità, attenzione alle esigenze, tranquillità nella comunicazione, empatia. Mi sono trovato benissimo e non vedo l'ora di continuare questo percorso insieme a Priscilla! Veramente top!</p>
+              </blockquote>
+              <footer class="review-author">Anna</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Ho iniziato il percorso con la dott.ssa Castellani Tarabini e sono soddisfatto della sua professionalità, competenza, gentilezza e empatia. Super consigliata.</p>
+              </blockquote>
+              <footer class="review-author">Pietro</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Approccio molto professionale, molto chiara nella comunicazione con il paziente. Ottenuto il risultato auspicato nei tempi previsti.</p>
+              </blockquote>
+              <footer class="review-author">Carlo</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Dottoressa molto disponibile, attenta all'ascolto, esaustiva nelle spiegazioni. Altamente raccomandata.</p>
+              </blockquote>
+              <footer class="review-author">Chiara</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>La dottoressa è stata perfettamente puntuale, gentile e disponibile. Mi ha spiegato tutto con cura e attenzione e fatto tutto perché io fossi a mio agio. Non vedo l'ora di iniziare questo percorso con lei. Assolutamente consigliata.</p>
+              </blockquote>
+              <footer class="review-author">Gregorio</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Oltre ad avere dei modi molto gentili, per me qualità importante, è molto attenta nell'ascolto, flessibile alle diverse esigenze, puntuale e disponibile. La competenza mi sembra non manchi, tant'è che i risultati si vedono.</p>
+              </blockquote>
+              <footer class="review-author">Roberta</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Gentilezza e competenza con attenzione alle mie necessità e alle mie esigenze.</p>
+              </blockquote>
+              <footer class="review-author">Carlotta</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Nonostante io fossi un caso disperato mi sono trovato molto bene con la dottoressa. In un mese sto già vedendo i risultati! Grazie mille, super consigliata.</p>
+              </blockquote>
+              <footer class="review-author">Mario</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Mi sono trovata benissimo, attenta, paziente e confortante. Se la dieta rispecchierà mie esigenze e sarà funzionale, stra stra stra consigliata.</p>
+              </blockquote>
+              <footer class="review-author">Pietro</footer>
+            </article>
+            <article class="review-card">
+              <div class="review-stars" role="img" aria-label="Valutazione: 5 stelle su 5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <blockquote class="review-text">
+                <p>Competente, disponibile e precisa con spiegazioni dettagliate, attenzione e cura alle esigenze del cliente.</p>
+              </blockquote>
+              <footer class="review-author">Mattia</footer>
+            </article>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -69,53 +444,14 @@
           <h2 class="about-title">Priscilla Castellani Tarabini</h2>
           <p class="about-role">Biologa Nutrizionista</p>
         </header>
-        <div class="about-grid reveal">
-          <div class="about-image">
-            <img src="assets/priscilla-about.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" class="about-photo" width="400" height="500">
+        <div class="about-grid">
+          <div class="about-image reveal-left">
+            <img src="assets/priscilla-about.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" class="about-photo parallax-target" width="400" height="500">
           </div>
-          <div class="about-content">
+          <div class="about-content reveal-right">
             <div class="about-bio">
               <p>Tramite un <span class="text-emphasis">approccio alimentare flessibile e moderato</span> cerco di trasmettere ad ogni paziente un rapporto di maggiore <span class="text-emphasis">serenità con il cibo</span>, con l'obiettivo di raggiungere i <span class="text-emphasis">risultati desiderati</span> attraverso un <span class="text-emphasis">percorso sostenibile e personalizzato</span>.</p>
               <p>I piani alimentari che propongo si basano su un'<span class="text-emphasis">alimentazione bilanciata</span> secondo le <span class="text-emphasis">linee guida del modello mediterraneo</span>, e si adattano alle <span class="text-emphasis">esigenze e preferenze</span> di ciascuno per essere perfettamente integrati nella vita quotidiana — per un migliore raggiungimento degli obiettivi e il loro mantenimento nel tempo, a favore di un <span class="text-emphasis">benessere completo, fisico e mentale</span>.</p>
-            </div>
-
-            <div class="about-cv-block">
-              <div class="about-formazione">
-                <h3 class="about-subtitle">Formazione</h3>
-                <ul class="about-list">
-                  <li>Laurea Triennale in Dietistica (L-SNT/3) — Università degli Studi di Milano, Facoltà di Medicina e Chirurgia</li>
-                  <li>Laurea Magistrale in Alimentazione e Nutrizione Umana (LM-61) — Università degli Studi di Milano, Facoltà di Scienze Agrarie e Alimentari</li>
-                </ul>
-              </div>
-              <div class="about-certificazioni">
-                <h3 class="about-subtitle">Corsi e Certificazioni</h3>
-                <ul class="about-list">
-                  <li>ISAK Level 2</li>
-                  <li>Nutrizione e integrazione nello sport (SANIS)</li>
-                  <li>Corso di alta formazione in nutrizione applicata al calcio (FIGC)</li>
-                </ul>
-              </div>
-              <div class="about-esperienze">
-                <h3 class="about-subtitle">Esperienze professionali</h3>
-                <ul class="esperienze-list">
-                  <li class="esperienza-item">
-                    <img src="assets/logo-ac-milan.png" alt="" class="esperienza-logo" width="48" height="48">
-                    <span>AC Milan</span>
-                  </li>
-                  <li class="esperienza-item">
-                    <img src="assets/logo-figc.png" alt="" class="esperienza-logo" width="48" height="48">
-                    <span>FIGC</span>
-                  </li>
-                  <li class="esperienza-item">
-                    <img src="assets/icona-libera-professione.png" alt="" class="esperienza-logo" width="48" height="48">
-                    <span>Libera Professione</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="about-buttons">
-              <a href="#" class="btn btn-cv" id="btnScaricaCv" download style="display: none;">Scarica CV</a>
             </div>
           </div>
         </div>
@@ -173,10 +509,10 @@
         </div>
 
         <!-- Tipologie di visita -->
-        <div class="services-tipologie-wrap">
+        <div class="services-tipologie-wrap reveal">
           <h3 class="services-tipologie-title">Tipologie di visita</h3>
           <p class="services-tipologie-intro">In studio, online, consulenza mirata o valutazione della composizione corporea: scegli la modalità che preferisci.</p>
-          <div class="services-tipologie-grid">
+          <div class="services-tipologie-grid reveal-stagger">
             <article class="service-tipo-card">
               <h4 class="service-tipo-title">Visita in Studio</h4>
               <ul class="service-tipo-list">
@@ -209,10 +545,10 @@
           </div>
         </div>
 
-        <div class="services-list-wrap">
+        <div class="services-list-wrap reveal">
           <h3 class="services-list-title">Aree di competenza</h3>
           <p class="services-list-intro">Piani alimentari e consulenze personalizzate in base alle tue esigenze.</p>
-          <ul class="services-list" role="list">
+          <ul class="services-list reveal-stagger" role="list">
             <li class="services-list-item">
               <span class="services-list-icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -270,9 +606,9 @@
         </header>
 
         <!-- Step 1: scelta sede / modalità -->
-        <div class="prenota-scelta" id="prenotaScelta">
+        <div class="prenota-scelta reveal" id="prenotaScelta">
           <p class="prenota-domanda">Dove vuoi prenotare?</p>
-          <div class="prenota-sedi" role="group" aria-label="Scegli sede o modalità">
+          <div class="prenota-sedi reveal-stagger" role="group" aria-label="Scegli sede o modalità">
             <button type="button" class="prenota-sede-card" data-sede="milano" id="btnPrenotaMilano">
               <span class="prenota-sede-icon" aria-hidden="true">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -377,54 +713,18 @@
         </div>
       </div>
     </section>
-
-    <!-- Ricette -->
-    <section id="ricette" class="section section-recipes">
-      <div class="container">
-        <div class="section-header section-header--light reveal">
-          <span class="section-label">Ricette</span>
-          <h2>Ricette per sportivi</h2>
-        </div>
-        <div class="recipes-grid reveal-stagger" id="recipesGrid">
-          <article class="recipe-card">
-            <div class="recipe-card-image recipe-card-image--1"></div>
-            <div class="recipe-card-content">
-              <span class="recipe-tag">Pre-workout</span>
-              <h3>Porridge energetico</h3>
-              <p>Avena, banana e semi: la colazione ideale prima dell’allenamento.</p>
-            </div>
-          </article>
-          <article class="recipe-card">
-            <div class="recipe-card-image recipe-card-image--2"></div>
-            <div class="recipe-card-content">
-              <span class="recipe-tag">Post-workout</span>
-              <h3>Bowl proteico con pollo e quinoa</h3>
-              <p>Un piatto unico bilanciato per il recupero dopo lo sport.</p>
-            </div>
-          </article>
-          <article class="recipe-card">
-            <div class="recipe-card-image recipe-card-image--3"></div>
-            <div class="recipe-card-content">
-              <span class="recipe-tag">Snack</span>
-              <h3>Energy ball ai datteri</h3>
-              <p>Bocconcini senza cottura, perfetti come spuntino pre o post gara.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="footer" id="contatti">
     <div class="container">
-      <div class="footer-top">
+      <div class="footer-top reveal">
         <a href="#home" class="footer-logo" aria-label="Torna alla home">
-          <img src="assets/logo-pct.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" width="200" height="46">
+          <img src="assets/logo-pct.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" width="48" height="48">
         </a>
         <p class="footer-tagline">Dott.ssa Priscilla Castellani Tarabini — Biologa Nutrizionista</p>
       </div>
 
-      <div class="footer-grid">
+      <div class="footer-grid reveal-stagger">
         <nav class="footer-col footer-nav" aria-label="Navigazione sito">
           <h3 class="footer-col-title">Navigazione</h3>
           <ul class="footer-list">
@@ -433,7 +733,6 @@
             <li><a href="#servizi">Servizi</a></li>
             <li><a href="#prenota">Prenota</a></li>
             <li><a href="#blog">Blog</a></li>
-            <li><a href="#ricette">Ricette</a></li>
             <li><a href="scarica.html">Materiale</a></li>
           </ul>
         </nav>
@@ -470,34 +769,22 @@
   <!-- CTA sticky in basso -->
   <div class="cta-bar">
     <div class="container cta-bar-inner">
-      <div class="cta-bar-content">
-        <span class="cta-bar-label">Contattami</span>
-        <p class="cta-bar-text">Prenota una consulenza personalizzata e inizia il tuo percorso.</p>
-      </div>
-      <div class="cta-bar-buttons">
-        <a href="https://wa.me/393278205996" class="btn-cta btn-cta-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Scrivi su WhatsApp">WhatsApp</a>
-        <a href="#prenota" class="btn-cta btn-cta-prenota" aria-label="Prenota la prima visita">Prenota</a>
-      </div>
+      <a href="https://wa.me/393278205996" class="cta-bar-info" target="_blank" rel="noopener noreferrer" aria-label="Scrivimi su WhatsApp">
+        <span class="cta-bar-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+        </span>
+        <span class="cta-bar-info-text">
+          <strong class="cta-bar-info-title">Scrivimi su WhatsApp</strong>
+          <span class="cta-bar-info-sub">Per informazioni e prenotazioni</span>
+        </span>
+      </a>
+      <a href="#contatti" class="btn-cta btn-cta-outline" aria-label="Contattami">Contattami</a>
     </div>
   </div>
 
   <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
   <script src="script.js"></script>
-  <script>
-    (function() {
-      var STORAGE_KEY_CV = 'scarica_cv';
-      var btn = document.getElementById('btnScaricaCv');
-      if (!btn) return;
-      try {
-        var raw = localStorage.getItem(STORAGE_KEY_CV);
-        var cv = raw ? JSON.parse(raw) : null;
-        if (cv && cv.dataBase64) {
-          btn.href = 'data:' + (cv.mimeType || 'application/pdf') + ';base64,' + cv.dataBase64;
-          btn.download = (cv.filename || cv.title || 'CV-Priscilla-Castellani') + '.pdf';
-          btn.style.display = '';
-        }
-      } catch (e) {}
-    })();
-  </script>
 </body>
 </html>

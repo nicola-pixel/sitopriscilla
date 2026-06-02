@@ -53,6 +53,7 @@
         '</div></article>';
     });
     grid.innerHTML = html;
+    if (typeof initRevealAnimations === 'function') initRevealAnimations();
   }
 
   function renderRecipesGrid() {
@@ -76,6 +77,7 @@
         '</div></article>';
     });
     grid.innerHTML = html;
+    if (typeof initRevealAnimations === 'function') initRevealAnimations();
   }
 
   renderBlogGrid();
@@ -99,15 +101,16 @@
 
   if (navToggle && mainNav) {
     navToggle.addEventListener('click', function () {
-      mainNav.classList.toggle('is-open');
-      navToggle.setAttribute('aria-expanded', mainNav.classList.contains('is-open'));
-      navToggle.setAttribute('aria-label', mainNav.classList.contains('is-open') ? 'Chiudi menu' : 'Apri menu');
+      var isOpen = mainNav.classList.toggle('is-open');
+      navToggle.classList.toggle('is-active', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen);
+      navToggle.setAttribute('aria-label', isOpen ? 'Chiudi menu' : 'Apri menu');
     });
 
-    // Chiudi menu al click su un link (navigazione)
     mainNav.querySelectorAll('a').forEach(function (link) {
       link.addEventListener('click', function () {
         mainNav.classList.remove('is-open');
+        navToggle.classList.remove('is-active');
         navToggle.setAttribute('aria-expanded', 'false');
         navToggle.setAttribute('aria-label', 'Apri menu');
       });
@@ -191,29 +194,43 @@
   document.getElementById('btnTornaDaOnline') && document.getElementById('btnTornaDaOnline').addEventListener('click', tornaSceltaSede);
 
   // Scroll reveal animations
-  var revealTargets = document.querySelectorAll('.reveal, .reveal-stagger');
-  if (revealTargets.length && 'IntersectionObserver' in window) {
-    var revealObserver = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            revealObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.12 }
-    );
+  var revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger';
+  var revealObserver = null;
+
+  function initRevealAnimations() {
+    var revealTargets = document.querySelectorAll(revealSelector);
+    if (!revealTargets.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      revealTargets.forEach(function (el) {
+        el.classList.add('is-visible');
+      });
+      return;
+    }
+
+    if (!revealObserver) {
+      revealObserver = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { root: null, rootMargin: '0px 0px -6% 0px', threshold: 0.1 }
+      );
+    }
+
     revealTargets.forEach(function (el) {
-      if (!el.closest('.hero')) {
-        revealObserver.observe(el);
-      }
-    });
-  } else {
-    revealTargets.forEach(function (el) {
-      el.classList.add('is-visible');
+      if (el.closest('.hero') || el.classList.contains('is-visible')) return;
+      if (el.dataset.revealObserved === 'true') return;
+      el.dataset.revealObserved = 'true';
+      revealObserver.observe(el);
     });
   }
+
+  initRevealAnimations();
 
   // Hero stagger: mark list visible on load
   var heroStagger = document.querySelector('.hero .reveal-stagger');
@@ -222,4 +239,92 @@
       heroStagger.classList.add('is-visible');
     });
   }
+
+  // Subtle parallax on scroll
+  var parallaxTargets = document.querySelectorAll('.parallax-target');
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (parallaxTargets.length && !prefersReducedMotion) {
+    var parallaxTicking = false;
+
+    function updateParallax() {
+      parallaxTargets.forEach(function (el) {
+        var rect = el.getBoundingClientRect();
+        var viewH = window.innerHeight;
+        if (rect.bottom < 0 || rect.top > viewH) return;
+        var progress = (rect.top + rect.height * 0.5 - viewH * 0.5) / viewH;
+        var offset = progress * -18;
+        el.style.transform = 'translate3d(0, ' + offset + 'px, 0)';
+      });
+      parallaxTicking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!parallaxTicking) {
+        parallaxTicking = true;
+        requestAnimationFrame(updateParallax);
+      }
+    }, { passive: true });
+    updateParallax();
+  }
+
+  // Active nav link on scroll
+  var navLinks = document.querySelectorAll('.nav a[href^="#"]');
+  var sections = [];
+
+  navLinks.forEach(function (link) {
+    var id = link.getAttribute('href');
+    if (!id || id === '#') return;
+    var section = document.querySelector(id);
+    if (section) sections.push({ id: id, el: section, link: link });
+  });
+
+  if (sections.length) {
+    function updateActiveNav() {
+      var scrollPos = window.scrollY + (header ? header.offsetHeight + 40 : 120);
+      var current = sections[0];
+
+      sections.forEach(function (item) {
+        if (item.el.offsetTop <= scrollPos) current = item;
+      });
+
+      navLinks.forEach(function (link) {
+        link.classList.remove('is-active');
+      });
+      if (current && current.link) {
+        current.link.classList.add('is-active');
+      }
+    }
+
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+    updateActiveNav();
+  }
+
+  function initReviewsSlider() {
+    var track = document.getElementById('reviewsTrack');
+    if (!track) return;
+
+    var cards = track.querySelectorAll('.review-card');
+    if (!cards.length) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    for (var i = 0; i < cards.length; i++) {
+      var clone = cards[i].cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      track.appendChild(clone);
+    }
+
+    function setDuration() {
+      var halfWidth = track.scrollWidth / 2;
+      var speed = 42;
+      var duration = Math.max(halfWidth / speed, 40);
+      track.style.setProperty('--reviews-duration', duration + 's');
+    }
+
+    setDuration();
+    window.addEventListener('resize', setDuration);
+  }
+
+  initReviewsSlider();
 })();
