@@ -1,20 +1,29 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-seo-page="home">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link rel="icon" href="assets/favicon.ico" sizes="any">
   <link rel="icon" href="assets/favicon-32x32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="assets/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <title>Priscilla Castellani Tarabini | Nutrizionista Sportiva – Piano alimentare e materiale nutrizionale</title>
-  <meta name="description" content="Priscilla Castellani Tarabini - Biologa Nutrizionista. Piani alimentari personalizzati, consulenze e ricette per atleti e sportivi. Studio a Milano, Trezzo sull'Adda, Modena.">
+  <meta name="description" content="Biologa Nutrizionista specializzata in nutrizione sportiva e clinica. Piani alimentari personalizzati, consulenze in studio (Milano, Modena, Trezzo sull'Adda) e online. Prenota la prima visita.">
+  <meta name="author" content="Priscilla Castellani Tarabini">
+  <meta name="keywords" content="nutrizionista sportiva, biologa nutrizionista, piano alimentare, Milano, Modena, Trezzo sull'Adda, nutrizione sportiva, consulenza nutrizionale online">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#111111">
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM site summary">
+  <script src="config.js"></script>
+  <script src="seo.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://calendly.com">
   <link rel="preconnect" href="https://calendly.com">
   <link rel="preconnect" href="https://assets.calendly.com" crossorigin>
   <link rel="preload" href="https://assets.calendly.com/assets/external/widget.js" as="script">
+  <script defer src="https://assets.calendly.com/assets/external/widget.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,24 +32,29 @@
       <a href="#home" class="header-logo" aria-label="Torna alla home">
         <img src="assets/logo-pct-header.png" alt="Priscilla Castellani Tarabini" class="logo-img" width="44" height="44">
       </a>
-      <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false">
+      <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false" aria-controls="mainNav">
         <span></span>
         <span></span>
         <span></span>
       </button>
-      <nav class="nav" id="mainNav">
-        <ul>
-          <li><a href="#home" class="is-active">Home</a></li>
-          <li><a href="#chi-siamo">Chi sono</a></li>
-          <li><a href="#servizi">Servizi</a></li>
-          <li><a href="#prenota">Prenota</a></li>
-          <li><a href="#blog">Blog</a></li>
-          <li><a href="scarica.html">Materiale</a></li>
-        </ul>
-      </nav>
       <a href="#prenota" class="btn btn-header-cta">Prenota una consulenza</a>
     </div>
   </header>
+
+  <div class="nav-backdrop" id="navBackdrop" aria-hidden="true"></div>
+  <nav class="nav" id="mainNav">
+    <p class="nav-mobile-label">Navigazione</p>
+    <ul>
+      <li><a href="#home" class="is-active">Home</a></li>
+      <li><a href="#chi-siamo">Chi sono</a></li>
+      <li><a href="#servizi">Servizi</a></li>
+      <li><a href="#prenota">Prenota</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="scarica.html">Materiale</a></li>
+    </ul>
+    <a href="#prenota" class="btn btn-header-cta nav-mobile-cta">Prenota una consulenza</a>
+  </nav>
 
   <main>
     <!-- Home / Hero -->
@@ -442,7 +456,7 @@
       <div class="container">
         <header class="about-header reveal">
           <h2 class="about-title">Priscilla Castellani Tarabini</h2>
-          <p class="about-role">Biologa Nutrizionista</p>
+          <p class="about-role">Nutrizionista sportiva</p>
         </header>
         <div class="about-grid">
           <div class="about-image reveal-left">
@@ -452,6 +466,46 @@
             <div class="about-bio">
               <p>Tramite un <span class="text-emphasis">approccio alimentare flessibile e moderato</span> cerco di trasmettere ad ogni paziente un rapporto di maggiore <span class="text-emphasis">serenità con il cibo</span>, con l'obiettivo di raggiungere i <span class="text-emphasis">risultati desiderati</span> attraverso un <span class="text-emphasis">percorso sostenibile e personalizzato</span>.</p>
               <p>I piani alimentari che propongo si basano su un'<span class="text-emphasis">alimentazione bilanciata</span> secondo le <span class="text-emphasis">linee guida del modello mediterraneo</span>, e si adattano alle <span class="text-emphasis">esigenze e preferenze</span> di ciascuno per essere perfettamente integrati nella vita quotidiana — per un migliore raggiungimento degli obiettivi e il loro mantenimento nel tempo, a favore di un <span class="text-emphasis">benessere completo, fisico e mentale</span>.</p>
+              <button type="button" class="btn btn-outline btn-esperienze" id="btnEsperienze" aria-haspopup="dialog" aria-controls="cvModal">Curriculum</button>
+            </div>
+
+            <div class="about-cv-block">
+              <div class="about-formazione">
+                <h3 class="about-subtitle">Formazione</h3>
+                <ul class="about-list">
+                  <li>Laurea Triennale in Dietistica (L-SNT/3) — Università degli Studi di Milano, Facoltà di Medicina e Chirurgia</li>
+                  <li>Laurea Magistrale in Alimentazione e Nutrizione Umana (LM-61) — Università degli Studi di Milano, Facoltà di Scienze Agrarie e Alimentari</li>
+                </ul>
+              </div>
+              <div class="about-certificazioni">
+                <h3 class="about-subtitle">Corsi e Certificazioni</h3>
+                <ul class="about-list">
+                  <li>ISAK Level 2</li>
+                  <li>Nutrizione e integrazione nello sport (SANIS)</li>
+                  <li>Corso di alta formazione in nutrizione applicata al calcio (FIGC)</li>
+                </ul>
+              </div>
+              <div class="about-esperienze">
+                <h3 class="about-subtitle">Esperienze professionali</h3>
+                <ul class="esperienze-list">
+                  <li class="esperienza-item">
+                    <img src="assets/logo-ac-milan.png" alt="Logo AC Milan" class="esperienza-logo" width="48" height="48">
+                    <span>AC Milan</span>
+                  </li>
+                  <li class="esperienza-item">
+                    <img src="assets/logo-figc.png" alt="Logo FIGC" class="esperienza-logo" width="48" height="48">
+                    <span>FIGC</span>
+                  </li>
+                  <li class="esperienza-item">
+                    <img src="assets/icona-libera-professione.png" alt="Libera professione" class="esperienza-logo" width="48" height="48">
+                    <span>Libera Professione</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="about-buttons">
+              <a href="#" class="btn btn-cv" id="btnScaricaCv" download style="display: none;">Scarica CV</a>
             </div>
           </div>
         </div>
@@ -596,7 +650,7 @@
       </div>
     </section>
 
-    <!-- Prenota - Scelta sede poi Calendly (inserisci i link Calendly per Milano e Modena in data-url) -->
+    <!-- Prenota - Scelta sede poi Calendly -->
     <section id="prenota" class="section section-prenota">
       <div class="container">
         <header class="prenota-header reveal">
@@ -648,21 +702,21 @@
         <div class="prenota-calendario-wrap" id="calendarioMilano" hidden>
           <button type="button" class="prenota-torna" id="btnTornaDaMilano" aria-label="Cambia sede">← Cambia sede</button>
           <div class="calendly-wrap">
-            <div class="calendly-inline-widget" data-auto-load="false" data-resize="true" data-url="https://calendly.com/priscilla-castellanitarabini/prima-visita-nutrizionale-online?hide_gdpr_banner=1" style="min-width:320px;min-height:630px;"></div>
+            <div class="calendly-inline-widget" data-auto-load="false" data-resize="true" data-url="https://calendly.com/priscilla-castellanitarabini/prima-visita-nutrizionale-milano?hide_gdpr_banner=1" style="min-width:320px;min-height:630px;"></div>
           </div>
         </div>
 
         <div class="prenota-calendario-wrap" id="calendarioModena" hidden>
           <button type="button" class="prenota-torna" id="btnTornaDaModena" aria-label="Cambia sede">← Cambia sede</button>
           <div class="calendly-wrap">
-            <div class="calendly-inline-widget" data-auto-load="false" data-resize="true" data-url="https://calendly.com/priscilla-castellanitarabini/prima-visita-nutrizionale-online?hide_gdpr_banner=1" style="min-width:320px;min-height:630px;"></div>
+            <div class="calendly-inline-widget" data-auto-load="false" data-resize="true" data-url="https://calendly.com/priscilla-castellanitarabini/prima-visita-nutrizionale-modena?hide_gdpr_banner=1" style="min-width:320px;min-height:630px;"></div>
           </div>
         </div>
 
         <div class="prenota-calendario-wrap" id="calendarioTrezzo" hidden>
           <button type="button" class="prenota-torna" id="btnTornaDaTrezzo" aria-label="Cambia sede">← Cambia sede</button>
           <div class="calendly-wrap">
-            <div class="calendly-inline-widget" data-auto-load="false" data-resize="true" data-url="https://calendly.com/priscilla-castellanitarabini/prima-visita-nutrizionale-online?hide_gdpr_banner=1" style="min-width:320px;min-height:630px;"></div>
+            <div class="calendly-inline-widget" data-auto-load="false" data-resize="true" data-url="https://calendly.com/priscilla-castellanitarabini/prima-visita-nutrizionale-trezzo-studio-oggioni?hide_gdpr_banner=1" style="min-width:320px;min-height:630px;"></div>
           </div>
         </div>
 
@@ -675,42 +729,57 @@
       </div>
     </section>
 
-    <!-- Blog -->
-    <section id="blog" class="section section-blog">
+    <!-- FAQ — contenuto strutturato per motori di ricerca e AI -->
+    <section id="faq" class="section section-faq">
+      <div class="container">
+        <header class="section-header reveal">
+          <span class="section-label">Domande frequenti</span>
+          <h2>Informazioni utili</h2>
+          <p class="section-intro">Risposte rapide su chi sono, dove ricevo e come prenotare una consulenza.</p>
+        </header>
+        <div class="faq-list reveal-stagger">
+          <details class="faq-item">
+            <summary>Chi è Priscilla Castellani Tarabini?</summary>
+            <div class="faq-answer">
+              <p>Priscilla Castellani Tarabini è una <strong>Biologa Nutrizionista</strong> specializzata in <strong>nutrizione sportiva e clinica</strong>, con laurea in Dietistica e Magistrale in Alimentazione e Nutrizione Umana presso l'Università degli Studi di Milano. Propone piani alimentari personalizzati con un approccio flessibile e moderato.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Dove si trovano gli studi e come prenotare?</summary>
+            <div class="faq-answer">
+              <p>Riceve a <strong>Milano</strong> (Via dei Fabbri 12), <strong>Modena</strong> (Via Tamburini 99) e <strong>Trezzo sull'Adda</strong> (Via Gianfranco Miglio 5), oppure <strong>online</strong> in videochiamata. Per la prima visita usa la sezione <a href="#prenota">Prenota</a> con prenotazione tramite Calendly.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Quali servizi nutrizionali offre?</summary>
+            <div class="faq-answer">
+              <p>Il percorso comprende <strong>consulenza iniziale</strong>, <strong>piano alimentare su misura</strong> con materiale nutrizionale e <strong>follow-up</strong>. Sono disponibili visite in studio, online, consulenze mirate e valutazione della composizione corporea (antropometria, bioimpedenziometria, profilo ISAK 2 per atleti professionisti).</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Quali aree di competenza tratta?</summary>
+            <div class="faq-answer">
+              <p>Nutrizione sportiva, dimagrimento e ricomposizione corporea, educazione alimentare, alimentazione vegetariana e vegana, allergie e intolleranze, dietoterapia per patologie cardiometaboliche e gestione nutrizionale di patologie del microcircolo.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Come contattare la dottoressa?</summary>
+            <div class="faq-answer">
+              <p>Telefono <a href="tel:+393278205996">+39 327 8205 996</a>, email <a href="mailto:priscilla.castellanitarabini@gmail.com">priscilla.castellanitarabini@gmail.com</a>. Puoi prenotare online dalla sezione <a href="#prenota">Prenota</a>.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blog (visibile solo con articoli pubblicati dall'admin) -->
+    <section id="blog" class="section section-blog" hidden aria-hidden="true">
       <div class="container">
         <div class="section-header reveal">
           <span class="section-label">Blog</span>
           <h2>Articoli e approfondimenti</h2>
         </div>
-        <div class="blog-grid reveal-stagger" id="blogGrid">
-          <article class="blog-card blog-card--placeholder">
-            <div class="blog-card-image"></div>
-            <div class="blog-card-content">
-              <span class="blog-meta">Alimentazione · 5 min</span>
-              <h3>Carboidrati e sport: quando e come assumerli</h3>
-              <p>Timing e quantità per sostenere l’allenamento senza appesantire.</p>
-              <a href="#" class="blog-link">Leggi l’articolo →</a>
-            </div>
-          </article>
-          <article class="blog-card blog-card--placeholder">
-            <div class="blog-card-image blog-card-image--2"></div>
-            <div class="blog-card-content">
-              <span class="blog-meta">Recupero · 4 min</span>
-              <h3>Il ruolo delle proteine nel recupero muscolare</h3>
-              <p>Perché le proteine sono fondamentali dopo l’allenamento.</p>
-              <a href="#" class="blog-link">Leggi l’articolo →</a>
-            </div>
-          </article>
-          <article class="blog-card blog-card--placeholder">
-            <div class="blog-card-image blog-card-image--3"></div>
-            <div class="blog-card-content">
-              <span class="blog-meta">Idratazione · 3 min</span>
-              <h3>Bere bene in gara: guida pratica</h3>
-              <p>Consigli per restare idratati prima, durante e dopo la performance.</p>
-              <a href="#" class="blog-link">Leggi l’articolo →</a>
-            </div>
-          </article>
-        </div>
+        <div class="blog-grid reveal-stagger" id="blogGrid"></div>
       </div>
     </section>
   </main>
@@ -732,6 +801,7 @@
             <li><a href="#chi-siamo">Chi sono</a></li>
             <li><a href="#servizi">Servizi</a></li>
             <li><a href="#prenota">Prenota</a></li>
+            <li><a href="#faq">FAQ</a></li>
             <li><a href="#blog">Blog</a></li>
             <li><a href="scarica.html">Materiale</a></li>
           </ul>
@@ -769,7 +839,7 @@
   <!-- CTA sticky in basso -->
   <div class="cta-bar">
     <div class="container cta-bar-inner">
-      <a href="https://wa.me/393278205996" class="cta-bar-info" target="_blank" rel="noopener noreferrer" aria-label="Scrivimi su WhatsApp">
+      <a href="https://api.whatsapp.com/message/BZKU2GC2FGMXH1?autoload=1&app_absent=0" class="cta-bar-info" target="_blank" rel="noopener noreferrer" aria-label="Scrivimi su WhatsApp">
         <span class="cta-bar-icon" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -784,7 +854,117 @@
     </div>
   </div>
 
-  <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+  <div class="cv-modal" id="cvModal" role="dialog" aria-modal="true" aria-labelledby="cvModalTitle" hidden>
+    <div class="cv-modal-overlay" id="cvModalOverlay" tabindex="-1"></div>
+    <div class="cv-modal-panel">
+      <div class="cv-modal-accent" aria-hidden="true"></div>
+      <header class="cv-modal-header">
+        <div class="cv-modal-heading">
+          <p class="cv-modal-kicker">Esperienze professionali</p>
+          <h2 class="cv-modal-title" id="cvModalTitle">Curriculum vitae</h2>
+        </div>
+        <button type="button" class="cv-modal-close" id="cvModalClose" aria-label="Chiudi">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+            <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </header>
+      <div class="cv-modal-body">
+        <section class="cv-section">
+          <h3 class="cv-section-title">Istruzione e formazione</h3>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Istituto Sacro Cuore, Modena</p>
+            <p class="cv-entry-detail">Diploma secondario: Liceo Scientifico</p>
+            <p class="cv-entry-date">Anno Maturità: 2016</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Università degli Studi di Milano — Facoltà di Medicina e Chirurgia</p>
+            <p class="cv-entry-detail">Corso di Laurea Triennale in Dietistica</p>
+            <p class="cv-entry-date">2017 – 2020</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Università degli Studi di Milano — Facoltà di Scienze Agrarie e Alimentari</p>
+            <p class="cv-entry-detail">Corso di Laurea Magistrale in Alimentazione e Nutrizione Umana</p>
+            <p class="cv-entry-date">2020 – 2022</p>
+          </div>
+        </section>
+
+        <section class="cv-section cv-section--timeline">
+          <h3 class="cv-section-title">Esperienze professionali</h3>
+          <div class="cv-timeline">
+          <div class="cv-entry">
+            <p class="cv-entry-org">Tirocinio Curricolare, Ospedale Niguarda di Milano</p>
+            <p class="cv-entry-date">Febbraio 2019 – Settembre 2019</p>
+            <p class="cv-text">Reparto DCA: assistenza ai pasti, partecipazione alle visite nutrizionali delle pazienti in Day Hospital per Anoressia Nervosa, Bulimia, Binge Eating.</p>
+            <p class="cv-text">Reparto GO: partecipazione alle visite ambulatoriali presso il reparto di Dietetica e Nutrizione Clinica e ai gruppi di educazione alimentare rivolti a pazienti affetti da sovrappeso e obesità di vario grado. Svolgimento del test di calorimetria indiretta per la misurazione del metabolismo basale e della bioimpedenziometria per la stima dei tessuti magri corporei.</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Biologa nutrizionista, Health and Sport Nutrition (Milano)</p>
+            <p class="cv-entry-date">Aprile 2022 – In corso</p>
+            <p class="cv-text">Visite nutrizionali che prevedono anamnesi clinica, anamnesi alimentare, valutazione dello stato nutrizionale, valutazione della composizione corporea mediante bioimpedenziometria (BIA) e metodo antropoplicometrico.</p>
+            <p class="cv-text">Elaborazione di piani alimentari in soggetti sportivi, sedentari, sani e affetti da patologie cardiometaboliche.</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Dietista, MyNutritional (Milano)</p>
+            <p class="cv-entry-date">Febbraio 2023 – Giugno 2023</p>
+            <p class="cv-text">Visite nutrizionali che prevedono anamnesi clinica, anamnesi alimentare, valutazione dello stato nutrizionale, valutazione della composizione corporea mediante bioimpedenziometria (BIA), test del metabolismo basale con calorimetria indiretta.</p>
+            <p class="cv-text">Elaborazione di piani alimentari in soggetti sportivi, sedentari, sani e affetti da patologie cardiometaboliche.</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Nutrizionista sportiva, AC Milan</p>
+            <p class="cv-entry-date">Aprile 2023 – In corso</p>
+            <p class="cv-text">Settore giovanile maschile e femminile.</p>
+            <p class="cv-text">Anamnesi alimentari, visite nutrizionali e valutazione della composizione corporea (antropometria, plicometria) degli atleti e atlete, elaborazione di piani alimentari personalizzati, supporto nella gestione dell'integrazione degli atleti e nella preparazione di menù stagionali per il convitto, elaborazione di menù per le trasferte delle squadre, programmazione e organizzazione di test fisici mensili e gestione del database.</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Nutrizionista sportiva, FIGC — Federazione Italiana Giuoco Calcio</p>
+            <p class="cv-entry-date">Settembre 2023 – In corso</p>
+            <p class="cv-text">U16-17 femminile.</p>
+            <p class="cv-text">Anamnesi alimentari, visite nutrizionali e valutazione della composizione corporea (antropometria, plicometria) delle giocatrici, elaborazione di piani alimentari personalizzati, gestione dell'integrazione, elaborazione di menù per i ritiri.</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Biologa nutrizionista, Serenis (Online)</p>
+            <p class="cv-entry-date">Ottobre 2024 – In corso</p>
+            <p class="cv-text">Visite nutrizionali online che prevedono anamnesi clinica, anamnesi alimentare, valutazione dello stato nutrizionale.</p>
+          </div>
+          </div>
+        </section>
+
+        <section class="cv-section">
+          <h3 class="cv-section-title">Corsi e certificazioni</h3>
+          <div class="cv-entry">
+            <p class="cv-entry-org">International Society for the Advancement Kinanthropometry (ISAK) — Livello 2</p>
+            <p class="cv-entry-date">Maggio 2023</p>
+            <p class="cv-text">Certificazione internazionale per la valutazione della composizione corporea mediante metodica antropometrica standardizzata.</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Gestione Ambulatoriale del Paziente con Alimentazione Vegetale — Plant Based Clinic</p>
+            <p class="cv-entry-date">Dicembre 2022</p>
+          </div>
+          <div class="cv-entry">
+            <p class="cv-entry-org">Scuola di nutrizione e integrazione nello sport — SANIS (Padova)</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script>
+    (function() {
+      var STORAGE_KEY_CV = 'scarica_cv';
+      var btn = document.getElementById('btnScaricaCv');
+      if (!btn) return;
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY_CV);
+        var cv = raw ? JSON.parse(raw) : null;
+        if (cv && cv.dataBase64) {
+          btn.href = 'data:' + (cv.mimeType || 'application/pdf') + ';base64,' + cv.dataBase64;
+          btn.download = (cv.filename || cv.title || 'CV-Priscilla-Castellani') + '.pdf';
+          btn.style.display = '';
+        }
+      } catch (e) {}
+    })();
+  </script>
 </body>
 </html>

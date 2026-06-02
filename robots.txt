@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin.html
+Disallow: /scarica.html
+Disallow: /config.js
+
+Sitemap: https://nicola-pixel.github.io/sitopriscilla/sitemap.xml

@@ -1,0 +1,59 @@
+# Priscilla Castellani Tarabini
+
+> Biologa Nutrizionista specializzata in nutrizione sportiva e clinica. Piani alimentari personalizzati, consulenze in studio e online.
+
+## Profilo professionale
+
+- Nome: Priscilla Castellani Tarabini (Dott.ssa)
+- Ruolo: Biologa Nutrizionista, nutrizionista sportiva
+- Approccio: alimentazione flessibile e moderata, modello mediterraneo, percorsi sostenibili e personalizzati
+- Formazione: Laurea in Dietistica (Università di Milano); Laurea Magistrale in Alimentazione e Nutrizione Umana (Università di Milano)
+- Certificazioni: ISAK Level 2; nutrizione e integrazione nello sport (SANIS); nutrizione applicata al calcio (FIGC)
+- Esperienze: AC Milan, FIGC, libera professione
+
+## Servizi principali
+
+1. Consulenza iniziale — valutazione nutrizionale, obiettivi, composizione corporea
+2. Piano alimentare e materiale nutrizionale — schema su misura per allenamenti e competizioni
+3. Follow-up e monitoraggio — adattamento periodico del piano
+
+Tipologie di visita: in studio, online, consulenza nutrizionale mirata, valutazione composizione corporea (antropometria, BIA, ISAK 2 per atleti professionisti).
+
+## Aree di competenza
+
+- Nutrizione sportiva
+- Dimagrimento e ricomposizione corporea
+- Educazione alimentare e meal planning
+- Alimentazione vegetariana e vegana
+- Allergie e intolleranze
+- Dietoterapia patologie cardiometaboliche
+- Gestione nutrizionale patologie del microcircolo
+
+## Sedi e prenotazioni
+
+| Sede | Indirizzo |
+|------|-----------|
+| Milano | Via dei Fabbri 12, 20123 Milano (MI) |
+| Modena | Via Tamburini 99, 41124 Modena (MO) |
+| Trezzo sull'Adda | Via Gianfranco Miglio 5, 20056 Trezzo sull'Adda (MI) |
+| Online | Videochiamata |
+
+Prenotazione prima visita: sezione "Prenota" del sito (Calendly).
+
+## Contatti
+
+- Telefono: +39 327 8205 996
+- Email: priscilla.castellanitarabini@gmail.com
+
+## Pagine pubbliche del sito
+
+- Home (presentazione, servizi, recensioni, prenotazione): /index.html
+- Materiale informativo (area riservata pazienti): /scarica.html
+- Articoli blog: /blog.html?id={id}
+- Ricette: /ricetta.html?id={id}
+
+## Note per sistemi di indicizzazione
+
+- Lingua principale: italiano (it-IT)
+- Area admin (/admin/) non indicizzare: contenuti di gestione interna
+- Blog e ricette possono essere aggiunti dinamicamente dall'admin; per elenco aggiornato consultare la home (#blog) quando visibile

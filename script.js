@@ -33,11 +33,38 @@
     return div.innerHTML;
   }
 
+  function getPublishedBlogPosts() {
+    return getBlogPosts().filter(function (post) {
+      return post && String(post.title || '').trim();
+    });
+  }
+
+  function setBlogNavVisible(visible) {
+    document.querySelectorAll('a[href="#blog"]').forEach(function (link) {
+      var li = link.closest('li');
+      if (li) li.hidden = !visible;
+    });
+  }
+
+  function setBlogSectionVisible(visible) {
+    var section = document.getElementById('blog');
+    if (!section) return;
+    section.hidden = !visible;
+    section.setAttribute('aria-hidden', visible ? 'false' : 'true');
+  }
+
   function renderBlogGrid() {
     var grid = document.getElementById('blogGrid');
+    var posts = getPublishedBlogPosts();
+    if (posts.length === 0) {
+      setBlogSectionVisible(false);
+      if (grid) grid.innerHTML = '';
+      setBlogNavVisible(false);
+      return;
+    }
+    setBlogSectionVisible(true);
+    setBlogNavVisible(true);
     if (!grid) return;
-    var posts = getBlogPosts();
-    if (posts.length === 0) return;
     var html = '';
     var imageClasses = ['', ' blog-card-image--2', ' blog-card-image--3'];
     posts.forEach(function (post, i) {
@@ -81,6 +108,9 @@
   }
 
   renderBlogGrid();
+  window.addEventListener('storage', function (e) {
+    if (e.key === STORAGE_KEY_BLOG) renderBlogGrid();
+  });
   renderRecipesGrid();
 
   const header = document.querySelector('.header');
@@ -100,19 +130,39 @@
   }
 
   if (navToggle && mainNav) {
-    navToggle.addEventListener('click', function () {
-      var isOpen = mainNav.classList.toggle('is-open');
+    var navBackdrop = document.getElementById('navBackdrop');
+
+    function setNavOpen(isOpen) {
+      mainNav.classList.toggle('is-open', isOpen);
       navToggle.classList.toggle('is-active', isOpen);
-      navToggle.setAttribute('aria-expanded', isOpen);
+      document.body.classList.toggle('nav-open', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       navToggle.setAttribute('aria-label', isOpen ? 'Chiudi menu' : 'Apri menu');
+      if (navBackdrop) {
+        navBackdrop.classList.toggle('is-visible', isOpen);
+        navBackdrop.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+      }
+    }
+
+    navToggle.addEventListener('click', function () {
+      setNavOpen(!mainNav.classList.contains('is-open'));
+    });
+
+    if (navBackdrop) {
+      navBackdrop.addEventListener('click', function () {
+        setNavOpen(false);
+      });
+    }
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && mainNav.classList.contains('is-open')) {
+        setNavOpen(false);
+      }
     });
 
     mainNav.querySelectorAll('a').forEach(function (link) {
       link.addEventListener('click', function () {
-        mainNav.classList.remove('is-open');
-        navToggle.classList.remove('is-active');
-        navToggle.setAttribute('aria-expanded', 'false');
-        navToggle.setAttribute('aria-label', 'Apri menu');
+        setNavOpen(false);
       });
     });
   }
@@ -125,16 +175,236 @@
     trezzo: document.getElementById('calendarioTrezzo'),
     online: document.getElementById('calendarioOnline')
   };
+  var CALENDLY_SCRIPT_URL = 'https://assets.calendly.com/assets/external/widget.js';
+  var calendlyScriptPromise = null;
+  var calendlyPanelsPreloaded = false;
 
-  function initCalendlyInPanel(panel) {
+  function ensureCalendlyScript() {
+    if (typeof window.Calendly !== 'undefined' && window.Calendly.initInlineWidget) {
+      return Promise.resolve();
+    }
+    if (calendlyScriptPromise) return calendlyScriptPromise;
+
+    calendlyScriptPromise = new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[src*="assets/external/widget.js"]');
+      if (existing) {
+        if (existing.getAttribute('data-calendly-ready') === 'true') {
+          resolve();
+          return;
+        }
+        existing.addEventListener('load', function () {
+          existing.setAttribute('data-calendly-ready', 'true');
+          resolve();
+        });
+        existing.addEventListener('error', reject);
+        return;
+      }
+
+      var script = document.createElement('script');
+      script.src = CALENDLY_SCRIPT_URL;
+      script.async = true;
+      script.addEventListener('load', function () {
+        script.setAttribute('data-calendly-ready', 'true');
+        resolve();
+      });
+      script.addEventListener('error', reject);
+      document.head.appendChild(script);
+    });
+
+    return calendlyScriptPromise;
+  }
+
+  function preparePanelForPreload(panel) {
+    if (!panel) return;
+    panel.hidden = false;
+    panel.classList.add('prenota-calendario-wrap--preload');
+  }
+
+  function isCalendlyRendered(widgetEl, minHeight) {
+    if (!widgetEl) return false;
+    if (widgetEl.getAttribute('data-calendly-rendered') === 'true') return true;
+    var iframe = widgetEl.querySelector('iframe');
+    return !!(iframe && iframe.offsetHeight >= (minHeight || 320));
+  }
+
+  function markCalendlyRendered(widgetEl) {
+    if (!widgetEl) return;
+    widgetEl.setAttribute('data-calendly-rendered', 'true');
+  }
+
+  function preloadCalendlyPanel(panel) {
     if (!panel) return;
     var widgetEl = panel.querySelector('.calendly-inline-widget');
-    var wrap = panel && panel.querySelector('.calendly-wrap');
+    if (isCalendlyRendered(widgetEl)) return;
+    preparePanelForPreload(panel);
+    initCalendlyInPanel(panel, { silent: true });
+  }
+
+  function preloadAllCalendlyPanels() {
+    if (calendlyPanelsPreloaded || !prenotaScelta) return;
+    calendlyPanelsPreloaded = true;
+
+    ensureCalendlyScript().then(function () {
+      preloadCalendlyPanel(calendari.milano);
+      ['modena', 'trezzo', 'online'].forEach(function (key, index) {
+        setTimeout(function () {
+          preloadCalendlyPanel(calendari[key]);
+        }, (index + 1) * 250);
+      });
+    }).catch(function () {});
+  }
+
+  function scheduleCalendlyPreload() {
+    if (!prenotaScelta) return;
+    if (window.matchMedia('(prefers-reduced-data: reduce)').matches) return;
+
+    ensureCalendlyScript().then(function () {
+      preloadCalendlyPanel(calendari.milano);
+    }).catch(function () {});
+
+    function preloadRest() {
+      preloadAllCalendlyPanels();
+    }
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(preloadRest, { timeout: 1200 });
+    } else {
+      setTimeout(preloadRest, 300);
+    }
+
+    var prenotaSection = document.getElementById('prenota');
+    if (prenotaSection && 'IntersectionObserver' in window) {
+      var prenotaObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          preloadAllCalendlyPanels();
+          prenotaObserver.disconnect();
+        });
+      }, { rootMargin: '1200px 0px', threshold: 0 });
+      prenotaObserver.observe(prenotaSection);
+    }
+  }
+
+  function warmCalendlyOnNavIntent() {
+    ensureCalendlyScript().then(function () {
+      preloadCalendlyPanel(calendari.milano);
+    }).catch(function () {});
+  }
+
+  function ensureCalendlyLoader(wrap) {
+    if (!wrap || wrap.querySelector('.calendly-loader')) return;
+    var loader = document.createElement('div');
+    loader.className = 'calendly-loader';
+    loader.setAttribute('role', 'status');
+    loader.setAttribute('aria-live', 'polite');
+    loader.innerHTML =
+      '<div class="calendly-loader-inner">' +
+        '<div class="calendly-loader-icon" aria-hidden="true">' +
+          '<svg class="calendly-loader-calendar" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+            '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>' +
+            '<line x1="16" y1="2" x2="16" y2="6"/>' +
+            '<line x1="8" y1="2" x2="8" y2="6"/>' +
+            '<line x1="3" y1="10" x2="21" y2="10"/>' +
+            '<rect class="calendly-loader-day" x="7" y="13" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/>' +
+            '<rect class="calendly-loader-day calendly-loader-day--2" x="12" y="13" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/>' +
+            '<rect class="calendly-loader-day calendly-loader-day--3" x="17" y="13" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/>' +
+          '</svg>' +
+          '<span class="calendly-loader-ring"></span>' +
+        '</div>' +
+        '<p class="calendly-loader-text">Caricamento calendario…</p>' +
+        '<div class="calendly-loader-dots" aria-hidden="true">' +
+          '<span></span><span></span><span></span>' +
+        '</div>' +
+      '</div>';
+    wrap.insertBefore(loader, wrap.firstChild);
+  }
+
+  function setCalendlyLoading(wrap, loading) {
+    if (!wrap) return;
+    wrap.classList.toggle('calendly-wrap--loading', loading);
+  }
+
+  function waitForCalendlyRender(widgetEl, callback) {
+    var settled = false;
+    var iframeCheck = null;
+    var fallbackTimeout = null;
+    var minRenderedHeight = 320;
+
+    function cleanup() {
+      window.removeEventListener('message', onMessage);
+      if (iframeCheck) clearInterval(iframeCheck);
+      if (fallbackTimeout) clearTimeout(fallbackTimeout);
+    }
+
+    function finish() {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      markCalendlyRendered(widgetEl);
+      callback();
+    }
+
+    function onMessage(event) {
+      if (event.origin !== 'https://calendly.com') return;
+      if (!event.data || event.data.event !== 'calendly.page_height') return;
+      var height = event.data.payload && event.data.payload.height;
+      if (height && height >= minRenderedHeight) finish();
+    }
+
+    if (isCalendlyRendered(widgetEl, minRenderedHeight)) {
+      finish();
+      return;
+    }
+
+    window.addEventListener('message', onMessage);
+
+    iframeCheck = setInterval(function () {
+      if (isCalendlyRendered(widgetEl, minRenderedHeight)) finish();
+    }, 50);
+
+    fallbackTimeout = setTimeout(finish, 15000);
+  }
+
+  function initCalendlyInPanel(panel, options) {
+    if (!panel) return;
+    options = options || {};
+    var silent = options.silent === true;
+    var widgetEl = panel.querySelector('.calendly-inline-widget');
+    var wrap = panel.querySelector('.calendly-wrap');
     if (!widgetEl) return;
-    if (widgetEl.getAttribute('data-calendly-inited') === 'true') return;
+
+    if (!silent) {
+      ensureCalendlyLoader(wrap);
+      setCalendlyLoading(wrap, true);
+    }
+
+    function finishLoading() {
+      if (silent) return;
+      waitForCalendlyRender(widgetEl, function () {
+        setCalendlyLoading(wrap, false);
+        panel.classList.add('prenota-calendario-wrap--ready');
+      });
+    }
+
+    if (widgetEl.getAttribute('data-calendly-inited') === 'true') {
+      if (silent) {
+        if (!isCalendlyRendered(widgetEl)) {
+          waitForCalendlyRender(widgetEl, function () {});
+        }
+      } else if (isCalendlyRendered(widgetEl)) {
+        setCalendlyLoading(wrap, false);
+      } else {
+        finishLoading();
+      }
+      return;
+    }
+
     var url = widgetEl.getAttribute('data-url');
-    if (!url) return;
-    if (wrap) wrap.classList.add('calendly-wrap--loading');
+    if (!url) {
+      if (!silent) setCalendlyLoading(wrap, false);
+      return;
+    }
+
     function doInit() {
       if (typeof window.Calendly === 'undefined' || !window.Calendly.initInlineWidget) return false;
       window.Calendly.initInlineWidget({
@@ -146,18 +416,24 @@
         resize: true
       });
       widgetEl.setAttribute('data-calendly-inited', 'true');
-      if (wrap) wrap.classList.remove('calendly-wrap--loading');
+      finishLoading();
       return true;
     }
-    if (!doInit()) {
+
+    function waitAndInit() {
+      if (doInit()) return;
       var attempts = 0;
       var t = setInterval(function () {
         if (doInit() || attempts++ > 100) {
           clearInterval(t);
-          if (wrap) wrap.classList.remove('calendly-wrap--loading');
+          if (!silent && attempts > 100) setCalendlyLoading(wrap, false);
         }
       }, 30);
     }
+
+    ensureCalendlyScript().then(waitAndInit).catch(function () {
+      if (!silent) setCalendlyLoading(wrap, false);
+    });
   }
 
   function mostraCalendario(sede) {
@@ -165,11 +441,26 @@
     prenotaScelta.hidden = true;
     Object.keys(calendari).forEach(function (key) {
       var el = calendari[key];
-      if (el) el.hidden = key !== sede;
+      if (!el) return;
+      if (key !== sede) {
+        el.hidden = true;
+        el.classList.remove('prenota-calendario-wrap--preload');
+      }
     });
     var panel = calendari[sede];
     if (panel) {
       panel.hidden = false;
+      panel.classList.remove('prenota-calendario-wrap--preload');
+      var wrap = panel.querySelector('.calendly-wrap');
+      var widgetEl = panel.querySelector('.calendly-inline-widget');
+      var ready = isCalendlyRendered(widgetEl);
+      panel.classList.toggle('prenota-calendario-wrap--ready', ready);
+      if (ready) {
+        setCalendlyLoading(wrap, false);
+      } else {
+        ensureCalendlyLoader(wrap);
+        setCalendlyLoading(wrap, true);
+      }
       initCalendlyInPanel(panel);
     }
   }
@@ -180,7 +471,16 @@
     prenotaScelta.hidden = false;
     Object.keys(calendari).forEach(function (key) {
       var el = calendari[key];
-      if (el) el.hidden = true;
+      if (!el) return;
+      var widget = el.querySelector('.calendly-inline-widget');
+      var inited = widget && widget.getAttribute('data-calendly-inited') === 'true';
+      if (inited) {
+        el.hidden = false;
+        el.classList.add('prenota-calendario-wrap--preload');
+      } else {
+        el.hidden = true;
+        el.classList.remove('prenota-calendario-wrap--preload');
+      }
     });
   }
 
@@ -192,6 +492,23 @@
   document.getElementById('btnTornaDaModena') && document.getElementById('btnTornaDaModena').addEventListener('click', tornaSceltaSede);
   document.getElementById('btnTornaDaTrezzo') && document.getElementById('btnTornaDaTrezzo').addEventListener('click', tornaSceltaSede);
   document.getElementById('btnTornaDaOnline') && document.getElementById('btnTornaDaOnline').addEventListener('click', tornaSceltaSede);
+
+  document.querySelectorAll('.prenota-sede-card').forEach(function (btn) {
+    function warmCalendlyOnIntent() {
+      var sede = btn.getAttribute('data-sede');
+      if (sede && calendari[sede]) preloadCalendlyPanel(calendari[sede]);
+    }
+    btn.addEventListener('mouseenter', warmCalendlyOnIntent, { once: true });
+    btn.addEventListener('focus', warmCalendlyOnIntent, { once: true });
+    btn.addEventListener('touchstart', warmCalendlyOnIntent, { once: true, passive: true });
+  });
+
+  document.querySelectorAll('a[href="#prenota"]').forEach(function (link) {
+    link.addEventListener('mouseenter', warmCalendlyOnNavIntent, { once: true });
+    link.addEventListener('focus', warmCalendlyOnNavIntent, { once: true });
+  });
+
+  scheduleCalendlyPreload();
 
   // Scroll reveal animations
   var revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger';
@@ -327,4 +644,43 @@
   }
 
   initReviewsSlider();
+
+  // CV modal (Esperienze professionali)
+  var cvModal = document.getElementById('cvModal');
+  var btnEsperienze = document.getElementById('btnEsperienze');
+  var cvModalClose = document.getElementById('cvModalClose');
+  var cvModalOverlay = document.getElementById('cvModalOverlay');
+  var cvModalLastFocus = null;
+
+  function openCvModal() {
+    if (!cvModal || !btnEsperienze) return;
+    cvModalLastFocus = document.activeElement;
+    cvModal.hidden = false;
+    document.body.classList.add('cv-modal-open');
+    if (cvModalClose) cvModalClose.focus();
+  }
+
+  function closeCvModal() {
+    if (!cvModal) return;
+    cvModal.hidden = true;
+    document.body.classList.remove('cv-modal-open');
+    if (cvModalLastFocus && typeof cvModalLastFocus.focus === 'function') {
+      cvModalLastFocus.focus();
+    }
+  }
+
+  if (btnEsperienze) {
+    btnEsperienze.addEventListener('click', openCvModal);
+  }
+  if (cvModalClose) {
+    cvModalClose.addEventListener('click', closeCvModal);
+  }
+  if (cvModalOverlay) {
+    cvModalOverlay.addEventListener('click', closeCvModal);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && cvModal && !cvModal.hidden) {
+      closeCvModal();
+    }
+  });
 })();

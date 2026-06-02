@@ -29,6 +29,38 @@
     return escapeHtml(text).replace(/\n/g, '<br>');
   }
 
+  function excerptFromBody(body, maxLen) {
+    var plain = String(body || '').replace(/\s+/g, ' ').trim();
+    if (!plain) return '';
+    if (plain.length <= maxLen) return plain;
+    return plain.slice(0, maxLen).trim() + '…';
+  }
+
+  function applySeo(post, id) {
+    var seo = window.PriscillaSeo;
+    if (!seo) return;
+    var title = (post && post.title) || 'Articolo';
+    var description =
+      (post && post.excerpt && String(post.excerpt).trim()) ||
+      excerptFromBody(post && post.body, 160) ||
+      seo.DEFAULT_DESCRIPTION;
+    var path = '/blog.html?id=' + encodeURIComponent(id);
+    seo.applyPageMeta({
+      title: title + ' | ' + seo.SITE_NAME,
+      description: description,
+      path: path,
+      type: 'article',
+      image: (post && post.imageUrl) || undefined,
+    });
+    seo.injectArticleSchema({
+      title: title,
+      description: description,
+      path: path,
+      schemaType: 'BlogPosting',
+      breadcrumbLabel: title,
+    });
+  }
+
   var id = getParam('id');
   var wrap = document.getElementById('articleWrap');
   var errorEl = document.getElementById('articleError');
@@ -44,14 +76,16 @@
     }
   } else {
     var posts = getBlogPosts();
-    var post = posts.find(function (p) { return p.id === id; });
+    var post = posts.find(function (p) {
+      return p.id === id;
+    });
     if (!post) {
       if (wrap) wrap.hidden = true;
       if (errorEl) errorEl.hidden = false;
     } else {
       if (errorEl) errorEl.hidden = true;
       if (wrap) wrap.hidden = false;
-      document.title = (post.title || 'Articolo') + ' | Pristilla Castellani';
+      applySeo(post, id);
       if (titleEl) titleEl.textContent = post.title || '';
       if (metaEl) metaEl.textContent = post.meta || '';
       if (bodyEl) bodyEl.innerHTML = textToHtml(post.body || '');

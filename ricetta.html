@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-seo-page="ricetta">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,11 @@
   <link rel="icon" href="assets/favicon-32x32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="assets/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <title>Ricetta | Pristilla Castellani</title>
+  <title>Ricetta | Priscilla Castellani Tarabini</title>
+  <meta name="description" content="Ricetta salutare — Priscilla Castellani Tarabini, Biologa Nutrizionista sportiva.">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Priscilla Castellani Tarabini">
+  <meta name="theme-color" content="#111111">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -20,14 +24,23 @@
       <a href="index.html" class="header-logo" aria-label="Torna alla home">
         <img src="assets/logo-pct-header.png" alt="Priscilla Castellani Tarabini" class="logo-img" width="44" height="44">
       </a>
-      <nav class="nav">
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="scarica.html" class="nav-link-scarica">Scarica</a></li>
-        </ul>
-      </nav>
+      <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false" aria-controls="mainNav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </header>
+
+  <div class="nav-backdrop" id="navBackdrop" aria-hidden="true"></div>
+  <nav class="nav" id="mainNav">
+    <p class="nav-mobile-label">Navigazione</p>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="scarica.html" class="nav-link-scarica">Scarica</a></li>
+    </ul>
+    <a href="index.html#prenota" class="btn btn-header-cta nav-mobile-cta">Prenota una consulenza</a>
+  </nav>
 
   <main class="article-main">
     <article class="article-wrap" id="ricettaWrap">
@@ -96,6 +109,9 @@
     </div>
   </footer>
 
+  <script src="config.js"></script>
+  <script src="seo.js"></script>
+  <script src="script.js"></script>
   <script src="ricetta.js"></script>
 </body>
 </html>
