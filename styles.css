@@ -114,7 +114,7 @@ body {
 [class*="title"],
 .hero h1,
 .hero-title,
-.about-title,
+.about-eyebrow,
 .services-title,
 .prenota-title,
 .section-header h2,
@@ -525,7 +525,6 @@ body.nav-open {
   display: flex;
   align-items: center;
   padding: calc(var(--header-height) + 2.5rem) 0 4rem;
-  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -748,7 +747,6 @@ body.nav-open {
 
 /* ========== Features bar ========== */
 .features-bar {
-  background: var(--color-white);
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
   padding: 3rem 0;
@@ -827,10 +825,6 @@ body.nav-open {
 }
 
 /* ========== Journey Reviews ========== */
-.journey-cta {
-  background: var(--color-cream);
-}
-
 .journey-reviews {
   padding: 3.5rem 0 4.5rem;
 }
@@ -940,6 +934,15 @@ body.nav-open {
 }
 
 /* ========== Sections ========== */
+/* Home: alternanza beige / bianco */
+main > section:nth-child(odd) {
+  background-color: var(--color-bg);
+}
+
+main > section:nth-child(even) {
+  background-color: var(--color-white);
+}
+
 .section {
   padding: 6rem 0;
   position: relative;
@@ -998,125 +1001,149 @@ body.nav-open {
 
 /* ========== Chi siamo ========== */
 .section-about {
-  background: var(--color-white);
-  padding: 4rem 0;
+  padding: 5rem 0 6rem;
 }
 
-.section-about::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-sage-soft), transparent);
-}
-
-.about-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  max-width: 40rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.about-title {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(2rem, 4vw, 2.75rem);
-  letter-spacing: -0.02em;
-  color: var(--color-text);
-  margin-bottom: 0.5rem;
-}
-
-.about-role {
-  font-family: var(--font-heading);
+.about-eyebrow {
+  font-family: var(--font-body);
+  font-size: clamp(0.62rem, 1.1vw, 0.72rem);
   font-weight: 500;
-  font-size: 1.2rem;
-  font-style: italic;
-  color: var(--color-sage);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--color-text-muted);
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.4;
 }
 
 .about-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
   align-items: center;
-  justify-items: center;
-  max-width: 40rem;
+  max-width: 1120px;
   margin: 0 auto;
-  background: var(--color-cream);
-  padding: 2.5rem;
-  border-radius: var(--radius-xl);
-  border: 1px solid rgba(107, 143, 122, 0.08);
-  box-shadow: var(--shadow);
-  transition: box-shadow var(--transition-slow);
-  text-align: center;
-}
-
-.about-grid:hover {
-  box-shadow: var(--shadow-hover);
 }
 
 .about-image {
-  max-width: 200px;
   width: 100%;
+  max-width: 420px;
+  justify-self: center;
 }
 
 .about-photo {
   width: 100%;
   height: auto;
-  aspect-ratio: 1;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
   object-position: top center;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   display: block;
-  box-shadow: var(--shadow-hover);
-  transition: transform var(--transition-slow);
+  box-shadow:
+    0 4px 24px rgba(17, 17, 17, 0.06),
+    0 20px 48px rgba(17, 17, 17, 0.08);
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
 }
 
 .about-grid:hover .about-photo {
-  transform: scale(1.02);
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 32px rgba(17, 17, 17, 0.08),
+    0 28px 56px rgba(17, 17, 17, 0.1);
 }
 
 .about-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
+  min-width: 0;
+}
+
+.about-story {
+  display: flex;
+  gap: 1.75rem;
+  width: 100%;
+  margin-bottom: 2.25rem;
+}
+
+.about-accent {
+  position: relative;
+  flex: 0 0 2px;
+  width: 2px;
+  align-self: stretch;
+  min-height: 12rem;
+}
+
+.about-accent-line {
+  position: absolute;
+  inset: 0;
+  background: var(--color-gold);
+  border-radius: 2px;
+}
+
+.about-accent-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--color-cream);
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  border-radius: 50%;
+  color: var(--color-text);
+}
+
+.about-accent-icon svg {
+  display: block;
 }
 
 .about-bio {
-  max-width: 34rem;
+  flex: 1;
+  min-width: 0;
+  max-width: 36rem;
 }
 
 .about-bio p {
-  font-size: 1rem;
-  line-height: 1.75;
+  font-size: clamp(0.95rem, 1.35vw, 1.05rem);
+  line-height: 1.85;
   color: var(--color-text-muted);
-  margin-bottom: 1rem;
+  margin: 0;
 }
 
-.about-bio p:last-child {
-  margin-bottom: 0;
-}
-
-.about-bio .text-emphasis {
-  font-weight: 500;
+.about-bio strong {
+  font-weight: 600;
   color: var(--color-text);
-  background: linear-gradient(transparent 65%, var(--color-gold-soft) 65%);
-  background-size: 0% 100%;
-  background-repeat: no-repeat;
-  transition: background-size 0.6s var(--ease-out-expo);
 }
 
-.about-content.is-visible .text-emphasis,
-.about-bio.is-visible .text-emphasis {
-  background-size: 100% 100%;
+.about-divider {
+  border: none;
+  height: 1px;
+  margin: 1.65rem 0;
+  background: var(--color-border);
 }
 
 .btn-esperienze {
-  margin-top: 1.25rem;
+  margin-top: 0;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  letter-spacing: 0.18em;
+  background: var(--color-white);
+}
+
+.btn-esperienze .btn-arrow {
+  font-size: 1rem;
+  letter-spacing: 0;
+  line-height: 1;
+  transition: transform var(--transition);
+}
+
+.btn-esperienze:hover .btn-arrow {
+  transform: translateX(4px);
 }
 
 /* ========== CV Modal ========== */
@@ -1548,7 +1575,6 @@ body.cv-modal-open {
 
 /* ========== Prenota ========== */
 .section-prenota {
-  background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
   padding: 6rem 0;
 }
 
@@ -1917,7 +1943,7 @@ body.cv-modal-open {
   background:
     radial-gradient(ellipse 60% 40% at 100% 0%, rgba(201, 168, 124, 0.12) 0%, transparent 50%),
     radial-gradient(ellipse 50% 50% at 0% 100%, rgba(107, 143, 122, 0.1) 0%, transparent 50%),
-    var(--color-bg-alt);
+    var(--color-bg);
 }
 
 .services-container {
@@ -2208,7 +2234,6 @@ body.cv-modal-open {
 }
 
 .section-blog {
-  background: var(--color-white);
   padding: 6rem 0;
 }
 
@@ -2881,12 +2906,46 @@ body.cv-modal-open {
 
 @media (max-width: 1100px) {
   .about-grid {
-    padding: 2rem;
-    gap: 1.75rem;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    max-width: 34rem;
   }
 
   .about-image {
-    max-width: 180px;
+    max-width: min(320px, 72vw);
+  }
+
+  .about-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .about-story {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .about-accent {
+    width: 100%;
+    max-width: 12rem;
+    min-height: 2px;
+    height: 2px;
+    flex: 0 0 auto;
+    align-self: center;
+  }
+
+  .about-accent-line {
+    inset: auto 0;
+    top: 50%;
+    height: 2px;
+    width: 100%;
+    transform: translateY(-50%);
+  }
+
+  .about-bio {
+    text-align: left;
+    max-width: none;
   }
 
   .services-grid,
@@ -3050,14 +3109,14 @@ body.cv-modal-open {
     border-bottom: none;
   }
 
-  .about-grid {
-    padding: 1.5rem;
-    gap: 1.5rem;
+  .about-eyebrow {
+    letter-spacing: 0.32em;
+    margin-bottom: 2rem;
   }
 
   .about-bio p {
     font-size: 0.95rem;
-    line-height: 1.7;
+    line-height: 1.75;
   }
 
   .section-about,
@@ -3222,25 +3281,35 @@ body.cv-modal-open {
     padding: 3.5rem 0;
   }
 
-  .about-header {
-    margin-bottom: 1.5rem;
-  }
-
-  .about-title {
-    font-size: clamp(1.65rem, 7vw, 2.15rem);
-  }
-
-  .about-role {
-    font-size: 1.05rem;
+  .about-eyebrow {
+    letter-spacing: 0.26em;
+    margin-bottom: 1.75rem;
   }
 
   .about-grid {
-    padding: 1.25rem;
-    gap: 1.25rem;
+    gap: 2rem;
   }
 
   .about-image {
-    max-width: 160px;
+    max-width: min(280px, 88vw);
+  }
+
+  .about-story {
+    margin-bottom: 1.75rem;
+  }
+
+  .about-accent {
+    max-width: 10rem;
+  }
+
+  .about-divider {
+    margin: 1.35rem 0;
+  }
+
+  .btn-esperienze {
+    width: 100%;
+    max-width: 20rem;
+    justify-content: center;
   }
 
   .services-header {
@@ -3404,10 +3473,6 @@ body.cv-modal-open {
 }
 
 /* FAQ — contenuto citabile da motori AI / ricerca */
-.section-faq {
-  background: var(--color-bg-alt, #f8f6f3);
-}
-
 .section-faq .section-intro {
   max-width: 42rem;
   margin: 0.75rem auto 0;
