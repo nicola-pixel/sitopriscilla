@@ -232,6 +232,37 @@
     widgetEl.setAttribute('data-calendly-rendered', 'true');
   }
 
+  function applyCalendlyHeight(widgetEl, height) {
+    if (!widgetEl || !height) return;
+    var px = Math.ceil(height) + 'px';
+    var wrap = widgetEl.closest('.calendly-wrap');
+    widgetEl.style.height = px;
+    widgetEl.style.minHeight = px;
+    if (wrap) wrap.style.minHeight = px;
+    var iframe = widgetEl.querySelector('iframe');
+    if (iframe) iframe.style.height = px;
+  }
+
+  var calendlyResizeListenerBound = false;
+
+  function ensureCalendlyResizeListener() {
+    if (calendlyResizeListenerBound) return;
+    calendlyResizeListenerBound = true;
+
+    window.addEventListener('message', function (event) {
+      if (event.origin !== 'https://calendly.com') return;
+      if (!event.data || event.data.event !== 'calendly.page_height') return;
+      var height = event.data.payload && event.data.payload.height;
+      if (!height || height < 200) return;
+
+      document.querySelectorAll('.calendly-inline-widget iframe').forEach(function (iframe) {
+        if (iframe.contentWindow !== event.source) return;
+        var widgetEl = iframe.closest('.calendly-inline-widget');
+        applyCalendlyHeight(widgetEl, height);
+      });
+    });
+  }
+
   function preloadCalendlyPanel(panel) {
     if (!panel) return;
     var widgetEl = panel.querySelector('.calendly-inline-widget');
@@ -348,6 +379,7 @@
       if (event.origin !== 'https://calendly.com') return;
       if (!event.data || event.data.event !== 'calendly.page_height') return;
       var height = event.data.payload && event.data.payload.height;
+      if (height) applyCalendlyHeight(widgetEl, height);
       if (height && height >= minRenderedHeight) finish();
     }
 
@@ -407,6 +439,7 @@
 
     function doInit() {
       if (typeof window.Calendly === 'undefined' || !window.Calendly.initInlineWidget) return false;
+      ensureCalendlyResizeListener();
       window.Calendly.initInlineWidget({
         url: url,
         parentElement: widgetEl,
