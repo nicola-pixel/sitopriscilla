@@ -3261,7 +3261,7 @@
   }
 
   function updateCvEntryFormFields() {
-    var sectionKey = cvEntrySectionSelect ? cvEntrySectionSelect.value : 'education';
+    var sectionKey = cvEntrySectionSelect ? cvEntrySectionSelect.value : 'experience';
     if (cvEntrySectionKeyInput) cvEntrySectionKeyInput.value = sectionKey;
     if (cvEntryDetailWrap) {
       cvEntryDetailWrap.style.display = sectionKey === 'education' ? '' : 'none';
@@ -3271,7 +3271,7 @@
   function resetCvEntryForm() {
     if (!formCvEntry) return;
     if (cvEntryIdInput) cvEntryIdInput.value = '';
-    if (cvEntrySectionSelect) cvEntrySectionSelect.value = 'education';
+    if (cvEntrySectionSelect) cvEntrySectionSelect.value = 'experience';
     updateCvEntryFormFields();
     if (cvEntryOrgInput) cvEntryOrgInput.value = '';
     if (cvEntryDetailInput) cvEntryDetailInput.value = '';
@@ -3406,7 +3406,7 @@
       if (!api) return;
       if (msgCvEntry) msgCvEntry.hidden = true;
 
-      var sectionKey = cvEntrySectionSelect ? cvEntrySectionSelect.value : 'education';
+      var sectionKey = cvEntrySectionSelect ? cvEntrySectionSelect.value : 'experience';
       var org = (cvEntryOrgInput && cvEntryOrgInput.value || '').trim();
       if (!org) {
         if (msgCvEntry) {

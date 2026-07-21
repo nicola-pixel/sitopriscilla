@@ -3,41 +3,51 @@
 
   var STORAGE_KEY = 'cv_contenuto';
 
+  var IT_MONTHS = {
+    gennaio: 1, febbraio: 2, marzo: 3, aprile: 4, maggio: 5, giugno: 6,
+    luglio: 7, agosto: 8, settembre: 9, ottobre: 10, novembre: 11, dicembre: 12
+  };
+
+  /** Chiave numerica per ordinare le date CV (più recente = valore più alto). */
+  function cvDateSortKey(dateStr) {
+    var raw = String(dateStr || '').trim().toLowerCase();
+    if (!raw) return 0;
+    var ongoing = /\bin corso\b/.test(raw);
+    // Usa la parte finale del periodo ("2017 – 2020", "Aprile 2022 – In corso").
+    var parts = raw.split(/\s*[–—\-]\s*/);
+    var focus = (parts.length > 1 ? parts[parts.length - 1] : parts[0]) || raw;
+    if (/\bin corso\b/.test(focus)) {
+      focus = parts[0] || focus;
+      ongoing = true;
+    }
+    var yearMatch = focus.match(/(19|20)\d{2}/);
+    if (!yearMatch) {
+      yearMatch = raw.match(/(19|20)\d{2}/g);
+      if (!yearMatch || !yearMatch.length) return ongoing ? 999999 : 0;
+      yearMatch = [yearMatch[yearMatch.length - 1]];
+    }
+    var year = parseInt(yearMatch[0], 10);
+    var month = 0;
+    Object.keys(IT_MONTHS).forEach(function (name) {
+      if (focus.indexOf(name) >= 0 || raw.indexOf(name) >= 0) month = IT_MONTHS[name];
+    });
+    // "In corso" resta sopra ai periodi chiusi dello stesso anno.
+    return year * 100 + month + (ongoing ? 50 : 0);
+  }
+
+  function sortEntriesNewestFirst(entries) {
+    return (entries || []).slice().sort(function (a, b) {
+      return cvDateSortKey(b && b.date) - cvDateSortKey(a && a.date);
+    });
+  }
+
   var DEFAULT_CV = {
     sections: [
-      {
-        key: 'education',
-        title: 'Istruzione e formazione',
-        timeline: false,
-        entries: [
-          {
-            id: 'cv_edu_1',
-            org: 'Istituto Sacro Cuore, Modena',
-            detail: 'Diploma secondario: Liceo Scientifico',
-            date: 'Anno Maturità: 2016',
-            texts: []
-          },
-          {
-            id: 'cv_edu_2',
-            org: 'Università degli Studi di Milano — Facoltà di Medicina e Chirurgia',
-            detail: 'Corso di Laurea Triennale in Dietistica',
-            date: '2017 – 2020',
-            texts: []
-          },
-          {
-            id: 'cv_edu_3',
-            org: 'Università degli Studi di Milano — Facoltà di Scienze Agrarie e Alimentari',
-            detail: 'Corso di Laurea Magistrale in Alimentazione e Nutrizione Umana',
-            date: '2020 – 2022',
-            texts: []
-          }
-        ]
-      },
       {
         key: 'experience',
         title: 'Esperienze professionali',
         timeline: true,
-        entries: [
+        entries: sortEntriesNewestFirst([
           {
             id: 'cv_exp_1',
             org: 'Tirocinio Curricolare, Ospedale Niguarda di Milano',
@@ -97,13 +107,41 @@
               'Visite nutrizionali online che prevedono anamnesi clinica, anamnesi alimentare, valutazione dello stato nutrizionale.'
             ]
           }
-        ]
+        ])
+      },
+      {
+        key: 'education',
+        title: 'Istruzione e formazione',
+        timeline: false,
+        entries: sortEntriesNewestFirst([
+          {
+            id: 'cv_edu_1',
+            org: 'Istituto Sacro Cuore, Modena',
+            detail: 'Diploma secondario: Liceo Scientifico',
+            date: 'Anno Maturità: 2016',
+            texts: []
+          },
+          {
+            id: 'cv_edu_2',
+            org: 'Università degli Studi di Milano — Facoltà di Medicina e Chirurgia',
+            detail: 'Corso di Laurea Triennale in Dietistica',
+            date: '2017 – 2020',
+            texts: []
+          },
+          {
+            id: 'cv_edu_3',
+            org: 'Università degli Studi di Milano — Facoltà di Scienze Agrarie e Alimentari',
+            detail: 'Corso di Laurea Magistrale in Alimentazione e Nutrizione Umana',
+            date: '2020 – 2022',
+            texts: []
+          }
+        ])
       },
       {
         key: 'courses',
         title: 'Corsi e certificazioni',
         timeline: false,
-        entries: [
+        entries: sortEntriesNewestFirst([
           {
             id: 'cv_crs_1',
             org: 'International Society for the Advancement Kinanthropometry (ISAK) — Livello 2',
@@ -127,7 +165,7 @@
             date: '',
             texts: []
           }
-        ]
+        ])
       }
     ]
   };
@@ -149,15 +187,17 @@
     base.sections.forEach(function (defaultSection) {
       var saved = data.sections.find(function (s) { return s && s.key === defaultSection.key; });
       if (!saved || !Array.isArray(saved.entries)) return;
-      defaultSection.entries = saved.entries.map(function (entry, index) {
-        return {
-          id: entry.id || (defaultSection.key + '_' + index + '_' + Date.now()),
-          org: String(entry.org || '').trim(),
-          detail: String(entry.detail || '').trim(),
-          date: String(entry.date || '').trim(),
-          texts: Array.isArray(entry.texts) ? entry.texts.map(function (t) { return String(t || '').trim(); }).filter(Boolean) : []
-        };
-      }).filter(function (entry) { return entry.org; });
+      defaultSection.entries = sortEntriesNewestFirst(
+        saved.entries.map(function (entry, index) {
+          return {
+            id: entry.id || (defaultSection.key + '_' + index + '_' + Date.now()),
+            org: String(entry.org || '').trim(),
+            detail: String(entry.detail || '').trim(),
+            date: String(entry.date || '').trim(),
+            texts: Array.isArray(entry.texts) ? entry.texts.map(function (t) { return String(t || '').trim(); }).filter(Boolean) : []
+          };
+        }).filter(function (entry) { return entry.org; })
+      );
     });
 
     return base;
@@ -208,7 +248,7 @@
       html += '<section class="' + sectionClass + '">';
       html += '<h3 class="cv-section-title">' + escapeHtml(section.title) + '</h3>';
       if (section.timeline) html += '<div class="cv-timeline">';
-      (section.entries || []).forEach(function (entry) {
+      sortEntriesNewestFirst(section.entries || []).forEach(function (entry) {
         html += renderEntryHtml(entry, section.key);
       });
       if (section.timeline) html += '</div>';
