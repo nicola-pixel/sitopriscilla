@@ -383,6 +383,7 @@
         var isPng = meta.kind === 'png';
         var ext = isPng ? '.png' : '.pdf';
         var title = item.title || 'Documento ' + (previewIndex + 1);
+        var description = (item.description || '').trim();
         var filename = (item.filename || item.title || 'documento') + ext;
         var href = itemHref(item);
         var canPreview = itemCanPreview(item);
@@ -410,6 +411,9 @@
                 '<span class="download-card-pill download-card-pill--lock">Riservato</span>' +
               '</div>' +
               '<span class="download-card-title">' + escapeHtml(title) + '</span>' +
+              (description
+                ? '<span class="download-card-description">' + escapeHtml(description) + '</span>'
+                : '') +
               '<span class="download-card-type">Formato ' + meta.label + ' · pronto da aprire o scaricare</span>' +
             '</div>' +
             '<div class="download-card-actions">' +

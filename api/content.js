@@ -6,18 +6,23 @@
  *
  *   content/posts/{id}.json
  *   content/recipes/{id}.json
- *   content/meta/categories.json
- *   content/meta/tags.json
+ *   content/meta/categories.json      (ricette)
+ *   content/meta/tags.json            (ricette)
+ *   content/meta/blog-categories.json (blog)
+ *   content/meta/blog-tags.json       (blog)
  *
- * GET  → elenco pubblico posts + recipes (+ categorie/tag)
+ * GET  → elenco pubblico posts + recipes (+ categorie/tag ricette e blog)
  * POST → savePost / saveRecipe / deletePost / deleteRecipe /
- *        setCategories / setTags / replaceAll — richiede password admin
+ *        setCategories / setTags / setBlogCategories / setBlogTags /
+ *        replaceAll — richiede password admin
  */
 
 var POSTS_PREFIX = 'content/posts/';
 var RECIPES_PREFIX = 'content/recipes/';
 var CATEGORIES_PATH = 'content/meta/categories.json';
 var TAGS_PATH = 'content/meta/tags.json';
+var BLOG_CATEGORIES_PATH = 'content/meta/blog-categories.json';
+var BLOG_TAGS_PATH = 'content/meta/blog-tags.json';
 var MAX_JSON_BYTES = 4 * 1024 * 1024;
 
 function cors(res) {
@@ -83,15 +88,37 @@ function sanitizeId(id, prefix) {
   return clean;
 }
 
+function categoryFromLegacyMeta(meta) {
+  var raw = String(meta || '').trim();
+  if (!raw) return '';
+  var cat = raw.split(/\s*[·|]\s*/)[0].trim();
+  return cat || raw;
+}
+
 function normalizePost(post) {
   if (!post || typeof post !== 'object') return null;
   var id = sanitizeId(post.id);
   var title = String(post.title || '').trim();
   if (!id || !title) return null;
+  var tags = [];
+  if (Array.isArray(post.tags)) {
+    post.tags.forEach(function (tag) {
+      var t = String(tag || '').trim();
+      if (t && tags.indexOf(t) < 0) tags.push(t);
+    });
+  }
+  var category = String(post.category || '').trim();
+  if (!category) {
+    category = categoryFromLegacyMeta(post.meta);
+  }
+  var meta = String(post.meta || '').trim();
+  if (!meta && category) meta = category;
   return {
     id: id,
     title: title,
-    meta: String(post.meta || '').trim(),
+    category: category,
+    tags: tags,
+    meta: meta,
     excerpt: String(post.excerpt || '').trim(),
     body: typeof post.body === 'string' ? post.body : '',
     blocks: Array.isArray(post.blocks) ? post.blocks : [],
@@ -263,6 +290,8 @@ module.exports = async function handler(req, res) {
       var recipes = await listRecipes(blob);
       var categories = await readStringList(blob, CATEGORIES_PATH);
       var tags = await readStringList(blob, TAGS_PATH);
+      var blogCategories = await readStringList(blob, BLOG_CATEGORIES_PATH);
+      var blogTags = await readStringList(blob, BLOG_TAGS_PATH);
       json(res, 200, {
         ok: true,
         available: true,
@@ -270,7 +299,9 @@ module.exports = async function handler(req, res) {
         posts: posts,
         recipes: recipes,
         categories: categories,
-        tags: tags
+        tags: tags,
+        blogCategories: blogCategories,
+        blogTags: blogTags
       });
       return;
     }
@@ -348,6 +379,20 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    if (action === 'setBlogCategories') {
+      var blogCategoriesPayload = normalizeStringList(body && body.blogCategories);
+      await putJson(blob, BLOG_CATEGORIES_PATH, { items: blogCategoriesPayload });
+      json(res, 200, { ok: true, blogCategories: blogCategoriesPayload });
+      return;
+    }
+
+    if (action === 'setBlogTags') {
+      var blogTagsPayload = normalizeStringList(body && body.blogTags);
+      await putJson(blob, BLOG_TAGS_PATH, { items: blogTagsPayload });
+      json(res, 200, { ok: true, blogTags: blogTagsPayload });
+      return;
+    }
+
     if (action === 'replaceAll') {
       var nextPosts = Array.isArray(body.posts)
         ? body.posts.map(normalizePost).filter(Boolean)
@@ -357,6 +402,8 @@ module.exports = async function handler(req, res) {
         : [];
       var nextCategories = normalizeStringList(body.categories);
       var nextTags = normalizeStringList(body.tags);
+      var nextBlogCategories = normalizeStringList(body.blogCategories);
+      var nextBlogTags = normalizeStringList(body.blogTags);
 
       var existingPosts = await listAllBlobs(blob, POSTS_PREFIX);
       var existingRecipes = await listAllBlobs(blob, RECIPES_PREFIX);
@@ -392,13 +439,17 @@ module.exports = async function handler(req, res) {
 
       await putJson(blob, CATEGORIES_PATH, { items: nextCategories });
       await putJson(blob, TAGS_PATH, { items: nextTags });
+      await putJson(blob, BLOG_CATEGORIES_PATH, { items: nextBlogCategories });
+      await putJson(blob, BLOG_TAGS_PATH, { items: nextBlogTags });
 
       json(res, 200, {
         ok: true,
         posts: nextPosts,
         recipes: nextRecipes,
         categories: nextCategories,
-        tags: nextTags
+        tags: nextTags,
+        blogCategories: nextBlogCategories,
+        blogTags: nextBlogTags
       });
       return;
     }

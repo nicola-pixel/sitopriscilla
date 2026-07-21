@@ -266,6 +266,53 @@
     return textToHtml((item && item.body) || '');
   }
 
+  /** Palette fissa: stesso nome → stesso colore su tutte le pagine. */
+  var TAG_COLORS = [
+    '#E07A5F',
+    '#3D8B7A',
+    '#D4A017',
+    '#6B8F71',
+    '#C45C6A',
+    '#5B7C99',
+    '#B87D4B',
+    '#7A6B9A',
+    '#2A9D8F',
+    '#C97B4A',
+  ];
+
+  function tagColor(name) {
+    var s = String(name || '')
+      .trim()
+      .toLowerCase();
+    if (!s) return TAG_COLORS[0];
+    var h = 0;
+    for (var i = 0; i < s.length; i++) {
+      h = (h * 31 + s.charCodeAt(i)) | 0;
+    }
+    return TAG_COLORS[Math.abs(h) % TAG_COLORS.length];
+  }
+
+  function formatTagLabel(name) {
+    return String(name || '')
+      .trim()
+      .toLowerCase();
+  }
+
+  function metaTagHtml(name, className) {
+    var label = formatTagLabel(name);
+    if (!label) return '';
+    var cls = className || 'blog-meta-tag';
+    return (
+      '<span class="' +
+      cls +
+      '" style="--tag-color:' +
+      tagColor(name) +
+      '">' +
+      escapeHtml(label) +
+      '</span>'
+    );
+  }
+
   global.PriscillaContentFormat = {
     escapeHtml: escapeHtml,
     textToHtml: textToHtml,
@@ -273,5 +320,8 @@
     blocksToHtml: blocksToHtml,
     normalizeBlocks: normalizeBlocks,
     renderBodyHtml: renderBodyHtml,
+    tagColor: tagColor,
+    formatTagLabel: formatTagLabel,
+    metaTagHtml: metaTagHtml,
   };
 })(typeof window !== 'undefined' ? window : this);

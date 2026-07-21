@@ -106,6 +106,8 @@
         </select>
         <label for="pdfTitle">Titolo (visibile ai clienti)</label>
         <input type="text" id="pdfTitle" name="pdfTitle" placeholder="es. Guida alimentare (opzionale con più file)">
+        <label for="pdfDescription">Descrizione (visibile ai clienti)</label>
+        <textarea id="pdfDescription" name="pdfDescription" rows="3" placeholder="es. Breve spiegazione del contenuto (opzionale)"></textarea>
         <label>File PDF o PNG</label>
         <div class="upload-zone" id="uploadZone">
           <input type="file" id="pdfFile" name="pdfFile" accept=".pdf,application/pdf,.png,image/png" multiple>
@@ -125,6 +127,31 @@
       <div id="listaPdfAdmin" class="lista-pdf-admin-wrap"></div>
     </div>
   </main>
+  </div>
+
+  <div class="admin-confirm" id="editMaterialeModal" role="dialog" aria-modal="true" aria-labelledby="editMaterialeTitle" hidden>
+    <div class="admin-confirm-overlay" data-edit-dismiss tabindex="-1"></div>
+    <div class="admin-confirm-panel admin-confirm-panel--form">
+      <h2 class="admin-confirm-title" id="editMaterialeTitle">Modifica materiale</h2>
+      <p class="admin-confirm-text">Aggiorna titolo, descrizione e cartella. Il file originale non viene modificato.</p>
+      <form id="formEditMateriale" class="admin-edit-materiale-form">
+        <input type="hidden" id="editMaterialeId" value="">
+        <input type="hidden" id="editMaterialeIndex" value="">
+        <label for="editMaterialeFolder">Cartella</label>
+        <select id="editMaterialeFolder" name="editMaterialeFolder" required>
+          <option value="">Seleziona una cartella…</option>
+        </select>
+        <label for="editMaterialeTitleInput">Titolo (visibile ai clienti)</label>
+        <input type="text" id="editMaterialeTitleInput" name="editMaterialeTitleInput" placeholder="es. Guida alimentare" required>
+        <label for="editMaterialeDescription">Descrizione (visibile ai clienti)</label>
+        <textarea id="editMaterialeDescription" name="editMaterialeDescription" rows="3" placeholder="es. Breve spiegazione del contenuto (opzionale)"></textarea>
+        <p id="msgEditMateriale" class="msg" hidden></p>
+        <div class="admin-confirm-actions">
+          <button type="button" class="btn" data-edit-dismiss>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="btnSalvaMateriale">Salva</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="../config.js"></script>

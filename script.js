@@ -156,9 +156,22 @@
             var tag = String(recipe.tag || '').trim();
             if (tag && !(cat && tag === cat)) tags = [tag];
           }
+          var metaTagHtml = function (name, className) {
+            var fmt = window.PriscillaContentFormat;
+            if (fmt && typeof fmt.metaTagHtml === 'function') {
+              return fmt.metaTagHtml(name, className);
+            }
+            var label = String(name || '')
+              .trim()
+              .toLowerCase();
+            if (!label) return '';
+            return (
+              '<span class="' + (className || 'blog-meta-tag') + '">' + escapeHtml(label) + '</span>'
+            );
+          };
           var tagsHtml = tags
             .map(function (t) {
-              return '<span class="blog-meta-tag">' + escapeHtml(t) + '</span>';
+              return metaTagHtml(t, 'blog-meta-tag');
             })
             .join('');
           if (!cat && !tags.length) {
@@ -166,9 +179,7 @@
           }
           return (
             '<div class="blog-meta blog-meta--split">' +
-            (cat
-              ? '<span class="blog-meta-category">' + escapeHtml(cat) + '</span>'
-              : '<span class="blog-meta-category"></span>') +
+            (cat ? metaTagHtml(cat, 'blog-meta-category') : '<span class="blog-meta-category"></span>') +
             (tagsHtml ? '<span class="blog-meta-tags">' + tagsHtml + '</span>' : '') +
             '</div>'
           );

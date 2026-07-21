@@ -824,16 +824,16 @@
 
 .recipe-preview-meta {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.65rem 1rem;
   width: 100%;
   margin-bottom: 0.5rem;
   padding: 0;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
   color: var(--admin-text-muted);
   background: transparent;
   border: none;
@@ -842,20 +842,32 @@
 
 .recipe-preview-meta .blog-meta-category,
 .recipe-preview-meta .blog-meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
   color: var(--admin-text-muted);
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+
+.recipe-preview-meta .blog-meta-category::before,
+.recipe-preview-meta .blog-meta-tag::before {
+  content: '';
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: var(--tag-color, #8a8a8a);
+  flex-shrink: 0;
 }
 
 .recipe-preview-meta .blog-meta-tags {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0;
+  align-items: center;
+  gap: 0.65rem;
   text-align: right;
-}
-
-.recipe-preview-meta .blog-meta-tag + .blog-meta-tag::before {
-  content: ' · ';
-  opacity: 0.55;
 }
 
 .multi-select {
@@ -1096,15 +1108,19 @@
   content: counter(prose-step);
   position: absolute;
   left: 0.65rem;
-  top: 0.65rem;
+  top: 0.7rem;
   width: 1.4rem;
   height: 1.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-heading, "Playfair Display", Georgia, serif);
-  font-size: 0.75rem;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  font-family: var(--font-body, "Montserrat", system-ui, sans-serif);
+  font-size: 0.7rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  line-height: 1;
+  text-align: center;
   color: #111;
   background: #eee;
   border-radius: 50%;
@@ -1942,6 +1958,14 @@
   margin-bottom: 0;
 }
 
+.lista-pdf-admin .pdf-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
 .lista-articoli-admin .articolo-title,
 .lista-pdf-admin .pdf-title {
   font-weight: 500;
@@ -1954,8 +1978,27 @@
   white-space: nowrap;
 }
 
+.lista-pdf-admin .pdf-description {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--admin-text-muted, #64748b);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+}
+
 .lista-articoli-admin .articolo-actions {
   display: flex;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.lista-pdf-admin .pdf-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.45rem;
   flex-shrink: 0;
 }
@@ -1963,6 +2006,7 @@
 .lista-articoli-admin .btn-edit,
 .lista-articoli-admin .btn-remove,
 .lista-sedi-admin .btn-move,
+.lista-pdf-admin .btn-edit,
 .lista-pdf-admin .btn-remove,
 .lista-cartelle-admin .btn-remove {
   padding: 0.4rem 0.75rem;
@@ -1974,13 +2018,15 @@
   transition: background var(--admin-transition), border-color var(--admin-transition), color var(--admin-transition);
 }
 
-.lista-articoli-admin .btn-edit {
+.lista-articoli-admin .btn-edit,
+.lista-pdf-admin .btn-edit {
   background: var(--admin-surface);
   border: 1px solid var(--admin-border);
   color: var(--admin-text);
 }
 
-.lista-articoli-admin .btn-edit:hover {
+.lista-articoli-admin .btn-edit:hover,
+.lista-pdf-admin .btn-edit:hover {
   background: var(--admin-text);
   border-color: var(--admin-text);
   color: #fff;
@@ -2382,6 +2428,49 @@
   border-radius: var(--admin-radius-lg);
   box-shadow: 0 18px 50px rgba(17, 24, 39, 0.18);
   padding: 1.35rem 1.4rem 1.25rem;
+}
+
+.admin-confirm-panel--form {
+  width: min(100%, 480px);
+}
+
+.admin-edit-materiale-form label {
+  display: block;
+  margin: 0.75rem 0 0.35rem;
+  font-family: var(--admin-font);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.admin-edit-materiale-form label:first-of-type {
+  margin-top: 0;
+}
+
+.admin-edit-materiale-form input[type="text"],
+.admin-edit-materiale-form select,
+.admin-edit-materiale-form textarea {
+  width: 100%;
+  padding: 0.72rem 0.9rem;
+  font-family: var(--admin-font);
+  font-size: 0.9rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+.admin-edit-materiale-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.admin-edit-materiale-form .msg {
+  margin: 0.75rem 0 0;
+}
+
+.admin-edit-materiale-form .admin-confirm-actions {
+  margin-top: 1.15rem;
 }
 
 .admin-confirm-title {
@@ -3061,6 +3150,7 @@ body.admin-confirm-open {
   .lista-articoli-admin .btn-edit,
   .lista-articoli-admin .btn-remove,
   .lista-sedi-admin .btn-move,
+  .lista-pdf-admin .btn-edit,
   .lista-pdf-admin .btn-remove {
     flex: 1 1 auto;
     min-height: 40px;

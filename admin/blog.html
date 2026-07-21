@@ -139,9 +139,81 @@
               <input type="text" id="articoloTitolo" name="articoloTitolo" placeholder="es. Carboidrati e sport: quando e come assumerli" required>
             </div>
 
-            <div class="form-group">
-              <label for="articoloMeta">Meta <span class="label-hint">(categoria · tempo lettura)</span></label>
-              <input type="text" id="articoloMeta" name="articoloMeta" placeholder="es. Alimentazione · 5 min">
+            <div class="form-row form-row--split">
+              <div class="form-group form-group--select">
+                <label id="articoloCategoriaLabel">Categoria <span class="label-hint">(visibile sulla card)</span></label>
+                <div class="multi-select" id="articoloCategoriaMulti">
+                  <button
+                    type="button"
+                    class="multi-select-trigger select-modern"
+                    id="articoloCategoriaTrigger"
+                    aria-labelledby="articoloCategoriaLabel"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="articoloCategoriaDropdown"
+                  >
+                    <span class="multi-select-label" id="articoloCategoriaLabelText">Scegli categoria</span>
+                    <span class="select-chevron" aria-hidden="true"></span>
+                  </button>
+                  <div
+                    class="multi-select-dropdown"
+                    id="articoloCategoriaDropdown"
+                    role="listbox"
+                    hidden
+                  >
+                    <div class="multi-select-create">
+                      <input
+                        type="text"
+                        id="articoloCategoriaCreateInput"
+                        class="input-inline"
+                        placeholder="Nuova categoria..."
+                        autocomplete="off"
+                        aria-label="Nuova categoria articolo"
+                      >
+                      <button type="button" id="articoloCategoriaCreateBtn" class="btn btn-outline btn-sm">Aggiungi</button>
+                    </div>
+                    <div class="multi-select-options" id="articoloCategoriaOptions"></div>
+                  </div>
+                  <input type="hidden" id="articoloCategoria" name="articoloCategoria" value="">
+                </div>
+              </div>
+              <div class="form-group form-group--select">
+                <label id="articoloTagLabel">Tag <span class="label-hint">(più di uno)</span></label>
+                <div class="multi-select" id="articoloTagMulti">
+                  <button
+                    type="button"
+                    class="multi-select-trigger select-modern"
+                    id="articoloTagTrigger"
+                    aria-labelledby="articoloTagLabel"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="articoloTagDropdown"
+                  >
+                    <span class="multi-select-label" id="articoloTagLabelText">Scegli tag</span>
+                    <span class="select-chevron" aria-hidden="true"></span>
+                  </button>
+                  <div
+                    class="multi-select-dropdown"
+                    id="articoloTagDropdown"
+                    role="listbox"
+                    aria-multiselectable="true"
+                    hidden
+                  >
+                    <div class="multi-select-create">
+                      <input
+                        type="text"
+                        id="articoloTagCreateInput"
+                        class="input-inline"
+                        placeholder="Nuovo tag..."
+                        autocomplete="off"
+                        aria-label="Nuovo tag articolo"
+                      >
+                      <button type="button" id="articoloTagCreateBtn" class="btn btn-outline btn-sm">Aggiungi</button>
+                    </div>
+                    <div class="multi-select-options" id="articoloTagOptions"></div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="form-group">
@@ -178,7 +250,10 @@
                   <img id="articlePreviewCoverImg" alt="">
                 </div>
                 <div class="recipe-preview-header">
-                  <span class="recipe-preview-meta" id="articlePreviewMeta">Categoria · lettura</span>
+                  <div class="recipe-preview-meta blog-meta--split" id="articlePreviewMeta">
+                    <span class="blog-meta-category">Categoria</span>
+                    <span class="blog-meta-tags"></span>
+                  </div>
                   <h3 class="recipe-preview-title" id="articlePreviewTitle">Titolo dell’articolo</h3>
                   <p class="recipe-preview-excerpt" id="articlePreviewExcerpt" hidden></p>
                 </div>
@@ -196,6 +271,38 @@
         <h3 class="admin-subtitle">Articoli pubblicati</h3>
         <ul id="listaArticoliAdmin" class="lista-articoli-admin"></ul>
       </div>
+
+      <div class="admin-taxonomy-section">
+        <details class="recipe-cats-panel">
+          <summary>
+            <span class="recipe-cats-panel-title">Gestione categorie blog</span>
+            <span class="recipe-cats-panel-hint">Separate da quelle delle ricette</span>
+          </summary>
+          <div class="recipe-cats-panel-body">
+            <p class="form-hint">Categorie dedicate agli articoli. Non sono le stesse delle ricette: puoi crearne, rinominarle o eliminarle qui.</p>
+            <div class="categorie-add-row">
+              <input type="text" id="nuovaCategoriaBlogInput" placeholder="es. Nutrizione, Sport, Salute..." class="input-inline" autocomplete="off">
+              <button type="button" id="btnAggiungiCategoriaBlog" class="btn btn-outline btn-sm">Aggiungi</button>
+            </div>
+            <ul id="listaCategorieBlog" class="categorie-list"></ul>
+          </div>
+        </details>
+
+        <details class="recipe-cats-panel">
+          <summary>
+            <span class="recipe-cats-panel-title">Gestione tag blog</span>
+            <span class="recipe-cats-panel-hint">Separate da quelli delle ricette</span>
+          </summary>
+          <div class="recipe-cats-panel-body">
+            <p class="form-hint">Tag dedicati agli articoli. Nel menu Tag dell’articolo puoi selezionarne più di uno.</p>
+            <div class="categorie-add-row">
+              <input type="text" id="nuovoTagBlogInput" placeholder="es. Consigli, Approfondimento..." class="input-inline" autocomplete="off">
+              <button type="button" id="btnAggiungiTagBlog" class="btn btn-outline btn-sm">Aggiungi</button>
+            </div>
+            <ul id="listaTagBlog" class="categorie-list"></ul>
+          </div>
+        </details>
+      </div>
     </div>
   </main>
   </div>
@@ -204,7 +311,7 @@
   <script src="../impostazioni.js"></script>
   <script src="../admin-auth.js"></script>
   <script src="../content-format.js"></script>
-  <script src="../content-store.js?v=20260721m"></script>
-  <script src="../admin.js?v=20260721m"></script>
+  <script src="../content-store.js?v=20260721n"></script>
+  <script src="../admin.js?v=20260721n"></script>
 </body>
 </html>

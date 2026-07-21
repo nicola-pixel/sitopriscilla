@@ -8,6 +8,10 @@
   var STORAGE_KEY_CATEGORIE_RICETTE = 'ricette_categorie';
   var STORAGE_KEY_CATEGORIE_NASCOSTE = 'ricette_categorie_nascoste';
   var STORAGE_KEY_TAG_RICETTE = 'ricette_tag';
+  var STORAGE_KEY_CATEGORIE_BLOG = 'blog_categorie';
+  var STORAGE_KEY_CATEGORIE_BLOG_NASCOSTE = 'blog_categorie_nascoste';
+  var STORAGE_KEY_TAG_BLOG = 'blog_tag';
+  var ARTICOLI_CATEGORIE = ['Nutrizione', 'Sport', 'Alimentazione', 'Salute', 'Approfondimenti'];
 
   var adminDashboard = document.getElementById('adminDashboard');
   var formChiaveDownload = document.getElementById('formChiaveDownload');
@@ -15,6 +19,7 @@
   var msgChiave = document.getElementById('msgChiave');
   var formUploadPdf = document.getElementById('formUploadPdf');
   var pdfTitleInput = document.getElementById('pdfTitle');
+  var pdfDescriptionInput = document.getElementById('pdfDescription');
   var pdfFileInput = document.getElementById('pdfFile');
   var pdfFolderSelect = document.getElementById('pdfFolder');
   var msgUpload = document.getElementById('msgUpload');
@@ -127,6 +132,124 @@
     );
   }
 
+  function syncPostsToCloud(posts) {
+    setBlogPosts(posts);
+    if (!contentStore || typeof contentStore.savePost !== 'function') {
+      return Promise.resolve();
+    }
+    return Promise.all(
+      (posts || []).map(function (post) {
+        return contentStore.savePost(post).catch(function (err) {
+          console.warn('Sync articolo', post && post.id, err);
+        });
+      })
+    );
+  }
+
+  function getPostCategory(post) {
+    if (!post) return '';
+    var cat = String(post.category || '').trim();
+    if (cat) return cat;
+    var raw = String(post.meta || '').trim();
+    if (!raw) return '';
+    return raw.split(/\s*[·|]\s*/)[0].trim() || raw;
+  }
+
+  function getPostTags(post) {
+    if (!post) return [];
+    if (Array.isArray(post.tags)) {
+      return post.tags
+        .map(function (t) { return String(t || '').trim(); })
+        .filter(Boolean);
+    }
+    return [];
+  }
+
+  function getCustomBlogCategories() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY_CATEGORIE_BLOG);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function setCustomBlogCategories(arr) {
+    localStorage.setItem(STORAGE_KEY_CATEGORIE_BLOG, JSON.stringify(arr || []));
+    if (contentStore && typeof contentStore.setBlogCategories === 'function') {
+      contentStore.setBlogCategories(arr || []).catch(function (err) {
+        console.warn('Sync categorie blog', err);
+      });
+    }
+  }
+
+  function getHiddenBlogCategories() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY_CATEGORIE_BLOG_NASCOSTE);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function setHiddenBlogCategories(arr) {
+    localStorage.setItem(STORAGE_KEY_CATEGORIE_BLOG_NASCOSTE, JSON.stringify(arr || []));
+  }
+
+  function isBaseBlogCategory(name) {
+    name = (name || '').trim();
+    if (!name) return false;
+    return ARTICOLI_CATEGORIE.indexOf(name) >= 0;
+  }
+
+  function getAllBlogCategories() {
+    var hidden = getHiddenBlogCategories();
+    var combined = [];
+    function pushCat(name) {
+      name = (name || '').trim();
+      if (!name || combined.indexOf(name) >= 0) return;
+      if (hidden.indexOf(name) >= 0) return;
+      combined.push(name);
+    }
+    ARTICOLI_CATEGORIE.forEach(pushCat);
+    getCustomBlogCategories().forEach(pushCat);
+    getBlogPosts().forEach(function (post) {
+      pushCat(getPostCategory(post));
+    });
+    return combined;
+  }
+
+  function getCustomBlogTags() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY_TAG_BLOG);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function setCustomBlogTags(arr) {
+    localStorage.setItem(STORAGE_KEY_TAG_BLOG, JSON.stringify(arr || []));
+    if (contentStore && typeof contentStore.setBlogTags === 'function') {
+      contentStore.setBlogTags(arr || []).catch(function (err) {
+        console.warn('Sync tag blog', err);
+      });
+    }
+  }
+
+  function getAllBlogTags() {
+    var tags = [];
+    function pushTag(name) {
+      name = (name || '').trim();
+      if (name && tags.indexOf(name) < 0) tags.push(name);
+    }
+    getCustomBlogTags().forEach(pushTag);
+    getBlogPosts().forEach(function (post) {
+      getPostTags(post).forEach(pushTag);
+    });
+    return tags;
+  }
+
   function getCustomRecipeCategories() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY_CATEGORIE_RICETTE);
@@ -223,6 +346,10 @@
     updateCvStatus();
     renderListaArticoliAdmin();
     renderListaRicetteAdmin();
+    if (typeof refreshSelectsCategorieBlog === 'function') refreshSelectsCategorieBlog();
+    if (typeof renderListaCategorieBlog === 'function') renderListaCategorieBlog();
+    if (typeof refreshSelectsTagBlog === 'function') refreshSelectsTagBlog();
+    if (typeof renderListaTagBlog === 'function') renderListaTagBlog();
     if (typeof refreshSelectsCategorie === 'function') refreshSelectsCategorie();
     if (typeof renderListaCategorieRicette === 'function') renderListaCategorieRicette();
     if (typeof refreshSelectsTag === 'function') refreshSelectsTag();
@@ -297,6 +424,73 @@
       pdfFolderSelect.value = '';
     }
     pdfFolderSelect.disabled = materialeAdminFolders.length === 0;
+  }
+
+  var editMaterialeModal = document.getElementById('editMaterialeModal');
+  var formEditMateriale = document.getElementById('formEditMateriale');
+  var editMaterialeIdInput = document.getElementById('editMaterialeId');
+  var editMaterialeIndexInput = document.getElementById('editMaterialeIndex');
+  var editMaterialeFolderSelect = document.getElementById('editMaterialeFolder');
+  var editMaterialeTitleInput = document.getElementById('editMaterialeTitleInput');
+  var editMaterialeDescriptionInput = document.getElementById('editMaterialeDescription');
+  var msgEditMateriale = document.getElementById('msgEditMateriale');
+  var btnSalvaMateriale = document.getElementById('btnSalvaMateriale');
+
+  function refreshEditFolderSelect(preferredId) {
+    if (!editMaterialeFolderSelect) return;
+    var current = preferredId || editMaterialeFolderSelect.value || '';
+    editMaterialeFolderSelect.innerHTML = '';
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = materialeAdminFolders.length
+      ? 'Seleziona una cartella…'
+      : 'Nessuna cartella disponibile';
+    editMaterialeFolderSelect.appendChild(placeholder);
+    materialeAdminFolders.forEach(function (folder) {
+      if (!folder || !folder.id) return;
+      var opt = document.createElement('option');
+      opt.value = folder.id;
+      opt.textContent = folder.name || 'Cartella';
+      editMaterialeFolderSelect.appendChild(opt);
+    });
+    if (current && Array.prototype.some.call(editMaterialeFolderSelect.options, function (o) {
+      return o.value === current;
+    })) {
+      editMaterialeFolderSelect.value = current;
+    } else {
+      editMaterialeFolderSelect.value = '';
+    }
+  }
+
+  function closeEditMaterialeModal() {
+    if (!editMaterialeModal) return;
+    editMaterialeModal.hidden = true;
+    document.body.classList.remove('admin-confirm-open');
+    if (msgEditMateriale) {
+      msgEditMateriale.hidden = true;
+      msgEditMateriale.textContent = '';
+    }
+  }
+
+  function openEditMaterialeModal(item, index) {
+    if (!editMaterialeModal || !item) return;
+    if (editMaterialeIdInput) editMaterialeIdInput.value = item.id || '';
+    if (editMaterialeIndexInput) editMaterialeIndexInput.value = String(index);
+    if (editMaterialeTitleInput) editMaterialeTitleInput.value = item.title || '';
+    if (editMaterialeDescriptionInput) {
+      editMaterialeDescriptionInput.value = item.description || '';
+    }
+    refreshEditFolderSelect(item.folderId || '');
+    if (msgEditMateriale) {
+      msgEditMateriale.hidden = true;
+      msgEditMateriale.textContent = '';
+    }
+    editMaterialeModal.hidden = false;
+    document.body.classList.add('admin-confirm-open');
+    if (editMaterialeTitleInput && typeof editMaterialeTitleInput.focus === 'function') {
+      editMaterialeTitleInput.focus();
+      editMaterialeTitleInput.select();
+    }
   }
 
   function renderListaCartelleAdmin() {
@@ -396,14 +590,30 @@
         group.files.forEach(function (item) {
           var globalIndex = materialeAdminItems.indexOf(item);
           var li = document.createElement('li');
+          var desc = (item.description || '').trim();
           li.innerHTML =
-            '<span class="pdf-title">' + escapeHtml(item.title || 'Senza titolo') + '</span> ' +
-            '<button type="button" class="btn-remove" data-index="' + globalIndex + '" aria-label="Rimuovi">Rimuovi</button>';
+            '<div class="pdf-meta">' +
+              '<span class="pdf-title">' + escapeHtml(item.title || 'Senza titolo') + '</span>' +
+              (desc ? '<span class="pdf-description">' + escapeHtml(desc) + '</span>' : '') +
+            '</div>' +
+            '<span class="pdf-actions">' +
+              '<button type="button" class="btn-edit" data-index="' + globalIndex + '" aria-label="Modifica">Modifica</button>' +
+              '<button type="button" class="btn-remove" data-index="' + globalIndex + '" aria-label="Rimuovi">Rimuovi</button>' +
+            '</span>';
           ul.appendChild(li);
         });
       }
       section.appendChild(ul);
       listaPdfAdmin.appendChild(section);
+    });
+
+    listaPdfAdmin.querySelectorAll('.btn-edit').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(btn.getAttribute('data-index'), 10);
+        var item = materialeAdminItems[idx];
+        if (!item) return;
+        openEditMaterialeModal(item, idx);
+      });
     });
 
     listaPdfAdmin.querySelectorAll('.btn-remove').forEach(function (btn) {
@@ -1554,7 +1764,9 @@
   var ricettaImmagineInput = document.getElementById('ricettaImmagine');
   var ricettaImmagineFileInput = document.getElementById('ricettaImmagineFile');
   var msgRicetta = document.getElementById('msgRicetta');
+  var btnSalvaRicetta = document.getElementById('btnSalvaRicetta');
   var btnAnnullaRicetta = document.getElementById('btnAnnullaRicetta');
+  var ricettaPublishing = false;
   var filtroCategoriaEl = document.getElementById('filtroCategoria');
   var filtroTagEl = document.getElementById('filtroTag');
   var filtroRicercaEl = document.getElementById('filtroRicerca');
@@ -1684,15 +1896,26 @@
     var coverUrl = ricettaImmagineInput ? (ricettaImmagineInput.value || '').trim() : '';
 
     if (recipePreviewMeta) {
+      var metaTagHtml = function (name, className) {
+        var fmt = window.PriscillaContentFormat;
+        if (fmt && typeof fmt.metaTagHtml === 'function') {
+          return fmt.metaTagHtml(name, className);
+        }
+        var label = String(name || '')
+          .trim()
+          .toLowerCase();
+        if (!label) return '';
+        return (
+          '<span class="' + (className || 'blog-meta-tag') + '">' + escapeHtml(label) + '</span>'
+        );
+      };
       var tagsHtml = tags
         .map(function (t) {
-          return '<span class="blog-meta-tag">' + escapeHtml(t) + '</span>';
+          return metaTagHtml(t, 'blog-meta-tag');
         })
         .join('');
       recipePreviewMeta.innerHTML =
-        '<span class="blog-meta-category">' +
-        escapeHtml(cat || 'Categoria') +
-        '</span>' +
+        metaTagHtml(cat || 'Categoria', 'blog-meta-category') +
         (tagsHtml ? '<span class="blog-meta-tags">' + tagsHtml + '</span>' : '<span class="blog-meta-tags"></span>');
     }
     if (recipePreviewTitle) recipePreviewTitle.textContent = title || 'Titolo della ricetta';
@@ -2594,8 +2817,16 @@
   if (formRicetta) {
     formRicetta.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (ricettaPublishing) return;
       var msgEl = document.getElementById('msgRicetta');
       if (msgEl) { msgEl.hidden = true; }
+      var unlockPublish = function () {
+        ricettaPublishing = false;
+        if (btnSalvaRicetta) {
+          btnSalvaRicetta.disabled = false;
+          btnSalvaRicetta.textContent = 'Pubblica ricetta';
+        }
+      };
       try {
         var id = ricettaIdInput ? (ricettaIdInput.value || '').trim() : '';
         var title = ricettaTitoloInput ? (ricettaTitoloInput.value || '').trim() : '';
@@ -2640,8 +2871,12 @@
         var recipes = getRecipes();
         var existing = id ? recipes.find(function (r) { return r.id === id; }) : null;
         var wasEdit = !!id;
+        if (!id) {
+          id = 'ric_' + Date.now();
+          if (ricettaIdInput) ricettaIdInput.value = id;
+        }
         var recipe = {
-          id: id || 'ric_' + Date.now(),
+          id: id,
           title: title,
           category: category,
           tag: tag,
@@ -2652,6 +2887,11 @@
           imageUrl: imageUrl || null,
           createdAt: existing ? existing.createdAt : Date.now()
         };
+        ricettaPublishing = true;
+        if (btnSalvaRicetta) {
+          btnSalvaRicetta.disabled = true;
+          btnSalvaRicetta.textContent = 'Pubblicazione…';
+        }
         persistRecipe(recipe).then(function (result) {
           renderListaRicetteAdmin();
           if (msgEl) {
@@ -2667,7 +2907,9 @@
             setTimeout(function () { msgEl.hidden = true; }, 6000);
           }
           resetRicettaFormFields();
+          unlockPublish();
         }).catch(function (err) {
+          unlockPublish();
           if (msgEl) {
             msgEl.textContent = 'Errore: ' + (err && err.message ? err.message : 'impossibile pubblicare');
             msgEl.classList.add('msg-error');
@@ -2677,6 +2919,7 @@
           console.error('Errore pubblicazione ricetta', err);
         });
       } catch (err) {
+        unlockPublish();
         if (msgEl) {
           msgEl.textContent = 'Errore: ' + (err && err.message ? err.message : 'impossibile pubblicare');
           msgEl.classList.add('msg-error');
@@ -2873,6 +3116,98 @@
     pdfFileInput.addEventListener('change', updateUploadZoneLabel);
   }
 
+  if (editMaterialeModal) {
+    editMaterialeModal.querySelectorAll('[data-edit-dismiss]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        closeEditMaterialeModal();
+      });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && editMaterialeModal && !editMaterialeModal.hidden) {
+        closeEditMaterialeModal();
+      }
+    });
+  }
+
+  if (formEditMateriale) {
+    formEditMateriale.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!materialeStore || typeof materialeStore.update !== 'function') {
+        if (msgEditMateriale) {
+          msgEditMateriale.textContent = 'Modulo materiale non disponibile. Ricarica la pagina.';
+          msgEditMateriale.classList.add('msg-error');
+          msgEditMateriale.classList.remove('msg-ok');
+          msgEditMateriale.hidden = false;
+        }
+        return;
+      }
+      var id = (editMaterialeIdInput && editMaterialeIdInput.value || '').trim();
+      var idx = parseInt(editMaterialeIndexInput && editMaterialeIndexInput.value, 10);
+      var item = (!isNaN(idx) && materialeAdminItems[idx]) ||
+        materialeAdminItems.find(function (it) { return it && it.id === id; });
+      if (!item) {
+        if (msgEditMateriale) {
+          msgEditMateriale.textContent = 'File non trovato.';
+          msgEditMateriale.classList.add('msg-error');
+          msgEditMateriale.classList.remove('msg-ok');
+          msgEditMateriale.hidden = false;
+        }
+        return;
+      }
+      var folderId = (editMaterialeFolderSelect && editMaterialeFolderSelect.value || '').trim();
+      var title = (editMaterialeTitleInput && editMaterialeTitleInput.value || '').trim();
+      var description = (editMaterialeDescriptionInput && editMaterialeDescriptionInput.value || '').trim();
+      if (!folderId) {
+        if (msgEditMateriale) {
+          msgEditMateriale.textContent = 'Seleziona una cartella.';
+          msgEditMateriale.classList.add('msg-error');
+          msgEditMateriale.classList.remove('msg-ok');
+          msgEditMateriale.hidden = false;
+        }
+        return;
+      }
+      if (!title) {
+        if (msgEditMateriale) {
+          msgEditMateriale.textContent = 'Inserisci un titolo.';
+          msgEditMateriale.classList.add('msg-error');
+          msgEditMateriale.classList.remove('msg-ok');
+          msgEditMateriale.hidden = false;
+        }
+        return;
+      }
+      if (btnSalvaMateriale) {
+        btnSalvaMateriale.disabled = true;
+        btnSalvaMateriale.textContent = 'Salvataggio…';
+      }
+      materialeStore.update(item, {
+        title: title,
+        description: description,
+        folderId: folderId
+      }).then(function () {
+        closeEditMaterialeModal();
+        if (msgUpload) {
+          msgUpload.textContent = 'Materiale aggiornato.';
+          msgUpload.classList.remove('msg-error');
+          msgUpload.classList.add('msg-ok');
+          msgUpload.hidden = false;
+        }
+        return renderListaPdfAdmin();
+      }).catch(function (err) {
+        if (msgEditMateriale) {
+          msgEditMateriale.textContent = (err && err.message) || 'Impossibile aggiornare il materiale.';
+          msgEditMateriale.classList.add('msg-error');
+          msgEditMateriale.classList.remove('msg-ok');
+          msgEditMateriale.hidden = false;
+        }
+      }).then(function () {
+        if (btnSalvaMateriale) {
+          btnSalvaMateriale.disabled = false;
+          btnSalvaMateriale.textContent = 'Salva';
+        }
+      });
+    });
+  }
+
   if (formCartellaMateriale) {
     formCartellaMateriale.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -2951,7 +3286,8 @@
         msgUpload.hidden = false;
         return;
       }
-      var titleBase = (pdfTitleInput.value || '').trim();
+      var titleBase = (pdfTitleInput && pdfTitleInput.value || '').trim();
+      var description = (pdfDescriptionInput && pdfDescriptionInput.value || '').trim();
       var queue = [];
       for (var i = 0; i < files.length; i++) {
         var f = files[i];
@@ -2993,6 +3329,7 @@
           msgUpload.classList.add('msg-ok');
           msgUpload.hidden = false;
           if (pdfTitleInput) pdfTitleInput.value = '';
+          if (pdfDescriptionInput) pdfDescriptionInput.value = '';
           if (pdfFileInput) pdfFileInput.value = '';
           updateUploadZoneLabel();
           // Mostra subito i file appena caricati (Blob list può ritardare)
@@ -3032,7 +3369,7 @@
         if (queue.length > 1 && !titleBase) title = cleanName;
         else if (queue.length > 1 && titleBase) title = titleBase + ' ' + (index + 1);
 
-        materialeStore.add(file, title, folderId).then(function (item) {
+        materialeStore.add(file, title, folderId, description).then(function (item) {
           added++;
           if (item) uploadedItems.push(item);
           processNext(index + 1);

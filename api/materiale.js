@@ -14,7 +14,7 @@
  * I file devono appartenere a una cartella (folderId obbligatorio in upload).
  *
  * GET    → elenco cartelle + file
- * POST   → crea cartella / elimina cartella / carica file — richiede password admin
+ * POST   → crea cartella / elimina cartella / carica file / aggiorna metadati — richiede password admin
  * DELETE → rimuove file — richiede password admin
  */
 
@@ -111,6 +111,7 @@ function publicItem(item) {
   return {
     id: item.id,
     title: item.title,
+    description: item.description ? String(item.description) : '',
     filename: item.filename,
     mimeType: item.mimeType,
     url: item.url,
@@ -319,7 +320,83 @@ module.exports = async function handler(req, res) {
         return;
       }
 
+      if (action === 'update') {
+        var idToUpdate = String((body && body.id) || '').trim();
+        if (!idToUpdate) {
+          json(res, 400, { ok: false, error: 'ID file mancante.' });
+          return;
+        }
+
+        var existingMetaUrl = null;
+        var existingMeta = null;
+        try {
+          var updateMetaHead = await blob.head(metaPath(idToUpdate));
+          existingMetaUrl = updateMetaHead && updateMetaHead.url;
+          if (existingMetaUrl) {
+            var updateMetaRes = await fetch(existingMetaUrl, { cache: 'no-store' });
+            if (updateMetaRes.ok) {
+              existingMeta = await updateMetaRes.json();
+            }
+          }
+        } catch (e) {}
+
+        if (!existingMeta || !existingMeta.id || !existingMeta.url) {
+          json(res, 404, { ok: false, error: 'File non trovato.' });
+          return;
+        }
+
+        var updatedTitle = (body && body.title != null ? String(body.title) : existingMeta.title || '').trim();
+        var updatedDescription = (body && body.description != null
+          ? String(body.description)
+          : (existingMeta.description || '')
+        ).trim();
+        var updatedFolderId = String(
+          (body && body.folderId != null ? body.folderId : existingMeta.folderId) || ''
+        ).trim();
+
+        if (!updatedFolderId) {
+          json(res, 400, { ok: false, error: 'Seleziona una cartella per il file.' });
+          return;
+        }
+        if (!(await folderExists(blob, updatedFolderId))) {
+          json(res, 400, { ok: false, error: 'Cartella non trovata.' });
+          return;
+        }
+
+        var updatedItem = {
+          id: existingMeta.id,
+          title: updatedTitle || existingMeta.filename || 'Senza titolo',
+          description: updatedDescription,
+          filename: existingMeta.filename,
+          mimeType: existingMeta.mimeType,
+          url: existingMeta.url,
+          pathname: existingMeta.pathname || '',
+          size: existingMeta.size || 0,
+          createdAt: existingMeta.createdAt || Date.now(),
+          folderId: updatedFolderId
+        };
+
+        // Meta immutabili: elimina e riscrivi per evitare cache stale
+        try {
+          await blob.del(existingMetaUrl || metaPath(idToUpdate));
+        } catch (delMetaErr) {
+          console.warn('[materiale] update delete meta', delMetaErr);
+        }
+
+        await blob.put(metaPath(idToUpdate), JSON.stringify(updatedItem), {
+          access: 'public',
+          addRandomSuffix: false,
+          contentType: 'application/json',
+          cacheControlMaxAge: 60
+        });
+
+        cleanupLegacyIndex(blob);
+        json(res, 200, { ok: true, item: publicItem(updatedItem) });
+        return;
+      }
+
       var title = (body && body.title ? String(body.title) : '').trim();
+      var description = (body && body.description ? String(body.description) : '').trim();
       var filename = sanitizeFilename(body && body.filename);
       var mimeType = guessMime(
         (body && body.filename) || filename,
@@ -374,6 +451,7 @@ module.exports = async function handler(req, res) {
       var item = {
         id: id,
         title: title || filename,
+        description: description,
         filename: filename,
         mimeType: mimeType,
         url: uploaded.url,

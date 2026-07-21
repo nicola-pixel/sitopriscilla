@@ -5,6 +5,8 @@
   var STORAGE_KEY_RICETTE = 'ricette';
   var STORAGE_KEY_CATEGORIE_RICETTE = 'ricette_categorie';
   var STORAGE_KEY_TAG_RICETTE = 'ricette_tag';
+  var STORAGE_KEY_CATEGORIE_BLOG = 'blog_categorie';
+  var STORAGE_KEY_TAG_BLOG = 'blog_tag';
   var STORAGE_KEY_MIGRATED = 'content_blob_migrated_v1';
   var API_URL = '/api/content';
   var remoteAvailable = null;
@@ -41,7 +43,9 @@
       posts: readLocalArray(STORAGE_KEY_BLOG),
       recipes: readLocalArray(STORAGE_KEY_RICETTE),
       categories: readLocalArray(STORAGE_KEY_CATEGORIE_RICETTE),
-      tags: readLocalArray(STORAGE_KEY_TAG_RICETTE)
+      tags: readLocalArray(STORAGE_KEY_TAG_RICETTE),
+      blogCategories: readLocalArray(STORAGE_KEY_CATEGORIE_BLOG),
+      blogTags: readLocalArray(STORAGE_KEY_TAG_BLOG)
     };
   }
 
@@ -73,11 +77,15 @@
     writeLocalArray(STORAGE_KEY_RICETTE, recipes);
     writeLocalArray(STORAGE_KEY_CATEGORIE_RICETTE, data.categories || []);
     writeLocalArray(STORAGE_KEY_TAG_RICETTE, data.tags || []);
+    writeLocalArray(STORAGE_KEY_CATEGORIE_BLOG, data.blogCategories || []);
+    writeLocalArray(STORAGE_KEY_TAG_BLOG, data.blogTags || []);
     var applied = {
       posts: posts,
       recipes: recipes,
       categories: data.categories || [],
       tags: data.tags || [],
+      blogCategories: data.blogCategories || [],
+      blogTags: data.blogTags || [],
       source: data.source || 'local'
     };
     try {
@@ -120,6 +128,8 @@
           recipes: Array.isArray(data.recipes) ? data.recipes : [],
           categories: Array.isArray(data.categories) ? data.categories : [],
           tags: Array.isArray(data.tags) ? data.tags : [],
+          blogCategories: Array.isArray(data.blogCategories) ? data.blogCategories : [],
+          blogTags: Array.isArray(data.blogTags) ? data.blogTags : [],
           source: 'blob'
         };
       });
@@ -183,7 +193,9 @@
       posts: local.posts,
       recipes: local.recipes,
       categories: local.categories,
-      tags: local.tags
+      tags: local.tags,
+      blogCategories: local.blogCategories,
+      blogTags: local.blogTags
     }).then(function (data) {
       try {
         global.localStorage.setItem(STORAGE_KEY_MIGRATED, '1');
@@ -193,6 +205,8 @@
         recipes: data.recipes || local.recipes,
         categories: data.categories || local.categories,
         tags: data.tags || local.tags,
+        blogCategories: data.blogCategories || local.blogCategories,
+        blogTags: data.blogTags || local.blogTags,
         source: 'blob'
       };
     }).catch(function () {
@@ -364,6 +378,22 @@
     });
   }
 
+  function setBlogCategories(blogCategories) {
+    writeLocalArray(STORAGE_KEY_CATEGORIE_BLOG, blogCategories || []);
+    return postAction('setBlogCategories', { blogCategories: blogCategories || [] }).then(function (data) {
+      writeLocalArray(STORAGE_KEY_CATEGORIE_BLOG, data.blogCategories || blogCategories || []);
+      return { blogCategories: data.blogCategories || blogCategories || [], source: 'blob' };
+    });
+  }
+
+  function setBlogTags(blogTags) {
+    writeLocalArray(STORAGE_KEY_TAG_BLOG, blogTags || []);
+    return postAction('setBlogTags', { blogTags: blogTags || [] }).then(function (data) {
+      writeLocalArray(STORAGE_KEY_TAG_BLOG, data.blogTags || blogTags || []);
+      return { blogTags: data.blogTags || blogTags || [], source: 'blob' };
+    });
+  }
+
   function isRemoteAvailable() {
     return remoteAvailable;
   }
@@ -373,6 +403,8 @@
     STORAGE_KEY_RICETTE: STORAGE_KEY_RICETTE,
     STORAGE_KEY_CATEGORIE_RICETTE: STORAGE_KEY_CATEGORIE_RICETTE,
     STORAGE_KEY_TAG_RICETTE: STORAGE_KEY_TAG_RICETTE,
+    STORAGE_KEY_CATEGORIE_BLOG: STORAGE_KEY_CATEGORIE_BLOG,
+    STORAGE_KEY_TAG_BLOG: STORAGE_KEY_TAG_BLOG,
     load: load,
     getLocalSnapshot: getLocalSnapshot,
     savePost: savePost,
@@ -381,6 +413,8 @@
     deleteRecipe: deleteRecipe,
     setCategories: setCategories,
     setTags: setTags,
+    setBlogCategories: setBlogCategories,
+    setBlogTags: setBlogTags,
     isRemoteAvailable: isRemoteAvailable
   };
 })(typeof window !== 'undefined' ? window : globalThis);
