@@ -618,9 +618,23 @@
 }
 
 /* ——— Ricetta: colonne e sezioni ——— */
+.article-page--recipe .article-hero {
+  padding-bottom: 1.25rem;
+}
+
 .article-page--recipe .article-hero-inner,
 .article-page--recipe .article-content {
   max-width: 46rem;
+}
+
+.article-page--recipe .article-back-link {
+  margin-bottom: 0;
+}
+
+/* Meta bar + cover in alto; titolo/descrizione sotto */
+.article-page--recipe .article-meta-bar {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
 }
 
 .article-page--recipe .article-cover {
@@ -628,6 +642,28 @@
   max-width: 46rem;
   max-height: min(48vh, 420px);
   aspect-ratio: 3 / 2;
+  margin-top: 1.5rem;
+}
+
+.article-page--recipe .article-content .article-header {
+  margin: 0 0 2.25rem;
+}
+
+.article-page--recipe .article-content .article-meta-chips {
+  margin-bottom: 0.95rem;
+}
+
+.article-page--recipe .article-content .article-title {
+  font-size: clamp(2.1rem, 5.5vw, 3.1rem);
+}
+
+.article-page--recipe .article-content .article-excerpt {
+  margin-top: 1.1rem;
+  max-width: none;
+}
+
+.article-page--recipe .article-content .article-body.prose {
+  margin-top: 0.25rem;
 }
 
 .article-body.prose .prose-heading {

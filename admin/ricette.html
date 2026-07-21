@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="../styles-blog.css">
-  <link rel="stylesheet" href="../styles-admin.css?v=20260721l">
+  <link rel="stylesheet" href="../styles-admin.css?v=20260721n">
 </head>
 <body class="admin-body">
   <aside class="admin-sidebar">
@@ -235,36 +235,6 @@
               </div>
             </div>
 
-            <details class="recipe-cats-panel">
-              <summary>
-                <span class="recipe-cats-panel-title">Gestione categorie</span>
-                <span class="recipe-cats-panel-hint">Modifica o elimina quelle personalizzate</span>
-              </summary>
-              <div class="recipe-cats-panel-body">
-                <p class="form-hint">Nel menu categoria trovi già Pre-workout, Post-workout, Colazione, ecc. Puoi crearne di nuove dal menu a tendina oppure qui sotto.</p>
-                <div class="categorie-add-row">
-                  <input type="text" id="nuovaCategoriaInput" placeholder="es. Primi, Dessert, Zuppe..." class="input-inline" autocomplete="off">
-                  <button type="button" id="btnAggiungiCategoria" class="btn btn-outline btn-sm">Aggiungi</button>
-                </div>
-                <ul id="listaCategorieRicette" class="categorie-list"></ul>
-              </div>
-            </details>
-
-            <details class="recipe-cats-panel">
-              <summary>
-                <span class="recipe-cats-panel-title">Gestione tag</span>
-                <span class="recipe-cats-panel-hint">Modifica o elimina i tag creati</span>
-              </summary>
-              <div class="recipe-cats-panel-body">
-                <p class="form-hint">Crea i tag dal menu Tag sopra (campo + Aggiungi) oppure qui. Nel menu puoi selezionarne più di uno.</p>
-                <div class="categorie-add-row">
-                  <input type="text" id="nuovoTagInput" placeholder="es. Proteico, Veloce, Vegano..." class="input-inline" autocomplete="off">
-                  <button type="button" id="btnAggiungiTag" class="btn btn-outline btn-sm">Aggiungi</button>
-                </div>
-                <ul id="listaTagRicette" class="categorie-list"></ul>
-              </div>
-            </details>
-
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" id="btnSalvaRicetta">Pubblica ricetta</button>
               <button type="button" class="btn btn-outline" id="btnAnnullaRicetta" style="display: none;">Annulla</button>
@@ -278,6 +248,13 @@
                 <span class="recipe-preview-label-hint">come apparirà su /ricetta</span>
               </div>
               <div class="recipe-preview-card" id="recipePreview">
+                <div class="recipe-preview-byline" aria-hidden="true">
+                  <img src="../assets/priscilla-portrait.png" alt="" width="36" height="36">
+                  <div>
+                    <p class="recipe-preview-byline-name">Dott.ssa Priscilla Castellani Tarabini</p>
+                    <p class="recipe-preview-byline-role">Biologa Nutrizionista</p>
+                  </div>
+                </div>
                 <div class="recipe-preview-cover" id="recipePreviewCover" hidden>
                   <img id="recipePreviewCoverImg" alt="">
                 </div>
@@ -340,6 +317,38 @@
         </div>
         <ul id="listaRicetteAdmin" class="lista-articoli-admin lista-articoli-admin--ricette"></ul>
       </div>
+
+      <div class="admin-taxonomy-section">
+        <details class="recipe-cats-panel" open>
+          <summary>
+            <span class="recipe-cats-panel-title">Gestione categorie</span>
+            <span class="recipe-cats-panel-hint">Modifica o elimina le categorie presenti</span>
+          </summary>
+          <div class="recipe-cats-panel-body">
+            <p class="form-hint">Qui trovi tutte le categorie disponibili (predefinite e personalizzate). Puoi rinominarle, eliminarle o crearne di nuove.</p>
+            <div class="categorie-add-row">
+              <input type="text" id="nuovaCategoriaInput" placeholder="es. Primi, Dessert, Zuppe..." class="input-inline" autocomplete="off">
+              <button type="button" id="btnAggiungiCategoria" class="btn btn-outline btn-sm">Aggiungi</button>
+            </div>
+            <ul id="listaCategorieRicette" class="categorie-list"></ul>
+          </div>
+        </details>
+
+        <details class="recipe-cats-panel" open>
+          <summary>
+            <span class="recipe-cats-panel-title">Gestione tag</span>
+            <span class="recipe-cats-panel-hint">Modifica o elimina i tag presenti</span>
+          </summary>
+          <div class="recipe-cats-panel-body">
+            <p class="form-hint">Qui trovi tutti i tag usati o creati. Puoi rinominarli, eliminarli o crearne di nuovi. Nel menu Tag della ricetta puoi selezionarne più di uno.</p>
+            <div class="categorie-add-row">
+              <input type="text" id="nuovoTagInput" placeholder="es. Proteico, Veloce, Vegano..." class="input-inline" autocomplete="off">
+              <button type="button" id="btnAggiungiTag" class="btn btn-outline btn-sm">Aggiungi</button>
+            </div>
+            <ul id="listaTagRicette" class="categorie-list"></ul>
+          </div>
+        </details>
+      </div>
     </div>
   </main>
   </div>
@@ -348,6 +357,7 @@
   <script src="../impostazioni.js?v=20260721i"></script>
   <script src="../admin-auth.js?v=20260721i"></script>
   <script src="../content-format.js?v=20260721i"></script>
-  <script src="../admin.js?v=20260721l"></script>
+  <script src="../content-store.js?v=20260721m"></script>
+  <script src="../admin.js?v=20260721n"></script>
 </body>
 </html>

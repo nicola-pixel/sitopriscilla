@@ -4,6 +4,7 @@
   var STORAGE_KEY_BLOG = 'blog_articoli';
   var STORAGE_KEY_RICETTE = 'ricette';
   var STORAGE_KEY_CATEGORIE_RICETTE = 'ricette_categorie';
+  var STORAGE_KEY_CATEGORIE_NASCOSTE = 'ricette_categorie_nascoste';
   var STORAGE_KEY_TAG_RICETTE = 'ricette_tag';
   var RICETTE_CATEGORIE = [
     'Pre-workout',
@@ -350,6 +351,7 @@
   }
 
   function getRecipeCategoryOptions(items) {
+    var hidden = readJsonArray(STORAGE_KEY_CATEGORIE_NASCOSTE);
     var fromRecipes = [];
     items.forEach(function (item) {
       if (item.type !== 'recipe') return;
@@ -358,7 +360,9 @@
     });
     return uniqueSorted(
       RICETTE_CATEGORIE.concat(readJsonArray(STORAGE_KEY_CATEGORIE_RICETTE), fromRecipes)
-    );
+    ).filter(function (name) {
+      return hidden.indexOf(name) < 0;
+    });
   }
 
   function getRecipeTagOptions(items) {
@@ -750,17 +754,30 @@
   }
 
 
-  var id = getParam('id');
-  if (id) {
-    renderArticle(id);
-  } else {
-    renderListing();
+  function bootBlog() {
+    var id = getParam('id');
+    if (id) {
+      renderArticle(id);
+    } else {
+      renderListing();
+    }
   }
+
+  function loadAndBoot() {
+    var store = window.PriscillaContent;
+    if (store && typeof store.load === 'function') {
+      store.load().then(bootBlog).catch(bootBlog);
+    } else {
+      bootBlog();
+    }
+  }
+
+  loadAndBoot();
 
   window.addEventListener('storage', function (e) {
     if (e.key === STORAGE_KEY_BLOG || e.key === STORAGE_KEY_RICETTE) {
-      if (getParam('id')) renderArticle(getParam('id'));
-      else renderListing();
+      bootBlog();
     }
   });
+  window.addEventListener('priscilla-content-changed', bootBlog);
 })();

@@ -366,13 +366,28 @@
   }
 
   forceContentVisible();
-  renderRecipe(getParam('id'));
+
+  function bootRicetta() {
+    renderRecipe(getParam('id'));
+  }
+
+  function loadAndBoot() {
+    var store = window.PriscillaContent;
+    if (store && typeof store.load === 'function') {
+      store.load().then(bootRicetta).catch(bootRicetta);
+    } else {
+      bootRicetta();
+    }
+  }
+
+  loadAndBoot();
   // Failsafe: se qualcosa blocca il render, mostra comunque header/contenuti
   setTimeout(revealPage, 1200);
 
   window.addEventListener('storage', function (e) {
     if (e.key === STORAGE_KEY_RICETTE) {
-      renderRecipe(getParam('id'));
+      bootRicetta();
     }
   });
+  window.addEventListener('priscilla-content-changed', bootRicetta);
 })();

@@ -773,6 +773,39 @@
   overflow-y: auto;
 }
 
+.recipe-preview-byline {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.95rem 1.15rem 0.85rem;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+}
+
+.recipe-preview-byline img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  flex-shrink: 0;
+  background: #f1f2f5;
+}
+
+.recipe-preview-byline-name {
+  margin: 0;
+  font-family: var(--font-heading, Georgia, serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #111;
+}
+
+.recipe-preview-byline-role {
+  margin: 0.15rem 0 0;
+  font-size: 0.68rem;
+  color: var(--admin-text-muted, #6b7280);
+}
+
 .recipe-preview-cover {
   aspect-ratio: 16 / 9;
   background: linear-gradient(145deg, #e8eaf0 0%, #d5d8e2 50%, #c4c8d4 100%);
@@ -1594,6 +1627,13 @@
   background: rgba(190, 18, 60, 0.92);
 }
 
+.admin-taxonomy-section {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
 .recipe-cats-panel {
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
@@ -1757,6 +1797,22 @@
   min-width: 0;
   font-weight: 550;
   color: var(--admin-text);
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.categorie-list .categoria-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
 }
 
 .categorie-list .categoria-actions {

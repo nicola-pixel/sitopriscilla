@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260721j">
-  <link rel="stylesheet" href="styles-blog.css?v=20260721j">
+  <link rel="stylesheet" href="styles.css?v=20260721k">
+  <link rel="stylesheet" href="styles-blog.css?v=20260721k">
 </head>
 <body>
   <header class="header">
@@ -67,39 +67,31 @@
             Torna al blog
           </a>
 
-          <header class="article-header" id="ricettaHeader">
-            <div class="article-meta-chips" id="ricettaMetaChips">
-              <span class="article-category" id="ricettaCategory" hidden></span>
-            </div>
-            <h1 class="article-title" id="ricettaTitle"></h1>
-            <p class="article-excerpt" id="ricettaExcerpt" hidden></p>
-
-            <div class="article-meta-bar">
-              <div class="article-byline">
-                <img
-                  src="assets/priscilla-portrait.png"
-                  alt=""
-                  class="article-byline-avatar"
-                  width="52"
-                  height="52"
-                >
-                <div class="article-byline-text">
-                  <p class="article-byline-name">Dott.ssa Priscilla Castellani Tarabini</p>
-                  <p class="article-byline-role">Biologa Nutrizionista</p>
-                </div>
+          <div class="article-meta-bar">
+            <div class="article-byline">
+              <img
+                src="assets/priscilla-portrait.png"
+                alt=""
+                class="article-byline-avatar"
+                width="52"
+                height="52"
+              >
+              <div class="article-byline-text">
+                <p class="article-byline-name">Dott.ssa Priscilla Castellani Tarabini</p>
+                <p class="article-byline-role">Biologa Nutrizionista</p>
               </div>
-              <dl class="article-facts">
-                <div class="article-fact">
-                  <dt>Pubblicato</dt>
-                  <dd><time class="article-date" id="ricettaDate"></time></dd>
-                </div>
-                <div class="article-fact">
-                  <dt>Lettura</dt>
-                  <dd class="article-read" id="ricettaRead"></dd>
-                </div>
-              </dl>
             </div>
-          </header>
+            <dl class="article-facts">
+              <div class="article-fact">
+                <dt>Pubblicato</dt>
+                <dd><time class="article-date" id="ricettaDate"></time></dd>
+              </div>
+              <div class="article-fact">
+                <dt>Lettura</dt>
+                <dd class="article-read" id="ricettaRead"></dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </div>
 
@@ -108,6 +100,14 @@
       </figure>
 
       <div class="article-content">
+        <header class="article-header" id="ricettaHeader">
+          <div class="article-meta-chips" id="ricettaMetaChips">
+            <span class="article-category" id="ricettaCategory" hidden></span>
+          </div>
+          <h1 class="article-title" id="ricettaTitle"></h1>
+          <p class="article-excerpt" id="ricettaExcerpt" hidden></p>
+        </header>
+
         <div class="article-body prose" id="ricettaBody"></div>
 
         <aside class="article-cta">
@@ -188,8 +188,9 @@
   <script src="config.js?v=20260721c"></script>
   <script src="seo.js?v=20260721c"></script>
   <script src="site-nav.js?v=20260721c"></script>
-  <script src="script.js?v=20260721j"></script>
+  <script src="content-store.js?v=20260721m"></script>
+  <script src="script.js?v=20260721m"></script>
   <script src="content-format.js?v=20260721c"></script>
-  <script src="ricetta.js?v=20260721j"></script>
+  <script src="ricetta.js?v=20260721n"></script>
 </body>
 </html>

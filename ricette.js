@@ -3,6 +3,7 @@
 
   var STORAGE_KEY_RICETTE = 'ricette';
   var STORAGE_KEY_CATEGORIE_RICETTE = 'ricette_categorie';
+  var STORAGE_KEY_CATEGORIE_NASCOSTE = 'ricette_categorie_nascoste';
   var STORAGE_KEY_TAG_RICETTE = 'ricette_tag';
   var RICETTE_CATEGORIE = [
     'Pre-workout',
@@ -130,10 +131,13 @@
   }
 
   function getRecipeCategoryOptions(recipes) {
+    var hidden = readJsonArray(STORAGE_KEY_CATEGORIE_NASCOSTE);
     var fromRecipes = recipes.map(recipeCategory).filter(Boolean);
     return uniqueSorted(
       RICETTE_CATEGORIE.concat(readJsonArray(STORAGE_KEY_CATEGORIE_RICETTE), fromRecipes)
-    );
+    ).filter(function (name) {
+      return hidden.indexOf(name) < 0;
+    });
   }
 
   function getRecipeTagOptions(recipes) {
@@ -305,10 +309,24 @@
   }
 
   bindFilterEvents();
-  resetFilters();
-  paint();
+
+  function bootRicette() {
+    reloadRecipes();
+  }
+
+  function loadAndBoot() {
+    var store = window.PriscillaContent;
+    if (store && typeof store.load === 'function') {
+      store.load().then(bootRicette).catch(bootRicette);
+    } else {
+      bootRicette();
+    }
+  }
+
+  loadAndBoot();
 
   window.addEventListener('priscilla-recipes-changed', reloadRecipes);
+  window.addEventListener('priscilla-content-changed', reloadRecipes);
   window.addEventListener('storage', function (e) {
     if (
       e.key === STORAGE_KEY_RICETTE ||

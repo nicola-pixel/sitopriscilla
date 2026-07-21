@@ -227,10 +227,20 @@
     if (typeof initRevealAnimations === 'function') initRevealAnimations();
   }
 
-  renderBlogGrid();
+  function loadHomepageBlog() {
+    var store = window.PriscillaContent;
+    if (store && typeof store.load === 'function') {
+      store.load().then(renderBlogGrid).catch(renderBlogGrid);
+    } else {
+      renderBlogGrid();
+    }
+  }
+
+  loadHomepageBlog();
   window.addEventListener('storage', function (e) {
     if (e.key === STORAGE_KEY_BLOG || e.key === STORAGE_KEY_RICETTE) renderBlogGrid();
   });
+  window.addEventListener('priscilla-content-changed', renderBlogGrid);
 
   const header = document.querySelector('.header');
   const navToggle = document.getElementById('navToggle');
