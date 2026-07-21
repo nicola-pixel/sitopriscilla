@@ -137,10 +137,15 @@
   letter-spacing: 0.02em;
 }
 
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
 .form-chiave input[type="password"],
 .form-chiave input[type="text"] {
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.875rem 3rem 0.875rem 1rem;
   font-family: var(--font-body);
   font-size: 1rem;
   border: 1px solid var(--color-accent-soft);
@@ -158,6 +163,38 @@
 
 .form-chiave input::placeholder {
   color: var(--color-accent-light);
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition);
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: var(--color-text);
+  background: rgba(17, 17, 17, 0.04);
+  outline: none;
+}
+
+.password-toggle-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
 }
 
 .btn-block {
@@ -406,6 +443,118 @@
 .codice-card-copy-btn:hover {
   border-color: rgba(17, 17, 17, 0.3);
   transform: translateY(-1px);
+}
+
+.spesa-filtri {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+}
+
+.spesa-filtro {
+  appearance: none;
+  margin: 0;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  background: #fff;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.spesa-filtro:hover {
+  border-color: rgba(17, 17, 17, 0.3);
+  transform: translateY(-1px);
+}
+
+.spesa-filtro.is-active {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+}
+
+.lista-spesa {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.spesa-city-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spesa-city-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.lista-spesa-stores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.spesa-card {
+  list-style: none;
+  margin: 0;
+  border-radius: 18px;
+  background: var(--color-white);
+  border: 1px solid rgba(17, 17, 17, 0.07);
+  box-shadow: 0 2px 10px rgba(17, 17, 17, 0.025);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: downloadCardIn 0.55s var(--ease-out-expo) forwards;
+  animation-delay: calc(0.18s + var(--card-i, 0) * 70ms);
+}
+
+.spesa-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.15rem 1.25rem;
+}
+
+.spesa-card-label {
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.spesa-card-name {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.spesa-card-desc {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
 }
 
 .scarica-lista::before {
@@ -1396,15 +1545,29 @@ body.preview-modal-open {
   }
 
   .lista-download,
-  .lista-codici {
+  .lista-codici,
+  .lista-spesa-stores {
     gap: 1rem;
   }
 
-  .codice-card {
+  .lista-spesa {
+    gap: 1.5rem;
+  }
+
+  .spesa-city-title {
+    font-size: 1.25rem;
+  }
+
+  .codice-card,
+  .spesa-card {
     border-radius: 22px;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.85) inset,
       0 14px 36px rgba(17, 17, 17, 0.05);
+  }
+
+  .spesa-card-body {
+    padding: 1.2rem 1.15rem 1.25rem;
   }
 
   .codice-card-body {

@@ -95,6 +95,8 @@
     if (!section) return;
     section.hidden = !visible;
     section.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    // Aggiorna sottolineatura nav quando la sezione blog appare/scompare
+    if (typeof updateActiveNav === 'function') updateActiveNav();
   }
 
   function getHomepageBlogItems() {
@@ -748,23 +750,39 @@
     sections.push({ id: id, el: section, link: link });
   });
 
-  if (sections.length) {
-    function updateActiveNav() {
-      var scrollPos = window.scrollY + (header ? header.offsetHeight + 40 : 120);
-      var current = sections[0];
+  function isSectionSpyable(el) {
+    // Sezioni [hidden]/display:none hanno offsetTop=0 e falserebbero lo scroll-spy
+    return !!(el && !el.hidden && el.offsetParent !== null);
+  }
 
-      sections.forEach(function (item) {
-        if (item.el.offsetTop <= scrollPos) current = item;
-      });
+  function updateActiveNav() {
+    if (!sections.length) return;
+    var scrollPos = window.scrollY + (header ? header.offsetHeight + 40 : 120);
+    var current = null;
 
-      navLinks.forEach(function (link) {
-        link.classList.remove('is-active');
-      });
-      if (current && current.link) {
-        current.link.classList.add('is-active');
+    sections.forEach(function (item) {
+      if (!isSectionSpyable(item.el)) return;
+      if (item.el.offsetTop <= scrollPos) current = item;
+    });
+
+    if (!current) {
+      for (var i = 0; i < sections.length; i++) {
+        if (isSectionSpyable(sections[i].el)) {
+          current = sections[i];
+          break;
+        }
       }
     }
 
+    navLinks.forEach(function (link) {
+      link.classList.remove('is-active');
+    });
+    if (current && current.link) {
+      current.link.classList.add('is-active');
+    }
+  }
+
+  if (sections.length) {
     window.addEventListener('scroll', updateActiveNav, { passive: true });
     updateActiveNav();
   }

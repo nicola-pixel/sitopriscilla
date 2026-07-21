@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260721g">
-  <link rel="stylesheet" href="styles-scarica.css?v=20260721s">
+  <link rel="stylesheet" href="styles-scarica.css?v=20260721v">
 </head>
 <body>
   <header class="header is-scrolled">
@@ -59,10 +59,23 @@
         <div class="scarica-card scarica-card--access">
           <p class="scarica-label">Accesso riservato</p>
           <h1 class="scarica-title">Area download</h1>
-          <p class="scarica-intro">Devi inserire la chiave fornita per accedere ai materiali e ai codici sconto riservati ai pazienti.</p>
+          <p class="scarica-intro">Devi inserire la chiave fornita per accedere ai materiali, ai codici sconto e ai consigli spesa riservati ai pazienti.</p>
           <form id="formChiave" class="form-chiave">
             <label for="chiave">Chiave segreta</label>
-            <input type="password" id="chiave" name="chiave" placeholder="Inserisci la chiave" required autocomplete="off">
+            <div class="password-field">
+              <input type="password" id="chiave" name="chiave" placeholder="Inserisci la chiave" required autocomplete="off">
+              <button type="button" class="password-toggle" id="toggleChiave" aria-label="Mostra chiave" aria-pressed="false">
+                <svg class="password-toggle-icon password-toggle-icon--show" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="2.75" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
+                <svg class="password-toggle-icon password-toggle-icon--hide" viewBox="0 0 24 24" fill="none" aria-hidden="true" hidden>
+                  <path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="2.75" stroke="currentColor" stroke-width="1.6"/>
+                  <path d="M4 20 20 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
             <button type="submit" class="btn btn-primary btn-block">Accedi</button>
           </form>
           <p id="erroreChiave" class="msg msg-error" role="alert" hidden>Chiave non valida. Riprova.</p>
@@ -89,6 +102,12 @@
                 </span>
                 <span class="scarica-side-text">Codici sconto</span>
               </button>
+              <button type="button" class="scarica-side-link" data-scarica-panel="spesa" aria-controls="panel-spesa" role="tab" aria-selected="false">
+                <span class="scarica-side-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 6h15l-1.5 9h-12z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="9" cy="20" r="1" fill="currentColor"/><circle cx="18" cy="20" r="1" fill="currentColor"/><path d="M6 6 5 3H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="scarica-side-text">Consigli spesa</span>
+              </button>
             </nav>
           </aside>
 
@@ -112,6 +131,18 @@
               </header>
               <div class="lista-download-shell">
                 <ul id="listaCodici" class="lista-codici"></ul>
+              </div>
+            </div>
+
+            <div class="scarica-panel" id="panel-spesa" data-panel="spesa" role="tabpanel" hidden>
+              <header class="scarica-lista-header">
+                <p class="scarica-label">Consigli spesa</p>
+                <h2 class="scarica-title">Dove fare la spesa</h2>
+                <p class="scarica-intro">Filtra per città e trova i negozi consigliati dove acquistare gli alimenti.</p>
+              </header>
+              <div id="spesaFiltri" class="spesa-filtri" hidden role="group" aria-label="Filtra per città"></div>
+              <div class="lista-download-shell">
+                <div id="listaSpesa" class="lista-spesa"></div>
               </div>
             </div>
           </div>
@@ -185,8 +216,8 @@
         <div class="footer-social">
           <span class="footer-social-label">Seguimi</span>
           <div class="footer-social-links">
-            <a href="#" class="footer-social-link" aria-label="Instagram">Instagram</a>
-            <a href="#" class="footer-social-link" aria-label="LinkedIn">LinkedIn</a>
+            <a href="https://www.instagram.com/priscilla_castellanitarabini/" class="footer-social-link" aria-label="Instagram" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://www.linkedin.com/in/priscilla-castellani-tarabini-26b037206/" class="footer-social-link" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           </div>
         </div>
         <p class="footer-copy">&copy; 2025 Priscilla Castellani Tarabini. Tutti i diritti riservati.</p>
@@ -200,6 +231,7 @@
   <script src="analytics.js"></script>
   <script src="materiale-store.js?v=20260721m"></script>
   <script src="codici-store.js"></script>
-  <script src="scarica.js?v=20260721s"></script>
+  <script src="spesa-store.js"></script>
+  <script src="scarica.js?v=20260721v"></script>
 </body>
 </html>

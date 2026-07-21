@@ -987,6 +987,19 @@
     return { id: newBlockId(), type: 'text', content: content || '' };
   }
 
+  function createHeadingBlock(content) {
+    return { id: newBlockId(), type: 'heading', content: content || '' };
+  }
+
+  function createListBlock(items, title) {
+    return {
+      id: newBlockId(),
+      type: 'list',
+      title: title || '',
+      items: Array.isArray(items) && items.length ? items.slice() : ['']
+    };
+  }
+
   function createImageBlock(src, alt) {
     return {
       id: newBlockId(),
@@ -1061,6 +1074,22 @@
             alt: b.alt || ''
           };
         }
+        if (b && b.type === 'heading') {
+          return {
+            id: b.id || newBlockId(),
+            type: 'heading',
+            content: (b.content || '').trim()
+          };
+        }
+        if (b && b.type === 'list') {
+          var listItems = normalizeListItems(b.items);
+          return {
+            id: b.id || newBlockId(),
+            type: 'list',
+            title: (b.title || '').trim(),
+            items: listItems.length ? listItems : ['']
+          };
+        }
         if (b && b.type === 'ingredients') {
           var ingItems = normalizeListItems(b.items);
           return {
@@ -1102,9 +1131,12 @@
     return (blocks || [])
       .map(function (b) {
         if (!b) return '';
-        if (b.type === 'text') return String(b.content || '').trim();
-        if (b.type === 'ingredients' || b.type === 'steps') {
-          return normalizeListItems(b.items).join(' ');
+        if (b.type === 'text' || b.type === 'heading') return String(b.content || '').trim();
+        if (b.type === 'ingredients' || b.type === 'steps' || b.type === 'list') {
+          var parts = [];
+          if (b.title) parts.push(String(b.title).trim());
+          parts = parts.concat(normalizeListItems(b.items));
+          return parts.filter(Boolean).join(' ');
         }
         return '';
       })
@@ -1116,11 +1148,17 @@
     if (!block) return '';
     var items = normalizeListItems(block.items);
     if (!items.length) {
+      var emptyHint =
+        block.type === 'steps'
+          ? 'Aggiungi i passaggi…'
+          : block.type === 'list'
+            ? 'Aggiungi le voci dell’elenco…'
+            : 'Aggiungi gli ingredienti…';
       return (
         '<div class="content-block content-block--' +
         escapeHtml(block.type) +
         '"><p class="recipe-preview-placeholder">' +
-        (block.type === 'steps' ? 'Aggiungi i passaggi…' : 'Aggiungi gli ingredienti…') +
+        emptyHint +
         '</p></div>'
       );
     }
@@ -1130,16 +1168,15 @@
     var isSteps = block.type === 'steps';
     var tag = isSteps ? 'ol' : 'ul';
     var listClass = isSteps ? 'prose-steps' : 'prose-list';
-    var title = (block.title || (isSteps ? 'Procedimento' : 'Ingredienti')).trim();
+    var title = (block.title || (isSteps ? 'Procedimento' : block.type === 'list' ? '' : 'Ingredienti')).trim();
+    var headingHtml = title
+      ? '<h2 class="prose-heading">' + escapeHtml(title) + '</h2>'
+      : '';
     return (
       '<section class="content-block content-block--' +
       escapeHtml(block.type) +
       '">' +
-      '<h2 class="prose-heading prose-heading--' +
-      (isSteps ? 'steps' : 'ingredients') +
-      '">' +
-      escapeHtml(title) +
-      '</h2>' +
+      headingHtml +
       '<' +
       tag +
       ' class="' +
@@ -1188,7 +1225,17 @@
           '"></figure>'
         );
       }
-      if (block.type === 'ingredients' || block.type === 'steps') {
+      if (block.type === 'heading') {
+        var headingText = String(block.content || '').trim();
+        if (!headingText) {
+          return '<h2 class="prose-heading content-block content-block--heading"><span class="recipe-preview-placeholder">Titolo sezione…</span></h2>';
+        }
+        if (window.PriscillaContentFormat && window.PriscillaContentFormat.headingBlockToHtml) {
+          return window.PriscillaContentFormat.headingBlockToHtml(block);
+        }
+        return '<h2 class="prose-heading content-block content-block--heading">' + escapeHtml(headingText) + '</h2>';
+      }
+      if (block.type === 'ingredients' || block.type === 'steps' || block.type === 'list') {
         return listBlockToPreviewHtml(block);
       }
       if (block.type === 'video') {
@@ -1256,6 +1303,21 @@
             alt: (b.alt || '').trim()
           };
         }
+        if (b.type === 'heading') {
+          return {
+            id: b.id,
+            type: 'heading',
+            content: (b.content || '').trim()
+          };
+        }
+        if (b.type === 'list') {
+          return {
+            id: b.id,
+            type: 'list',
+            title: (b.title || '').trim(),
+            items: normalizeListItems(b.items)
+          };
+        }
         if (b.type === 'ingredients') {
           return {
             id: b.id,
@@ -1287,7 +1349,7 @@
         };
       }).filter(function (b) {
         if (b.type === 'image') return !!(b.src && String(b.src).trim());
-        if (b.type === 'ingredients' || b.type === 'steps') {
+        if (b.type === 'ingredients' || b.type === 'steps' || b.type === 'list') {
           return normalizeListItems(b.items).length > 0;
         }
         if (b.type === 'video') return !!(b.url && String(b.url).trim());
@@ -1297,6 +1359,8 @@
 
     function blockTypeLabel(type) {
       if (type === 'image') return 'Immagine';
+      if (type === 'heading') return 'Titolo';
+      if (type === 'list') return 'Elenco';
       if (type === 'ingredients') return 'Ingredienti';
       if (type === 'steps') return 'Procedimento';
       if (type === 'video') return 'Video';
@@ -1305,14 +1369,19 @@
 
     function renderListEditor(block, el) {
       var isSteps = block.type === 'steps';
+      var isGenericList = block.type === 'list';
       var wrap = document.createElement('div');
       wrap.className = 'content-block-list-editor';
 
       var titleInput = document.createElement('input');
       titleInput.type = 'text';
       titleInput.className = 'content-block-list-title';
-      titleInput.value = block.title || (isSteps ? 'Procedimento' : 'Ingredienti');
-      titleInput.placeholder = isSteps ? 'Titolo sezione (es. Procedimento)' : 'Titolo sezione (es. Ingredienti)';
+      titleInput.value = block.title || (isSteps ? 'Procedimento' : isGenericList ? '' : 'Ingredienti');
+      titleInput.placeholder = isSteps
+        ? 'Titolo sezione (es. Procedimento)'
+        : isGenericList
+          ? 'Titolo elenco (opzionale, in grassetto)'
+          : 'Titolo sezione (es. Ingredienti)';
       titleInput.addEventListener('input', function () {
         var idx = findBlockIndex(block.id);
         if (idx < 0) return;
@@ -1357,7 +1426,9 @@
         input.value = item || '';
         input.placeholder = isSteps
           ? 'es. Cuoci il salmone 3-4 minuti per lato'
-          : 'es. 2 filetti di salmone';
+          : isGenericList
+            ? 'es. Omega-3: importanti per il cuore'
+            : 'es. 2 filetti di salmone';
         input.addEventListener('input', function () {
           var idx = findBlockIndex(block.id);
           if (idx < 0) return;
@@ -1437,7 +1508,11 @@
       var btnAddItem = document.createElement('button');
       btnAddItem.type = 'button';
       btnAddItem.className = 'btn btn-sm btn-outline content-block-list-add';
-      btnAddItem.textContent = isSteps ? '+ Aggiungi passaggio' : '+ Aggiungi ingrediente';
+      btnAddItem.textContent = isSteps
+        ? '+ Aggiungi passaggio'
+        : isGenericList
+          ? '+ Aggiungi voce'
+          : '+ Aggiungi ingrediente';
       btnAddItem.addEventListener('click', function () {
         var next = currentItems();
         next.push('');
@@ -1450,6 +1525,14 @@
         });
       });
       wrap.appendChild(btnAddItem);
+
+      if (isGenericList) {
+        var listHint = document.createElement('p');
+        listHint.className = 'form-hint content-block-list-hint';
+        listHint.textContent = 'Suggerimento: scrivi “Titolo: descrizione” — il titolo compare in grassetto.';
+        wrap.appendChild(listHint);
+      }
+
       el.appendChild(wrap);
     }
 
@@ -1535,7 +1618,21 @@
             onChange();
           });
           el.appendChild(ta);
-        } else if (block.type === 'ingredients' || block.type === 'steps') {
+        } else if (block.type === 'heading') {
+          var headingInput = document.createElement('input');
+          headingInput.type = 'text';
+          headingInput.className = 'content-block-heading-input';
+          headingInput.placeholder = 'Titolo della sezione (in grassetto)';
+          headingInput.value = block.content || '';
+          headingInput.setAttribute('aria-label', 'Titolo sezione');
+          headingInput.addEventListener('input', function () {
+            var idx = findBlockIndex(block.id);
+            if (idx < 0) return;
+            blocks[idx].content = headingInput.value;
+            onChange();
+          });
+          el.appendChild(headingInput);
+        } else if (block.type === 'ingredients' || block.type === 'steps' || block.type === 'list') {
           renderListEditor(block, el);
         } else if (block.type === 'video') {
           var videoEditor = document.createElement('div');
@@ -1674,6 +1771,18 @@
         render();
       });
     }
+    if (opts.btnAddHeading) {
+      opts.btnAddHeading.addEventListener('click', function () {
+        blocks.push(createHeadingBlock(''));
+        render();
+      });
+    }
+    if (opts.btnAddList) {
+      opts.btnAddList.addEventListener('click', function () {
+        blocks.push(createListBlock(['']));
+        render();
+      });
+    }
     if (opts.btnAddImage) {
       opts.btnAddImage.addEventListener('click', function () {
         blocks.push(createImageBlock('', ''));
@@ -1713,7 +1822,28 @@
   var formArticolo = document.getElementById('formArticolo');
   var articoloIdInput = document.getElementById('articoloId');
   var articoloTitoloInput = document.getElementById('articoloTitolo');
-  var articoloMetaInput = document.getElementById('articoloMeta');
+  var articoloCategoriaInput = document.getElementById('articoloCategoria');
+  var articoloCategoriaMulti = document.getElementById('articoloCategoriaMulti');
+  var articoloCategoriaTrigger = document.getElementById('articoloCategoriaTrigger');
+  var articoloCategoriaDropdown = document.getElementById('articoloCategoriaDropdown');
+  var articoloCategoriaOptions = document.getElementById('articoloCategoriaOptions');
+  var articoloCategoriaLabelText = document.getElementById('articoloCategoriaLabelText');
+  var articoloCategoriaCreateInput = document.getElementById('articoloCategoriaCreateInput');
+  var articoloCategoriaCreateBtn = document.getElementById('articoloCategoriaCreateBtn');
+  var articoloTagMulti = document.getElementById('articoloTagMulti');
+  var articoloTagTrigger = document.getElementById('articoloTagTrigger');
+  var articoloTagDropdown = document.getElementById('articoloTagDropdown');
+  var articoloTagOptions = document.getElementById('articoloTagOptions');
+  var articoloTagLabelText = document.getElementById('articoloTagLabelText');
+  var articoloTagCreateInput = document.getElementById('articoloTagCreateInput');
+  var articoloTagCreateBtn = document.getElementById('articoloTagCreateBtn');
+  var articoloSelectedTags = [];
+  var nuovaCategoriaBlogInput = document.getElementById('nuovaCategoriaBlogInput');
+  var btnAggiungiCategoriaBlog = document.getElementById('btnAggiungiCategoriaBlog');
+  var listaCategorieBlog = document.getElementById('listaCategorieBlog');
+  var nuovoTagBlogInput = document.getElementById('nuovoTagBlogInput');
+  var btnAggiungiTagBlog = document.getElementById('btnAggiungiTagBlog');
+  var listaTagBlog = document.getElementById('listaTagBlog');
   var articoloEstrattoInput = document.getElementById('articoloEstratto');
   var articoloImmagineInput = document.getElementById('articoloImmagine');
   var articoloImmagineFileInput = document.getElementById('articoloImmagineFile');
@@ -1740,14 +1870,666 @@
     removeBtnId: 'btnRimuoviArticleCover'
   });
 
+  function showArticoloMsg(text, isError) {
+    if (!msgArticolo) return;
+    msgArticolo.textContent = text;
+    msgArticolo.classList.toggle('msg-error', !!isError);
+    msgArticolo.classList.toggle('msg-ok', !isError);
+    msgArticolo.hidden = false;
+    setTimeout(function () { if (msgArticolo) msgArticolo.hidden = true; }, isError ? 3000 : 4000);
+  }
+
+  function getSelectedArticleTags() {
+    return articoloSelectedTags.slice();
+  }
+
+  function setSelectedArticleTags(tags) {
+    articoloSelectedTags = (tags || [])
+      .map(function (t) { return String(t || '').trim(); })
+      .filter(Boolean);
+    syncArticleTagMultiSelectUI();
+  }
+
+  function syncArticleTagMultiSelectUI() {
+    if (articoloTagLabelText) {
+      if (articoloSelectedTags.length === 0) {
+        articoloTagLabelText.textContent = 'Scegli tag';
+      } else if (articoloSelectedTags.length === 1) {
+        articoloTagLabelText.textContent = articoloSelectedTags[0];
+      } else {
+        articoloTagLabelText.textContent = articoloSelectedTags.length + ' tag selezionati';
+      }
+    }
+    var optionsRoot = articoloTagOptions || articoloTagDropdown;
+    if (optionsRoot) {
+      optionsRoot.querySelectorAll('.multi-select-option input[type="checkbox"]').forEach(function (cb) {
+        cb.checked = articoloSelectedTags.indexOf(cb.value) >= 0;
+      });
+    }
+  }
+
+  function syncArticleCategoriaSelectUI() {
+    var value = articoloCategoriaInput ? (articoloCategoriaInput.value || '').trim() : '';
+    if (articoloCategoriaLabelText) {
+      articoloCategoriaLabelText.textContent = value || 'Scegli categoria';
+    }
+    if (articoloCategoriaOptions) {
+      articoloCategoriaOptions.querySelectorAll('.multi-select-option').forEach(function (btn) {
+        btn.classList.toggle('is-selected', btn.getAttribute('data-value') === value);
+      });
+    }
+  }
+
+  function setSelectedArticleCategory(cat) {
+    var value = (cat || '').trim();
+    if (articoloCategoriaInput) articoloCategoriaInput.value = value;
+    syncArticleCategoriaSelectUI();
+  }
+
+  function getSelectedArticleCategory() {
+    return articoloCategoriaInput ? (articoloCategoriaInput.value || '').trim() : '';
+  }
+
+  function setArticleTagDropdownOpen(open) {
+    if (!articoloTagDropdown || !articoloTagTrigger) return;
+    if (open) {
+      if (articoloCategoriaDropdown) articoloCategoriaDropdown.hidden = true;
+      if (articoloCategoriaTrigger) articoloCategoriaTrigger.setAttribute('aria-expanded', 'false');
+      if (articoloCategoriaMulti) articoloCategoriaMulti.classList.remove('is-open');
+    }
+    articoloTagDropdown.hidden = !open;
+    articoloTagTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (articoloTagMulti) articoloTagMulti.classList.toggle('is-open', open);
+  }
+
+  function setArticleCategoriaDropdownOpen(open) {
+    if (!articoloCategoriaDropdown || !articoloCategoriaTrigger) return;
+    if (open) {
+      if (articoloTagDropdown) articoloTagDropdown.hidden = true;
+      if (articoloTagTrigger) articoloTagTrigger.setAttribute('aria-expanded', 'false');
+      if (articoloTagMulti) articoloTagMulti.classList.remove('is-open');
+    }
+    articoloCategoriaDropdown.hidden = !open;
+    articoloCategoriaTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (articoloCategoriaMulti) articoloCategoriaMulti.classList.toggle('is-open', open);
+  }
+
+  function closeAllArticleDropdowns() {
+    setArticleTagDropdownOpen(false);
+    setArticleCategoriaDropdownOpen(false);
+  }
+
+  function refreshSelectsCategorieBlog() {
+    var cats = getAllBlogCategories();
+    var sel = getSelectedArticleCategory();
+    if (articoloCategoriaOptions) {
+      if (cats.length === 0) {
+        articoloCategoriaOptions.innerHTML =
+          '<p class="multi-select-empty">Nessuna categoria. Scrivine una sopra e clicca Aggiungi.</p>';
+      } else {
+        articoloCategoriaOptions.innerHTML = cats
+          .map(function (c) {
+            return (
+              '<button type="button" class="multi-select-option' +
+              (c === sel ? ' is-selected' : '') +
+              '" role="option" data-value="' +
+              escapeHtml(c) +
+              '" aria-selected="' +
+              (c === sel ? 'true' : 'false') +
+              '">' +
+              escapeHtml(c) +
+              '</button>'
+            );
+          })
+          .join('');
+        articoloCategoriaOptions.querySelectorAll('.multi-select-option').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            setSelectedArticleCategory(btn.getAttribute('data-value') || '');
+            setArticleCategoriaDropdownOpen(false);
+            updateArticlePreview();
+          });
+        });
+      }
+      syncArticleCategoriaSelectUI();
+    }
+  }
+
+  function refreshSelectsTagBlog() {
+    var tags = getAllBlogTags();
+    var optionsRoot = articoloTagOptions || articoloTagDropdown;
+    if (!optionsRoot) return;
+    if (tags.length === 0) {
+      optionsRoot.innerHTML =
+        '<p class="multi-select-empty">Nessun tag. Scrivine uno sopra e clicca Aggiungi.</p>';
+    } else {
+      optionsRoot.innerHTML = tags
+        .map(function (t, index) {
+          var id = 'articoloTagOpt_' + index;
+          return (
+            '<label class="multi-select-option" for="' +
+            id +
+            '">' +
+            '<input type="checkbox" id="' +
+            id +
+            '" value="' +
+            escapeHtml(t) +
+            '"' +
+            (articoloSelectedTags.indexOf(t) >= 0 ? ' checked' : '') +
+            '> ' +
+            '<span>' +
+            escapeHtml(t) +
+            '</span>' +
+            '</label>'
+          );
+        })
+        .join('');
+      optionsRoot.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          if (cb.checked) {
+            if (articoloSelectedTags.indexOf(cb.value) < 0) articoloSelectedTags.push(cb.value);
+          } else {
+            articoloSelectedTags = articoloSelectedTags.filter(function (t) {
+              return t !== cb.value;
+            });
+          }
+          syncArticleTagMultiSelectUI();
+          updateArticlePreview();
+        });
+      });
+    }
+    syncArticleTagMultiSelectUI();
+  }
+
+  function renameCategoryInPosts(oldName, newName) {
+    var posts = getBlogPosts();
+    var changed = false;
+    posts.forEach(function (p) {
+      if (getPostCategory(p) === oldName) {
+        p.category = newName;
+        p.meta = newName;
+        changed = true;
+      }
+    });
+    if (changed) {
+      syncPostsToCloud(posts).then(function () {
+        renderListaArticoliAdmin();
+      });
+    }
+    if (getSelectedArticleCategory() === oldName) {
+      setSelectedArticleCategory(newName);
+      updateArticlePreview();
+    }
+  }
+
+  function removeCategoryFromPosts(name) {
+    var posts = getBlogPosts();
+    var changed = false;
+    posts.forEach(function (p) {
+      if (getPostCategory(p) === name) {
+        p.category = '';
+        p.meta = '';
+        changed = true;
+      }
+    });
+    if (changed) {
+      syncPostsToCloud(posts).then(function () {
+        renderListaArticoliAdmin();
+      });
+    }
+    if (getSelectedArticleCategory() === name) {
+      setSelectedArticleCategory('');
+      updateArticlePreview();
+    }
+  }
+
+  function renameTagInPosts(oldName, newName) {
+    var posts = getBlogPosts();
+    var changed = false;
+    posts.forEach(function (p) {
+      var tags = getPostTags(p);
+      var idx = tags.indexOf(oldName);
+      if (idx < 0) return;
+      tags[idx] = newName;
+      var deduped = [];
+      tags.forEach(function (t) {
+        if (t && deduped.indexOf(t) < 0) deduped.push(t);
+      });
+      p.tags = deduped;
+      changed = true;
+    });
+    if (changed) {
+      syncPostsToCloud(posts).then(function () {
+        renderListaArticoliAdmin();
+      });
+    }
+    if (articoloSelectedTags.indexOf(oldName) >= 0) {
+      var next = articoloSelectedTags
+        .map(function (t) { return t === oldName ? newName : t; })
+        .filter(function (t, i, arr) { return t && arr.indexOf(t) === i; });
+      setSelectedArticleTags(next);
+      updateArticlePreview();
+    }
+  }
+
+  function removeTagFromPosts(name) {
+    var posts = getBlogPosts();
+    var changed = false;
+    posts.forEach(function (p) {
+      var tags = getPostTags(p);
+      if (tags.indexOf(name) < 0) return;
+      p.tags = tags.filter(function (t) { return t !== name; });
+      changed = true;
+    });
+    if (changed) {
+      syncPostsToCloud(posts).then(function () {
+        renderListaArticoliAdmin();
+      });
+    }
+    if (articoloSelectedTags.indexOf(name) >= 0) {
+      setSelectedArticleTags(articoloSelectedTags.filter(function (t) { return t !== name; }));
+      updateArticlePreview();
+    }
+  }
+
+  function renameManagedBlogCategory(oldName, newName) {
+    oldName = (oldName || '').trim();
+    newName = (newName || '').trim();
+    if (!oldName || !newName || oldName === newName) return false;
+    if (getAllBlogCategories().indexOf(newName) >= 0) return false;
+
+    var custom = getCustomBlogCategories().filter(function (c) { return c !== oldName; });
+    if (custom.indexOf(newName) < 0) custom.push(newName);
+    setCustomBlogCategories(custom);
+
+    if (isBaseBlogCategory(oldName)) {
+      var hidden = getHiddenBlogCategories();
+      if (hidden.indexOf(oldName) < 0) {
+        hidden.push(oldName);
+        setHiddenBlogCategories(hidden);
+      }
+    }
+
+    var unhide = getHiddenBlogCategories().filter(function (c) { return c !== newName; });
+    if (unhide.length !== getHiddenBlogCategories().length) {
+      setHiddenBlogCategories(unhide);
+    }
+
+    renameCategoryInPosts(oldName, newName);
+    return true;
+  }
+
+  function deleteManagedBlogCategory(name) {
+    name = (name || '').trim();
+    if (!name) return false;
+
+    setCustomBlogCategories(getCustomBlogCategories().filter(function (c) { return c !== name; }));
+
+    if (isBaseBlogCategory(name)) {
+      var hidden = getHiddenBlogCategories();
+      if (hidden.indexOf(name) < 0) {
+        hidden.push(name);
+        setHiddenBlogCategories(hidden);
+      }
+    }
+
+    removeCategoryFromPosts(name);
+    return true;
+  }
+
+  function renameManagedBlogTag(oldName, newName) {
+    oldName = (oldName || '').trim();
+    newName = (newName || '').trim();
+    if (!oldName || !newName || oldName === newName) return false;
+    if (getAllBlogTags().indexOf(newName) >= 0) return false;
+
+    var custom = getCustomBlogTags().filter(function (t) { return t !== oldName; });
+    if (custom.indexOf(newName) < 0) custom.push(newName);
+    setCustomBlogTags(custom);
+    renameTagInPosts(oldName, newName);
+    return true;
+  }
+
+  function deleteManagedBlogTag(name) {
+    name = (name || '').trim();
+    if (!name) return false;
+    setCustomBlogTags(getCustomBlogTags().filter(function (t) { return t !== name; }));
+    removeTagFromPosts(name);
+    return true;
+  }
+
+  function renderListaCategorieBlog() {
+    if (!listaCategorieBlog) return;
+    var cats = getAllBlogCategories();
+    listaCategorieBlog.innerHTML = '';
+    if (cats.length === 0) {
+      listaCategorieBlog.innerHTML = '<li class="empty">Nessuna categoria. Aggiungine una sopra.</li>';
+      return;
+    }
+    cats.forEach(function (cat) {
+      var li = document.createElement('li');
+      li.setAttribute('data-name', cat);
+      li.innerHTML =
+        '<span class="categoria-nome">' + escapeHtml(cat) +
+        (isBaseBlogCategory(cat) ? ' <span class="categoria-badge">predefinita</span>' : '') +
+        '</span>' +
+        '<span class="categoria-actions">' +
+        '<button type="button" class="btn-edit-cat" data-name="' + escapeHtml(cat) + '" aria-label="Modifica">Modifica</button>' +
+        '<button type="button" class="btn-remove-cat" data-name="' + escapeHtml(cat) + '" aria-label="Rimuovi">Rimuovi</button>' +
+        '</span>';
+      listaCategorieBlog.appendChild(li);
+    });
+
+    listaCategorieBlog.querySelectorAll('.btn-edit-cat').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var current = btn.getAttribute('data-name') || '';
+        if (!current) return;
+        var li = btn.closest('li');
+        if (!li) return;
+        li.innerHTML = '';
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'categoria-edit-input';
+        input.value = current;
+        input.setAttribute('aria-label', 'Modifica categoria');
+        var actions = document.createElement('span');
+        actions.className = 'categoria-actions';
+        var saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn-save-cat';
+        saveBtn.textContent = 'Salva';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn-cancel-cat';
+        cancelBtn.textContent = 'Annulla';
+        actions.appendChild(saveBtn);
+        actions.appendChild(cancelBtn);
+        li.appendChild(input);
+        li.appendChild(actions);
+        input.focus();
+        input.select();
+        function commit() {
+          var nuovo = (input.value || '').trim();
+          if (!nuovo) {
+            showArticoloMsg('Il nome della categoria non può essere vuoto.', true);
+            input.focus();
+            return;
+          }
+          if (nuovo === current) {
+            renderListaCategorieBlog();
+            return;
+          }
+          if (getAllBlogCategories().indexOf(nuovo) >= 0) {
+            showArticoloMsg('Esiste già una categoria con questo nome.', true);
+            input.focus();
+            return;
+          }
+          if (!renameManagedBlogCategory(current, nuovo)) {
+            showArticoloMsg('Impossibile rinominare la categoria.', true);
+            return;
+          }
+          refreshSelectsCategorieBlog();
+          renderListaCategorieBlog();
+          showArticoloMsg('Categoria rinominata in "' + nuovo + '".', false);
+        }
+        saveBtn.addEventListener('click', commit);
+        cancelBtn.addEventListener('click', function () {
+          renderListaCategorieBlog();
+        });
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            renderListaCategorieBlog();
+          }
+        });
+      });
+    });
+
+    listaCategorieBlog.querySelectorAll('.btn-remove-cat').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var name = btn.getAttribute('data-name') || '';
+        if (!name) return;
+        adminConfirm({
+          title: 'Rimuovere la categoria?',
+          text: 'La categoria "' + name + '" verrà tolta anche dagli articoli che la usano.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (!ok) return;
+          deleteManagedBlogCategory(name);
+          renderListaCategorieBlog();
+          refreshSelectsCategorieBlog();
+          showArticoloMsg('Categoria "' + name + '" eliminata.', false);
+        });
+      });
+    });
+  }
+
+  function renderListaTagBlog() {
+    if (!listaTagBlog) return;
+    var tags = getAllBlogTags();
+    listaTagBlog.innerHTML = '';
+    if (tags.length === 0) {
+      listaTagBlog.innerHTML = '<li class="empty">Nessun tag. Aggiungine uno sopra.</li>';
+      return;
+    }
+    tags.forEach(function (tag) {
+      var li = document.createElement('li');
+      li.setAttribute('data-name', tag);
+      li.innerHTML =
+        '<span class="categoria-nome">' + escapeHtml(tag) + '</span>' +
+        '<span class="categoria-actions">' +
+        '<button type="button" class="btn-edit-tag" data-name="' + escapeHtml(tag) + '" aria-label="Modifica">Modifica</button>' +
+        '<button type="button" class="btn-remove-tag" data-name="' + escapeHtml(tag) + '" aria-label="Rimuovi">Rimuovi</button>' +
+        '</span>';
+      listaTagBlog.appendChild(li);
+    });
+
+    listaTagBlog.querySelectorAll('.btn-edit-tag').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var current = btn.getAttribute('data-name') || '';
+        if (!current) return;
+        var li = btn.closest('li');
+        if (!li) return;
+        li.innerHTML = '';
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'categoria-edit-input';
+        input.value = current;
+        input.setAttribute('aria-label', 'Modifica tag');
+        var actions = document.createElement('span');
+        actions.className = 'categoria-actions';
+        var saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn-save-tag';
+        saveBtn.textContent = 'Salva';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn-cancel-tag';
+        cancelBtn.textContent = 'Annulla';
+        actions.appendChild(saveBtn);
+        actions.appendChild(cancelBtn);
+        li.appendChild(input);
+        li.appendChild(actions);
+        input.focus();
+        input.select();
+        function commit() {
+          var nuovo = (input.value || '').trim();
+          if (!nuovo) {
+            showArticoloMsg('Il nome del tag non può essere vuoto.', true);
+            input.focus();
+            return;
+          }
+          if (nuovo === current) {
+            renderListaTagBlog();
+            return;
+          }
+          if (getAllBlogTags().indexOf(nuovo) >= 0) {
+            showArticoloMsg('Esiste già un tag con questo nome.', true);
+            input.focus();
+            return;
+          }
+          if (!renameManagedBlogTag(current, nuovo)) {
+            showArticoloMsg('Impossibile rinominare il tag.', true);
+            return;
+          }
+          refreshSelectsTagBlog();
+          renderListaTagBlog();
+          showArticoloMsg('Tag rinominato in "' + nuovo + '".', false);
+        }
+        saveBtn.addEventListener('click', commit);
+        cancelBtn.addEventListener('click', function () {
+          renderListaTagBlog();
+        });
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            renderListaTagBlog();
+          }
+        });
+      });
+    });
+
+    listaTagBlog.querySelectorAll('.btn-remove-tag').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var name = btn.getAttribute('data-name') || '';
+        if (!name) return;
+        adminConfirm({
+          title: 'Rimuovere il tag?',
+          text: 'Il tag "' + name + '" verrà tolto anche dagli articoli che lo usano.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (!ok) return;
+          deleteManagedBlogTag(name);
+          renderListaTagBlog();
+          refreshSelectsTagBlog();
+          showArticoloMsg('Tag "' + name + '" eliminato.', false);
+        });
+      });
+    });
+  }
+
+  function aggiungiCategoriaBlogDaInput(sourceInput) {
+    var inputEl = sourceInput || nuovaCategoriaBlogInput;
+    if (!inputEl) return;
+    var nome = (inputEl.value || '').trim();
+    if (!nome) {
+      showArticoloMsg('Scrivi il nome della categoria nel campo.', true);
+      inputEl.focus();
+      return;
+    }
+    try {
+      var all = getAllBlogCategories();
+      if (all.indexOf(nome) >= 0) {
+        setSelectedArticleCategory(nome);
+        updateArticlePreview();
+        setArticleCategoriaDropdownOpen(false);
+        inputEl.value = '';
+        showArticoloMsg('Categoria "' + nome + '" già presente: selezionata.', false);
+        return;
+      }
+      var hidden = getHiddenBlogCategories().filter(function (c) { return c !== nome; });
+      if (hidden.length !== getHiddenBlogCategories().length) {
+        setHiddenBlogCategories(hidden);
+      }
+      if (!isBaseBlogCategory(nome)) {
+        var custom = getCustomBlogCategories();
+        if (custom.indexOf(nome) < 0) {
+          custom.push(nome);
+          setCustomBlogCategories(custom);
+        }
+      }
+      refreshSelectsCategorieBlog();
+      renderListaCategorieBlog();
+      setSelectedArticleCategory(nome);
+      updateArticlePreview();
+      setArticleCategoriaDropdownOpen(false);
+      inputEl.value = '';
+      if (nuovaCategoriaBlogInput && nuovaCategoriaBlogInput !== inputEl) nuovaCategoriaBlogInput.value = '';
+      if (articoloCategoriaCreateInput && articoloCategoriaCreateInput !== inputEl) {
+        articoloCategoriaCreateInput.value = '';
+      }
+      showArticoloMsg('Categoria "' + nome + '" aggiunta e selezionata.', false);
+    } catch (err) {
+      showArticoloMsg('Errore: ' + (err && err.message ? err.message : 'impossibile aggiungere'), true);
+      console.error('Aggiungi categoria blog', err);
+    }
+  }
+
+  function aggiungiTagBlogDaInput(sourceInput) {
+    var inputEl = sourceInput || nuovoTagBlogInput;
+    if (!inputEl) return;
+    var nome = (inputEl.value || '').trim();
+    if (!nome) {
+      showArticoloMsg('Scrivi il nome del tag nel campo.', true);
+      inputEl.focus();
+      return;
+    }
+    try {
+      var all = getAllBlogTags();
+      if (all.indexOf(nome) >= 0) {
+        var existing = getSelectedArticleTags();
+        if (existing.indexOf(nome) < 0) existing.push(nome);
+        setSelectedArticleTags(existing);
+        updateArticlePreview();
+        inputEl.value = '';
+        showArticoloMsg('Tag "' + nome + '" già presente: selezionato.', false);
+        return;
+      }
+      var custom = getCustomBlogTags();
+      custom.push(nome);
+      setCustomBlogTags(custom);
+      refreshSelectsTagBlog();
+      renderListaTagBlog();
+      inputEl.value = '';
+      if (nuovoTagBlogInput && nuovoTagBlogInput !== inputEl) nuovoTagBlogInput.value = '';
+      if (articoloTagCreateInput && articoloTagCreateInput !== inputEl) articoloTagCreateInput.value = '';
+      var next = getSelectedArticleTags();
+      if (next.indexOf(nome) < 0) next.push(nome);
+      setSelectedArticleTags(next);
+      updateArticlePreview();
+      showArticoloMsg('Tag "' + nome + '" aggiunto e selezionato.', false);
+    } catch (err) {
+      showArticoloMsg('Errore: ' + (err && err.message ? err.message : 'impossibile aggiungere'), true);
+      console.error('Aggiungi tag blog', err);
+    }
+  }
+
   function updateArticlePreview() {
     if (!articlePreviewBody || !articleComposer) return;
     var title = articoloTitoloInput ? (articoloTitoloInput.value || '').trim() : '';
-    var meta = articoloMetaInput ? (articoloMetaInput.value || '').trim() : '';
+    var cat = getSelectedArticleCategory();
+    var tags = getSelectedArticleTags();
     var excerpt = articoloEstrattoInput ? (articoloEstrattoInput.value || '').trim() : '';
     var coverUrl = articoloImmagineInput ? (articoloImmagineInput.value || '').trim() : '';
 
-    if (articlePreviewMeta) articlePreviewMeta.textContent = meta || 'Categoria';
+    if (articlePreviewMeta) {
+      var metaTagHtml = function (name, className) {
+        var fmt = window.PriscillaContentFormat;
+        if (fmt && typeof fmt.metaTagHtml === 'function') {
+          return fmt.metaTagHtml(name, className);
+        }
+        var label = String(name || '')
+          .trim()
+          .toLowerCase();
+        if (!label) return '';
+        return (
+          '<span class="' + (className || 'blog-meta-tag') + '">' + escapeHtml(label) + '</span>'
+        );
+      };
+      var tagsHtml = tags
+        .map(function (t) {
+          return metaTagHtml(t, 'blog-meta-tag');
+        })
+        .join('');
+      articlePreviewMeta.innerHTML =
+        metaTagHtml(cat || 'Categoria', 'blog-meta-category') +
+        (tagsHtml ? '<span class="blog-meta-tags">' + tagsHtml + '</span>' : '<span class="blog-meta-tags"></span>');
+    }
     if (articlePreviewTitle) articlePreviewTitle.textContent = title || 'Titolo dell’articolo';
     if (articlePreviewExcerpt) {
       articlePreviewExcerpt.textContent = excerpt;
@@ -1770,9 +2552,11 @@
     articleComposer = createBlockComposer({
       blocksEl: document.getElementById('articleBlocks'),
       btnAddText: document.getElementById('btnAddArticleTextBlock'),
+      btnAddHeading: document.getElementById('btnAddArticleHeadingBlock'),
+      btnAddList: document.getElementById('btnAddArticleListBlock'),
       btnAddImage: document.getElementById('btnAddArticleImageBlock'),
       msgEl: msgArticolo,
-      textPlaceholder: 'Scrivi il testo dell’articolo…',
+      textPlaceholder: 'Scrivi la descrizione o il paragrafo…',
       onChange: updateArticlePreview
     });
   }
@@ -1780,7 +2564,11 @@
   function resetArticoloFormFields() {
     if (articoloIdInput) articoloIdInput.value = '';
     if (articoloTitoloInput) articoloTitoloInput.value = '';
-    if (articoloMetaInput) articoloMetaInput.value = '';
+    setSelectedArticleCategory('');
+    setSelectedArticleTags([]);
+    closeAllArticleDropdowns();
+    if (articoloCategoriaCreateInput) articoloCategoriaCreateInput.value = '';
+    if (articoloTagCreateInput) articoloTagCreateInput.value = '';
     if (articoloEstrattoInput) articoloEstrattoInput.value = '';
     if (articleComposer) articleComposer.reset();
     articleCover.clear();
@@ -1815,12 +2603,16 @@
         if (post) {
           articoloIdInput.value = post.id;
           articoloTitoloInput.value = post.title || '';
-          articoloMetaInput.value = post.meta || '';
+          setSelectedArticleCategory(getPostCategory(post));
+          setSelectedArticleTags(getPostTags(post));
+          refreshSelectsCategorieBlog();
+          refreshSelectsTagBlog();
           articoloEstrattoInput.value = post.excerpt || '';
           if (articleComposer) articleComposer.setBlocks(normalizeContentBlocks(post));
           articleCover.setPreview(post.imageUrl || '');
           btnAnnullaArticolo.style.display = 'inline-block';
           msgArticolo.hidden = true;
+          updateArticlePreview();
           if (formArticolo && typeof formArticolo.scrollIntoView === 'function') {
             formArticolo.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
@@ -1877,7 +2669,15 @@
         msgArticolo.hidden = false;
         return;
       }
-      var meta = (articoloMetaInput.value || '').trim();
+      var category = getSelectedArticleCategory();
+      if (!category) {
+        msgArticolo.textContent = 'Scegli una categoria.';
+        msgArticolo.classList.add('msg-error');
+        msgArticolo.hidden = false;
+        if (articoloCategoriaTrigger) articoloCategoriaTrigger.focus();
+        return;
+      }
+      var tags = getSelectedArticleTags();
       var excerpt = (articoloEstrattoInput.value || '').trim();
       var blocks = articleComposer ? articleComposer.serialize() : [];
       var body = blocksToPlainBody(blocks);
@@ -1888,7 +2688,9 @@
       var post = {
         id: id || 'art_' + Date.now(),
         title: title,
-        meta: meta,
+        category: category,
+        tags: tags,
+        meta: category,
         excerpt: excerpt,
         body: body,
         blocks: blocks,
@@ -1897,6 +2699,10 @@
       };
       persistPost(post).then(function (result) {
         renderListaArticoliAdmin();
+        refreshSelectsCategorieBlog();
+        renderListaCategorieBlog();
+        refreshSelectsTagBlog();
+        renderListaTagBlog();
         var articlePath = '/blog?id=' + encodeURIComponent(post.id);
         msgArticolo.innerHTML = (wasEdit
           ? 'Articolo aggiornato. <a href="' + articlePath + '">Apri pagina</a>'
@@ -1924,8 +2730,87 @@
   }
 
   if (articoloTitoloInput) articoloTitoloInput.addEventListener('input', updateArticlePreview);
-  if (articoloMetaInput) articoloMetaInput.addEventListener('input', updateArticlePreview);
   if (articoloEstrattoInput) articoloEstrattoInput.addEventListener('input', updateArticlePreview);
+  if (articoloTagTrigger && articoloTagDropdown) {
+    articoloTagTrigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setArticleTagDropdownOpen(articoloTagDropdown.hidden);
+    });
+    articoloTagDropdown.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+  }
+  if (articoloCategoriaTrigger && articoloCategoriaDropdown) {
+    articoloCategoriaTrigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setArticleCategoriaDropdownOpen(articoloCategoriaDropdown.hidden);
+    });
+    articoloCategoriaDropdown.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+  }
+  if ((articoloTagTrigger && articoloTagDropdown) || (articoloCategoriaTrigger && articoloCategoriaDropdown)) {
+    document.addEventListener('click', function () {
+      closeAllArticleDropdowns();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeAllArticleDropdowns();
+    });
+  }
+  if (btnAggiungiCategoriaBlog && nuovaCategoriaBlogInput) {
+    btnAggiungiCategoriaBlog.addEventListener('click', function (e) {
+      e.preventDefault();
+      aggiungiCategoriaBlogDaInput(nuovaCategoriaBlogInput);
+    });
+    nuovaCategoriaBlogInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        aggiungiCategoriaBlogDaInput(nuovaCategoriaBlogInput);
+      }
+    });
+  }
+  if (articoloCategoriaCreateBtn && articoloCategoriaCreateInput) {
+    articoloCategoriaCreateBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      aggiungiCategoriaBlogDaInput(articoloCategoriaCreateInput);
+    });
+    articoloCategoriaCreateInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        aggiungiCategoriaBlogDaInput(articoloCategoriaCreateInput);
+      }
+    });
+  }
+  if (btnAggiungiTagBlog && nuovoTagBlogInput) {
+    btnAggiungiTagBlog.addEventListener('click', function (e) {
+      e.preventDefault();
+      aggiungiTagBlogDaInput(nuovoTagBlogInput);
+    });
+    nuovoTagBlogInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        aggiungiTagBlogDaInput(nuovoTagBlogInput);
+      }
+    });
+  }
+  if (articoloTagCreateBtn && articoloTagCreateInput) {
+    articoloTagCreateBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      aggiungiTagBlogDaInput(articoloTagCreateInput);
+    });
+    articoloTagCreateInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        aggiungiTagBlogDaInput(articoloTagCreateInput);
+      }
+    });
+  }
   var _setArticleCoverPreview = articleCover.setPreview;
   var _clearArticleCover = articleCover.clear;
   articleCover.setPreview = function (url) {
@@ -1940,6 +2825,10 @@
   if (articleComposer) {
     articleComposer.render();
   }
+  refreshSelectsCategorieBlog();
+  refreshSelectsTagBlog();
+  renderListaCategorieBlog();
+  renderListaTagBlog();
 
   /* ========== Ricette ========== */
   var RICETTE_CATEGORIE = ['Pre-workout', 'Post-workout', 'Snack', 'Colazione', 'Pranzo', 'Cena', 'Primi', 'Secondi', 'Dessert', 'Bevande', 'Altro'];

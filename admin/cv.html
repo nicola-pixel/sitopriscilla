@@ -46,6 +46,10 @@
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.6 12.6a2 2 0 0 0 0-2.8l-6.4-6.4a2 2 0 0 0-2.8 0L4 10.6a2 2 0 0 0 0 2.8l6.4 6.4a2 2 0 0 0 2.8 0Z"/><circle cx="15" cy="9" r="1.2"/></svg></span>
           Codici sconto
         </a>
+        <a href="/admin/suggerimenti-spesa" class="admin-nav-link">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M6 6 5 3H2"/></svg></span>
+          Suggerimenti spesa
+        </a>
         <a href="/admin/cv" class="admin-nav-link admin-nav-link--active">
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg></span>
           CV
@@ -129,7 +133,9 @@
           </div>
           <p class="upload-zone-files" id="uploadZoneCvFiles"></p>
         </div>
-        <button type="submit" class="btn btn-primary" id="btnUploadCv">Carica CV</button>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="btnUploadCv">Carica CV</button>
+        </div>
       </form>
       <p id="msgCv" class="msg" hidden></p>
       <p id="cvStatus" class="cv-status"></p>

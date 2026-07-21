@@ -6,6 +6,9 @@
   var STORAGE_KEY_CATEGORIE_RICETTE = 'ricette_categorie';
   var STORAGE_KEY_CATEGORIE_NASCOSTE = 'ricette_categorie_nascoste';
   var STORAGE_KEY_TAG_RICETTE = 'ricette_tag';
+  var STORAGE_KEY_CATEGORIE_BLOG = 'blog_categorie';
+  var STORAGE_KEY_CATEGORIE_BLOG_NASCOSTE = 'blog_categorie_nascoste';
+  var STORAGE_KEY_TAG_BLOG = 'blog_tag';
   var RICETTE_CATEGORIE = [
     'Pre-workout',
     'Post-workout',
@@ -321,15 +324,46 @@
   }
 
   function postCategory(post) {
-    var raw = String((post && post.meta) || '').trim();
+    if (!post) return '';
+    var cat = String(post.category || '').trim();
+    if (cat) return cat;
+    var raw = String(post.meta || '').trim();
     if (!raw) return '';
-    // Meta admin: "Categoria · 5 min" → usa solo la categoria
-    var cat = raw.split(/\s*[·|]\s*/)[0].trim();
-    return cat || raw;
+    // Meta admin legacy: "Categoria · 5 min" → usa solo la categoria
+    return raw.split(/\s*[·|]\s*/)[0].trim() || raw;
+  }
+
+  function postTags(post) {
+    if (!post) return [];
+    if (Array.isArray(post.tags)) {
+      return post.tags
+        .map(function (t) {
+          return String(t || '').trim();
+        })
+        .filter(Boolean);
+    }
+    return [];
   }
 
   function postMetaLabel(post) {
     return postCategory(post) || 'Articolo';
+  }
+
+  function postMetaHtml(post) {
+    var cat = postCategory(post);
+    var tags = postTags(post);
+    var tagsHtml = tags
+      .map(function (t) {
+        return metaTagHtml(t, 'blog-meta-tag');
+      })
+      .join('');
+    if (!cat && !tags.length) return '';
+    return (
+      '<div class="blog-meta blog-meta--split">' +
+      (cat ? metaTagHtml(cat, 'blog-meta-category') : '<span class="blog-meta-category"></span>') +
+      (tagsHtml ? '<span class="blog-meta-tags">' + tagsHtml + '</span>' : '') +
+      '</div>'
+    );
   }
 
   /** Categoria ricetta (non usa il tag; gestisce il vecchio mirror tag === categoria). */
@@ -402,13 +436,29 @@
   }
 
   function getPostCategoriesFromItems(items) {
+    var hidden = readJsonArray(STORAGE_KEY_CATEGORIE_BLOG_NASCOSTE);
     var fromPosts = [];
     items.forEach(function (item) {
       if (item.type !== 'post') return;
       var cat = postCategory(item.post);
       if (cat) fromPosts.push(cat);
     });
-    return uniqueSorted(ARTICOLI_CATEGORIE.concat(fromPosts));
+    return uniqueSorted(
+      ARTICOLI_CATEGORIE.concat(readJsonArray(STORAGE_KEY_CATEGORIE_BLOG), fromPosts)
+    ).filter(function (name) {
+      return hidden.indexOf(name) < 0;
+    });
+  }
+
+  function getPostTagOptions(items) {
+    var fromPosts = [];
+    items.forEach(function (item) {
+      if (item.type !== 'post') return;
+      postTags(item.post).forEach(function (tag) {
+        fromPosts.push(tag);
+      });
+    });
+    return uniqueSorted(readJsonArray(STORAGE_KEY_TAG_BLOG).concat(fromPosts));
   }
 
   function getRecipeCategoryOptions(items) {
@@ -584,9 +634,10 @@
           var post = item.post;
           var imgStyle = post.imageUrl ? bgImageStyle(post.imageUrl) : '';
           var postHref = '/blog?id=' + encodeURIComponent(post.id);
-          var postCat = postMetaLabel(post);
           var postDate = formatDate(post.createdAt);
           var postRead = readingMinutes(post);
+          var postMeta = postMetaHtml(post) ||
+            '<span class="blog-meta">' + escapeHtml(postMetaLabel(post)) + '</span>';
           html +=
             '<a href="' +
             postHref +
@@ -604,9 +655,7 @@
             '<span class="blog-card-badge">Articolo</span>' +
             '</div>' +
             '<div class="blog-card-content">' +
-            '<span class="blog-meta">' +
-            escapeHtml(postCat) +
-            '</span>' +
+            postMeta +
             '<h2>' +
             escapeHtml(post.title) +
             '</h2>' +

@@ -720,6 +720,11 @@
   color: var(--color-text);
 }
 
+.article-body.prose .prose-list-title {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 .article-body.prose .prose-list li:last-child {
   border-bottom: none;
 }

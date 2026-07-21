@@ -40,6 +40,9 @@
       return 'scarica.html';
     }
     if (item.page === 'blog') {
+      // In homepage punta alla sezione anteprima (#blog) per scroll-spy e ancoraggio;
+      // dalle altre pagine va alla listing completa.
+      if (forHome) return item.hash || '#blog';
       return 'blog.html';
     }
     if (forHome) return item.hash;

@@ -21,12 +21,13 @@
 
   function isListItemLine(line, forceList) {
     var t = String(line || '').trim();
-    if (!t || isSectionHeading(t)) return false;
+    if (!t || isGenericHeadingLine(t)) return false;
     if (/^[-•*·]\s+\S/.test(t)) return true;
     if (/^\d+[.)]\s+\S/.test(t)) return true;
+    // Senza marker, solo in sezioni ricetta (ingredienti/passaggi)
+    if (!forceList) return false;
     var words = t.split(/\s+/).length;
     if (words > 16 || t.length > 110) return false;
-    if (forceList) return true;
     if (/[a-zàèéìòù]{4,}[.!?]$/i.test(t) && words >= 6) return false;
     return true;
   }
@@ -44,10 +45,28 @@
     return '';
   }
 
+  /** "Titolo: descrizione" → titolo in grassetto, resto testo normale. */
+  function formatListItemHtml(item, allowTitleDesc) {
+    var text = String(item == null ? '' : item).trim();
+    if (!text) return '';
+    if (allowTitleDesc) {
+      var match = text.match(/^(.{1,72}?)\s*[:–—]\s+(.+)$/);
+      if (match) {
+        var title = match[1].trim();
+        var desc = match[2].trim();
+        if (title && desc && title.split(/\s+/).length <= 10 && !/[.!?]$/.test(title)) {
+          return '<strong class="prose-list-title">' + escapeHtml(title) + '</strong> ' + escapeHtml(desc);
+        }
+      }
+    }
+    return escapeHtml(text);
+  }
+
   function flushList(items, mode, numbered) {
     if (!items.length) return '';
+    var allowTitleDesc = !mode;
     if (items.length === 1 && !mode) {
-      return '<p>' + escapeHtml(items[0]) + '</p>';
+      return '<p>' + formatListItemHtml(items[0], allowTitleDesc) + '</p>';
     }
     var asSteps = mode === 'steps' || numbered;
     var tag = asSteps ? 'ol' : 'ul';
@@ -60,13 +79,29 @@
       '">' +
       items
         .map(function (item) {
-          return '<li>' + escapeHtml(item) + '</li>';
+          return '<li>' + formatListItemHtml(item, allowTitleDesc) + '</li>';
         })
         .join('') +
       '</' +
       tag +
       '>'
     );
+  }
+
+  function isGenericHeadingLine(line) {
+    var t = String(line || '').trim();
+    if (!t) return false;
+    if (/^#{1,3}\s+\S/.test(t)) return true;
+    if (isSectionHeading(t)) return true;
+    // Riga breve che termina con ":" → titolo di sezione
+    if (/^.{2,70}:\s*$/.test(t) && t.split(/\s+/).length <= 12) return true;
+    return false;
+  }
+
+  function headingTextFromLine(line) {
+    var t = String(line || '').trim();
+    t = t.replace(/^#{1,3}\s+/, '').replace(/:$/, '').trim();
+    return t;
   }
 
   function linesToStructuredHtml(lines) {
@@ -86,8 +121,8 @@
         continue;
       }
 
-      if (isSectionHeading(line)) {
-        var heading = line.replace(/:$/, '').trim();
+      if (isGenericHeadingLine(line)) {
+        var heading = headingTextFromLine(line);
         mode = sectionMode(heading);
         var headingClass = mode ? ' prose-heading--' + mode : '';
         html +=
@@ -113,7 +148,7 @@
             while (peek < lines.length && !lines[peek].trim()) peek += 1;
             if (
               peek >= lines.length ||
-              isSectionHeading(lines[peek]) ||
+              isGenericHeadingLine(lines[peek]) ||
               !isListItemLine(lines[peek], forceList)
             ) {
               break;
@@ -121,7 +156,7 @@
             i = peek;
             continue;
           }
-          if (isSectionHeading(raw) || !isListItemLine(raw, forceList)) break;
+          if (isGenericHeadingLine(raw) || !isListItemLine(raw, forceList)) break;
           if (!/^\d+[.)]\s+\S/.test(raw)) numbered = false;
           sawItem = true;
           var item = stripListMarker(raw);
@@ -143,7 +178,7 @@
       i += 1;
       while (i < lines.length) {
         var next = lines[i].trim();
-        if (!next || isSectionHeading(next) || isListItemLine(next, false)) break;
+        if (!next || isGenericHeadingLine(next) || isListItemLine(next, false)) break;
         para.push(next);
         i += 1;
       }
@@ -160,7 +195,7 @@
 
     var lines = normalized.split('\n');
     var hasStructure = lines.some(function (l) {
-      return isSectionHeading(l) || isListItemLine(l, false);
+      return isGenericHeadingLine(l) || isListItemLine(l, false);
     });
 
     if (hasStructure && lines.length > 1) {
@@ -173,7 +208,7 @@
       .map(function (p) {
         var trimmed = p.trim();
         if (!trimmed) return '';
-        if (isSectionHeading(trimmed.split('\n')[0])) {
+        if (isGenericHeadingLine(trimmed.split('\n')[0])) {
           return linesToStructuredHtml(trimmed.split('\n'));
         }
         return '<p>' + escapeHtml(trimmed).replace(/\n/g, '<br>') + '</p>';
@@ -182,8 +217,21 @@
       .join('');
   }
 
+  function headingBlockToHtml(block) {
+    if (!block || block.type !== 'heading') return '';
+    var title = String(block.content || '').trim();
+    if (!title) return '';
+    return (
+      '<h2 class="prose-heading content-block content-block--heading">' +
+      escapeHtml(title) +
+      '</h2>'
+    );
+  }
+
   function listBlockToHtml(block) {
-    if (!block || (block.type !== 'ingredients' && block.type !== 'steps')) return '';
+    if (!block || (block.type !== 'ingredients' && block.type !== 'steps' && block.type !== 'list')) {
+      return '';
+    }
     var items = Array.isArray(block.items)
       ? block.items
           .map(function (item) {
@@ -193,18 +241,26 @@
       : [];
     if (!items.length) return '';
     var isSteps = block.type === 'steps';
+    var isGenericList = block.type === 'list';
     var tag = isSteps ? 'ol' : 'ul';
     var listClass = isSteps ? 'prose-steps' : 'prose-list';
-    var title = String(block.title || (isSteps ? 'Procedimento' : 'Ingredienti')).trim();
+    var defaultTitle = isSteps ? 'Procedimento' : isGenericList ? '' : 'Ingredienti';
+    var title = String(block.title != null ? block.title : defaultTitle).trim();
+    var headingHtml = '';
+    if (title) {
+      var headingMod = isSteps ? 'steps' : isGenericList ? 'list' : 'ingredients';
+      headingHtml =
+        '<h2 class="prose-heading prose-heading--' +
+        headingMod +
+        '">' +
+        escapeHtml(title) +
+        '</h2>';
+    }
     return (
       '<section class="content-block content-block--' +
       escapeHtml(block.type) +
       '">' +
-      '<h2 class="prose-heading prose-heading--' +
-      (isSteps ? 'steps' : 'ingredients') +
-      '">' +
-      escapeHtml(title) +
-      '</h2>' +
+      headingHtml +
       '<' +
       tag +
       ' class="' +
@@ -212,7 +268,7 @@
       '">' +
       items
         .map(function (item) {
-          return '<li>' + escapeHtml(item) + '</li>';
+          return '<li>' + formatListItemHtml(item, isGenericList) + '</li>';
         })
         .join('') +
       '</' +
@@ -270,7 +326,10 @@
             '</figure>'
           );
         }
-        if (block.type === 'ingredients' || block.type === 'steps') {
+        if (block.type === 'heading') {
+          return headingBlockToHtml(block);
+        }
+        if (block.type === 'ingredients' || block.type === 'steps' || block.type === 'list') {
           return listBlockToHtml(block);
         }
         if (block.type === 'video') {
@@ -351,6 +410,7 @@
   global.PriscillaContentFormat = {
     escapeHtml: escapeHtml,
     textToHtml: textToHtml,
+    headingBlockToHtml: headingBlockToHtml,
     listBlockToHtml: listBlockToHtml,
     videoBlockToHtml: videoBlockToHtml,
     normalizeVideoUrl: normalizeVideoUrl,

@@ -5,19 +5,26 @@
   var STORAGE_KEY_DOWNLOAD_KEY = 'download_secret';
   var materialeStore = window.PriscillaMateriale || null;
   var codiciStore = window.PriscillaCodici || null;
+  var spesaStore = window.PriscillaSpesa || null;
   var cachedPdfs = [];
   var cachedFolders = [];
   var flatPreviewItems = [];
   var folderGroupsById = {};
   var activePanel = 'materiale';
+  var VALID_PANELS = { materiale: true, codici: true, spesa: true };
 
   var formSection = document.getElementById('scarica-form-section');
   var listaSection = document.getElementById('scarica-lista-section');
   var formChiave = document.getElementById('formChiave');
   var chiaveInput = document.getElementById('chiave');
+  var toggleChiave = document.getElementById('toggleChiave');
   var erroreChiave = document.getElementById('erroreChiave');
   var listaPdf = document.getElementById('listaPdf');
   var listaCodici = document.getElementById('listaCodici');
+  var listaSpesa = document.getElementById('listaSpesa');
+  var spesaFiltri = document.getElementById('spesaFiltri');
+  var cachedSpesaItems = [];
+  var activeSpesaCity = '';
   var btnEsci = document.getElementById('btnEsci');
   var sideNav = document.querySelector('.scarica-side-nav');
 
@@ -520,8 +527,154 @@
     });
   }
 
+  function groupSpesaByCity(items) {
+    var groups = [];
+    var map = {};
+    (Array.isArray(items) ? items : []).forEach(function (item) {
+      if (!item) return;
+      var city = String(item.city || '').trim() || 'Altre città';
+      var key = city.toLocaleLowerCase('it');
+      if (!map[key]) {
+        map[key] = { city: city, items: [] };
+        groups.push(map[key]);
+      }
+      map[key].items.push(item);
+    });
+    groups.sort(function (a, b) {
+      return a.city.localeCompare(b.city, 'it', { sensitivity: 'base' });
+    });
+    return groups;
+  }
+
+  function getSpesaCities(items) {
+    return groupSpesaByCity(items).map(function (group) {
+      return group.city;
+    });
+  }
+
+  function cityKey(city) {
+    return String(city || '').trim().toLocaleLowerCase('it');
+  }
+
+  function renderSpesaFiltri(cities) {
+    if (!spesaFiltri) return;
+    var list = Array.isArray(cities) ? cities : [];
+
+    if (list.length < 2) {
+      spesaFiltri.hidden = true;
+      spesaFiltri.innerHTML = '';
+      activeSpesaCity = '';
+      return;
+    }
+
+    if (activeSpesaCity && list.every(function (city) {
+      return cityKey(city) !== cityKey(activeSpesaCity);
+    })) {
+      activeSpesaCity = '';
+    }
+
+    spesaFiltri.hidden = false;
+    spesaFiltri.innerHTML = '';
+
+    function addChip(label, value) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'spesa-filtro' + (cityKey(value) === cityKey(activeSpesaCity) ? ' is-active' : '');
+      btn.setAttribute('data-spesa-city', value);
+      btn.setAttribute('aria-pressed', cityKey(value) === cityKey(activeSpesaCity) ? 'true' : 'false');
+      btn.textContent = label;
+      spesaFiltri.appendChild(btn);
+    }
+
+    addChip('Tutte', '');
+    list.forEach(function (city) {
+      addChip(city, city);
+    });
+  }
+
+  function renderListaSpesaFromItems(items) {
+    if (!listaSpesa) return;
+    cachedSpesaItems = Array.isArray(items) ? items : [];
+    var cities = getSpesaCities(cachedSpesaItems);
+    renderSpesaFiltri(cities);
+
+    var filtered = cachedSpesaItems;
+    if (activeSpesaCity) {
+      filtered = cachedSpesaItems.filter(function (item) {
+        return cityKey(item && item.city) === cityKey(activeSpesaCity);
+      });
+    }
+
+    listaSpesa.innerHTML = '';
+    var groups = groupSpesaByCity(filtered);
+
+    if (!cachedSpesaItems.length) {
+      listaSpesa.innerHTML =
+        '<div class="download-empty">' +
+          '<span class="download-empty-icon" aria-hidden="true"></span>' +
+          '<span class="download-empty-title">Nessun consiglio disponibile</span>' +
+          '<span class="download-empty-text">Al momento non ci sono suggerimenti spesa in quest’area.</span>' +
+        '</div>';
+      return;
+    }
+
+    if (!groups.length) {
+      listaSpesa.innerHTML =
+        '<div class="download-empty">' +
+          '<span class="download-empty-icon" aria-hidden="true"></span>' +
+          '<span class="download-empty-title">Nessun negozio in questa città</span>' +
+          '<span class="download-empty-text">Prova un altro filtro città.</span>' +
+        '</div>';
+      return;
+    }
+
+    var cardIndex = 0;
+    groups.forEach(function (group) {
+      var section = document.createElement('section');
+      section.className = 'spesa-city-group';
+      section.innerHTML = '<h3 class="spesa-city-title">' + escapeHtml(group.city) + '</h3>';
+
+      var ul = document.createElement('ul');
+      ul.className = 'lista-spesa-stores';
+
+      group.items.forEach(function (item) {
+        var li = document.createElement('li');
+        li.className = 'spesa-card';
+        li.style.setProperty('--card-i', String(cardIndex++));
+        li.innerHTML =
+          '<div class="spesa-card-body">' +
+            '<span class="spesa-card-label">Negozio</span>' +
+            '<span class="spesa-card-name">' + escapeHtml(item.storeName || 'Negozio') + '</span>' +
+            '<p class="spesa-card-desc">' + escapeHtml(item.description || '') + '</p>' +
+          '</div>';
+        ul.appendChild(li);
+      });
+
+      section.appendChild(ul);
+      listaSpesa.appendChild(section);
+    });
+  }
+
+  function renderListaSpesa() {
+    if (!listaSpesa) return Promise.resolve();
+    listaSpesa.innerHTML = '<div class="download-empty">Caricamento consigli…</div>';
+    if (spesaFiltri) {
+      spesaFiltri.hidden = true;
+      spesaFiltri.innerHTML = '';
+    }
+    if (!spesaStore) {
+      renderListaSpesaFromItems([]);
+      return Promise.resolve();
+    }
+    return spesaStore.list().then(function (result) {
+      renderListaSpesaFromItems(result && result.items ? result.items : []);
+    }).catch(function () {
+      renderListaSpesaFromItems([]);
+    });
+  }
+
   function setActivePanel(panelId) {
-    activePanel = panelId === 'codici' ? 'codici' : 'materiale';
+    activePanel = VALID_PANELS[panelId] ? panelId : 'materiale';
     var links = document.querySelectorAll('[data-scarica-panel]');
     var panels = document.querySelectorAll('.scarica-panel');
 
@@ -560,6 +713,7 @@
     setActivePanel(activePanel);
     renderListaPdf();
     renderListaCodici();
+    renderListaSpesa();
   }
 
   if (listaPdf) {
@@ -617,6 +771,19 @@
     }
   });
 
+  if (toggleChiave && chiaveInput) {
+    toggleChiave.addEventListener('click', function () {
+      var show = chiaveInput.type === 'password';
+      chiaveInput.type = show ? 'text' : 'password';
+      toggleChiave.setAttribute('aria-pressed', show ? 'true' : 'false');
+      toggleChiave.setAttribute('aria-label', show ? 'Nascondi chiave' : 'Mostra chiave');
+      var iconShow = toggleChiave.querySelector('.password-toggle-icon--show');
+      var iconHide = toggleChiave.querySelector('.password-toggle-icon--hide');
+      if (iconShow) iconShow.hidden = show;
+      if (iconHide) iconHide.hidden = !show;
+    });
+  }
+
   if (formChiave) {
     formChiave.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -670,6 +837,15 @@
       } else {
         done(false);
       }
+    });
+  }
+
+  if (spesaFiltri) {
+    spesaFiltri.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-spesa-city]');
+      if (!btn) return;
+      activeSpesaCity = btn.getAttribute('data-spesa-city') || '';
+      renderListaSpesaFromItems(cachedSpesaItems);
     });
   }
 
