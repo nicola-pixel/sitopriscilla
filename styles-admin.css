@@ -872,13 +872,45 @@
   top: calc(100% + 0.35rem);
   left: 0;
   right: 0;
-  max-height: 220px;
+  max-height: 260px;
   overflow: auto;
   padding: 0.4rem;
   background: var(--admin-surface);
   border: 1px solid var(--admin-border);
   border-radius: 12px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.multi-select-create {
+  position: sticky;
+  top: -0.4rem;
+  z-index: 1;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin: -0.4rem -0.4rem 0.35rem;
+  padding: 0.5rem;
+  background: var(--admin-surface);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.multi-select-create .input-inline {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.8125rem;
+  border-radius: 8px;
+}
+
+.multi-select-create .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.multi-select-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .multi-select-empty {
@@ -894,14 +926,25 @@
   gap: 0.65rem;
   margin: 0;
   padding: 0.55rem 0.65rem;
+  border: 0;
   border-radius: 8px;
+  background: transparent;
+  width: 100%;
+  text-align: left;
   cursor: pointer;
+  font-family: inherit;
   font-size: 0.875rem;
   color: var(--admin-text);
 }
 
 .multi-select-option:hover {
   background: var(--admin-bg);
+}
+
+.multi-select-option.is-selected {
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+  font-weight: 560;
 }
 
 .multi-select-option input {
@@ -1688,19 +1731,94 @@
   margin: 0.75rem 0 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.45rem;
 }
 
 .categorie-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0.75rem;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  font-size: 0.8125rem;
+}
+
+.categorie-list li.empty {
+  color: var(--admin-text-muted);
+  background: var(--admin-bg);
+}
+
+.categorie-list .categoria-nome {
+  flex: 1;
+  min-width: 0;
+  font-weight: 550;
+  color: var(--admin-text);
+}
+
+.categorie-list .categoria-actions {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.35rem 0.65rem;
-  background: var(--admin-bg);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius-pill);
+  margin-left: auto;
+}
+
+.categorie-list .categoria-edit-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.4rem 0.6rem;
   font-size: 0.8125rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: inherit;
+}
+
+.categorie-list .categoria-edit-input:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.categorie-list .btn-edit-cat,
+.categorie-list .btn-edit-tag,
+.categorie-list .btn-save-cat,
+.categorie-list .btn-save-tag,
+.categorie-list .btn-cancel-cat,
+.categorie-list .btn-cancel-tag,
+.categorie-list .btn-remove-cat,
+.categorie-list .btn-remove-tag {
+  appearance: none;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg);
+  color: var(--admin-text-muted);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 550;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.categorie-list .btn-edit-cat:hover,
+.categorie-list .btn-edit-tag:hover,
+.categorie-list .btn-save-cat:hover,
+.categorie-list .btn-save-tag:hover {
+  color: #1d4ed8;
+  border-color: #93c5fd;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.categorie-list .btn-remove-cat:hover,
+.categorie-list .btn-remove-tag:hover {
+  color: #be123c;
+  border-color: #fecdd3;
+  background: rgba(190, 18, 60, 0.06);
 }
 
 .admin-filters,
@@ -1789,7 +1907,8 @@
 .lista-articoli-admin .btn-edit,
 .lista-articoli-admin .btn-remove,
 .lista-sedi-admin .btn-move,
-.lista-pdf-admin .btn-remove {
+.lista-pdf-admin .btn-remove,
+.lista-cartelle-admin .btn-remove {
   padding: 0.4rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
@@ -1841,6 +1960,7 @@
 
 .lista-articoli-admin .btn-remove,
 .lista-pdf-admin .btn-remove,
+.lista-cartelle-admin .btn-remove,
 .btn-remove-cv {
   background: transparent;
   border: 1px solid var(--admin-border);
@@ -1849,6 +1969,7 @@
 
 .lista-articoli-admin .btn-remove:hover,
 .lista-pdf-admin .btn-remove:hover,
+.lista-cartelle-admin .btn-remove:hover,
 .btn-remove-cv:hover {
   background: var(--admin-rose-soft);
   border-color: #fecdd3;
@@ -1856,12 +1977,97 @@
 }
 
 .lista-articoli-admin .empty,
-.lista-pdf-admin .empty {
+.lista-pdf-admin .empty,
+.lista-cartelle-admin .empty,
+.lista-pdf-admin-wrap > .empty {
   color: var(--admin-text-muted);
   font-style: italic;
   background: transparent !important;
   border: none !important;
   padding: 1rem 0 !important;
+}
+
+.form-inline-admin .form-inline-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.form-inline-admin .form-inline-row input[type="text"] {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.form-inline-admin .form-inline-row .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.lista-cartelle-admin {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.lista-cartelle-admin li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  margin-bottom: 0.45rem;
+  border-radius: 12px;
+  background: var(--admin-bg);
+  border: 1px solid transparent;
+  transition: background var(--admin-transition), border-color var(--admin-transition);
+}
+
+.lista-cartelle-admin li:hover {
+  background: var(--admin-bg-soft);
+  border-color: var(--admin-border);
+}
+
+.lista-cartelle-admin li:last-child {
+  margin-bottom: 0;
+}
+
+.cartella-admin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.cartella-admin-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--admin-text);
+}
+
+.cartella-admin-meta {
+  font-size: 0.8rem;
+  color: var(--admin-text-muted);
+}
+
+.lista-pdf-admin-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.materiale-folder-group {
+  margin: 0;
+}
+
+.materiale-folder-title {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
 }
 
 .articolo-title--with-badge {

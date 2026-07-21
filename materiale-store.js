@@ -2,6 +2,7 @@
   'use strict';
 
   var STORAGE_KEY_PDFS = 'scarica_pdfs';
+  var STORAGE_KEY_FOLDERS = 'scarica_folders';
   var API_URL = '/api/materiale';
   var remoteAvailable = null;
 
@@ -27,6 +28,31 @@
     global.localStorage.setItem(STORAGE_KEY_PDFS, JSON.stringify(pdfs));
   }
 
+  function getLocalFolders() {
+    try {
+      var raw = global.localStorage.getItem(STORAGE_KEY_FOLDERS);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function setLocalFolders(folders) {
+    global.localStorage.setItem(STORAGE_KEY_FOLDERS, JSON.stringify(folders));
+  }
+
+  function normalizeFolder(folder) {
+    if (!folder || typeof folder !== 'object') return null;
+    var name = String(folder.name || '').trim();
+    if (!name) return null;
+    return {
+      id: folder.id || '',
+      name: name,
+      createdAt: folder.createdAt || 0,
+      source: folder.source || (folder.id && String(folder.id).indexOf('local_') === 0 ? 'local' : 'blob')
+    };
+  }
+
   function normalizeItem(item) {
     if (!item || typeof item !== 'object') return null;
     return {
@@ -38,8 +64,13 @@
       dataBase64: item.dataBase64 || '',
       size: item.size || 0,
       createdAt: item.createdAt || 0,
+      folderId: item.folderId || '',
       source: item.source || (item.url ? 'blob' : 'local')
     };
+  }
+
+  function listLocalFolders() {
+    return getLocalFolders().map(normalizeFolder).filter(Boolean);
   }
 
   function listLocal() {
@@ -66,11 +97,19 @@
           return null;
         }
         remoteAvailable = true;
-        return data.items.map(function (item) {
-          var n = normalizeItem(item);
-          if (n) n.source = 'blob';
-          return n;
-        }).filter(Boolean);
+        var folders = Array.isArray(data.folders) ? data.folders : [];
+        return {
+          folders: folders.map(function (folder) {
+            var n = normalizeFolder(folder);
+            if (n) n.source = 'blob';
+            return n;
+          }).filter(Boolean),
+          items: data.items.map(function (item) {
+            var n = normalizeItem(item);
+            if (n) n.source = 'blob';
+            return n;
+          }).filter(Boolean)
+        };
       });
     }).catch(function () {
       remoteAvailable = false;
@@ -78,30 +117,41 @@
     });
   }
 
-  function mergeLocalExtras(remoteItems) {
-    var remote = Array.isArray(remoteItems) ? remoteItems : [];
+  function mergeLocalExtras(remote) {
+    var remoteFolders = (remote && Array.isArray(remote.folders)) ? remote.folders : [];
+    var remoteItems = (remote && Array.isArray(remote.items)) ? remote.items : [];
+    var remoteFolderIds = {};
+    remoteFolders.forEach(function (it) {
+      if (it && it.id) remoteFolderIds[String(it.id)] = true;
+    });
     var remoteIds = {};
-    remote.forEach(function (it) {
+    remoteItems.forEach(function (it) {
       if (it && it.id) remoteIds[String(it.id)] = true;
+    });
+    var extraFolders = listLocalFolders().filter(function (it) {
+      return it && it.id && !remoteFolderIds[String(it.id)];
     });
     var extras = listLocal().filter(function (it) {
       return it && it.id && !remoteIds[String(it.id)];
     });
-    if (!extras.length) {
-      return { items: remote, source: 'blob', available: true };
-    }
+    var source = (extraFolders.length || extras.length) ? 'mixed' : 'blob';
     return {
-      items: remote.concat(extras),
-      source: 'mixed',
+      folders: remoteFolders.concat(extraFolders),
+      items: remoteItems.concat(extras),
+      source: source,
       available: true
     };
   }
 
   function list() {
     return fetchRemoteList().then(function (remote) {
-      // Array (anche vuoto) = Blob ok; null = API non disponibile
-      if (Array.isArray(remote)) return mergeLocalExtras(remote);
-      return { items: listLocal(), source: 'local', available: false };
+      if (remote) return mergeLocalExtras(remote);
+      return {
+        folders: listLocalFolders(),
+        items: listLocal(),
+        source: 'local',
+        available: false
+      };
     });
   }
 
@@ -138,7 +188,149 @@
     return mime === 'application/pdf' || mime === 'image/png';
   }
 
-  function addLocal(file, title) {
+  function createFolderLocal(name) {
+    var clean = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    if (!clean) {
+      return Promise.reject(new Error('Nome cartella obbligatorio.'));
+    }
+    var folder = normalizeFolder({
+      id: 'local_fld_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      name: clean,
+      createdAt: Date.now(),
+      source: 'local'
+    });
+    var folders = getLocalFolders();
+    folders.push({
+      id: folder.id,
+      name: folder.name,
+      createdAt: folder.createdAt
+    });
+    setLocalFolders(folders);
+    return Promise.resolve(folder);
+  }
+
+  function createFolderRemote(name) {
+    return global.fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Password': getAdminPassword()
+      },
+      body: JSON.stringify({
+        action: 'createFolder',
+        name: name,
+        password: getAdminPassword()
+      })
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (res.status === 503 || res.status === 404) {
+          remoteAvailable = false;
+          var err503 = new Error('remote_unavailable');
+          err503.code = 'remote_unavailable';
+          throw err503;
+        }
+        if (!res.ok || !data || !data.ok) {
+          remoteAvailable = true;
+          throw new Error((data && data.error) || 'Creazione cartella non riuscita.');
+        }
+        remoteAvailable = true;
+        return normalizeFolder(data.folder);
+      });
+    });
+  }
+
+  function createFolder(name) {
+    if (remoteAvailable === false) {
+      return createFolderLocal(name);
+    }
+    return createFolderRemote(name).catch(function (err) {
+      if (err && err.code === 'remote_unavailable') {
+        return createFolderLocal(name);
+      }
+      if (remoteAvailable !== true && err && /failed to fetch|networkerror|load failed/i.test(String(err.message || err))) {
+        remoteAvailable = false;
+        return createFolderLocal(name);
+      }
+      throw err;
+    });
+  }
+
+  function deleteFolderLocal(id) {
+    var folders = getLocalFolders();
+    var idx = folders.findIndex(function (it) { return it && it.id === id; });
+    if (idx < 0) {
+      return Promise.reject(new Error('Cartella non trovata.'));
+    }
+    var files = getLocalPdfs();
+    var hasFiles = files.some(function (it) {
+      return it && String(it.folderId || '') === String(id);
+    });
+    if (hasFiles) {
+      return Promise.reject(new Error('La cartella non è vuota. Rimuovi prima i file al suo interno.'));
+    }
+    folders.splice(idx, 1);
+    setLocalFolders(folders);
+    return Promise.resolve();
+  }
+
+  function deleteFolderRemote(id) {
+    return global.fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Password': getAdminPassword()
+      },
+      body: JSON.stringify({
+        action: 'deleteFolder',
+        id: id,
+        password: getAdminPassword()
+      })
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (res.status === 503 || res.status === 404) {
+          remoteAvailable = false;
+          var err503 = new Error('remote_unavailable');
+          err503.code = 'remote_unavailable';
+          throw err503;
+        }
+        if (!res.ok || !data || !data.ok) {
+          remoteAvailable = true;
+          throw new Error((data && data.error) || 'Eliminazione cartella non riuscita.');
+        }
+        remoteAvailable = true;
+      });
+    });
+  }
+
+  function deleteFolder(folderOrId) {
+    var id = typeof folderOrId === 'object' && folderOrId ? folderOrId.id : folderOrId;
+    var source = typeof folderOrId === 'object' && folderOrId ? folderOrId.source : '';
+    if (!id) return Promise.reject(new Error('ID cartella mancante.'));
+
+    if (source === 'local' || String(id).indexOf('local_') === 0) {
+      return deleteFolderLocal(id);
+    }
+    if (remoteAvailable === false) {
+      return deleteFolderLocal(id);
+    }
+    return deleteFolderRemote(id).catch(function (err) {
+      if (err && err.code === 'remote_unavailable') {
+        return deleteFolderLocal(id);
+      }
+      if (remoteAvailable !== true && err && /failed to fetch|networkerror|load failed/i.test(String(err.message || err))) {
+        remoteAvailable = false;
+        return deleteFolderLocal(id);
+      }
+      throw err;
+    });
+  }
+
+  function addLocal(file, title, folderId) {
+    var folders = getLocalFolders();
+    var folderOk = folders.some(function (f) { return f && f.id === folderId; });
+    if (!folderId || !folderOk) {
+      return Promise.reject(new Error('Seleziona una cartella per il file.'));
+    }
     return fileToBase64(file).then(function (base64) {
       var mime = guessMime(file);
       var cleanName = String(file.name || 'documento').replace(/\.(pdf|png)$/i, '');
@@ -150,6 +342,7 @@
         dataBase64: base64,
         size: file.size || 0,
         createdAt: Date.now(),
+        folderId: folderId,
         source: 'local'
       });
       var listItems = getLocalPdfs();
@@ -160,7 +353,8 @@
         mimeType: item.mimeType,
         dataBase64: item.dataBase64,
         size: item.size,
-        createdAt: item.createdAt
+        createdAt: item.createdAt,
+        folderId: item.folderId
       });
       try {
         setLocalPdfs(listItems);
@@ -176,7 +370,7 @@
     });
   }
 
-  function addRemote(file, title) {
+  function addRemote(file, title, folderId) {
     return fileToBase64(file).then(function (base64) {
       var mime = guessMime(file);
       var cleanName = String(file.name || 'documento').replace(/\.(pdf|png)$/i, '');
@@ -191,6 +385,7 @@
           filename: cleanName,
           mimeType: mime,
           dataBase64: base64,
+          folderId: folderId,
           password: getAdminPassword()
         })
       }).then(function (res) {
@@ -212,22 +407,26 @@
     });
   }
 
-  function add(file, title) {
+  function add(file, title, folderId) {
     if (!file) return Promise.reject(new Error('Seleziona un file.'));
     if (!isAllowedFile(file)) {
       return Promise.reject(new Error('Sono ammessi solo PDF e PNG.'));
     }
-    if (remoteAvailable === false) {
-      return addLocal(file, title);
+    folderId = String(folderId || '').trim();
+    if (!folderId) {
+      return Promise.reject(new Error('Seleziona una cartella per il file.'));
     }
-    return addRemote(file, title).catch(function (err) {
+    if (remoteAvailable === false) {
+      return addLocal(file, title, folderId);
+    }
+    return addRemote(file, title, folderId).catch(function (err) {
       if (err && err.code === 'remote_unavailable') {
-        return addLocal(file, title);
+        return addLocal(file, title, folderId);
       }
       // Offline / server statico locale senza API
       if (remoteAvailable !== true && err && /failed to fetch|networkerror|load failed/i.test(String(err.message || err))) {
         remoteAvailable = false;
-        return addLocal(file, title);
+        return addLocal(file, title, folderId);
       }
       throw err;
     });
@@ -320,6 +519,8 @@
     list: list,
     add: add,
     remove: remove,
+    createFolder: createFolder,
+    deleteFolder: deleteFolder,
     guessMime: guessMime,
     isAllowedFile: isAllowedFile,
     getFileHref: getFileHref,

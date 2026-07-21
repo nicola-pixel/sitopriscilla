@@ -8,13 +8,19 @@
  *   materiale/files/{id}.{ext}  → contenuto
  *   materiale/meta/{id}.json    → metadati (immutabili, niente overwrite → niente cache stale)
  *
- * GET    → elenco file
- * POST   → carica file — richiede password admin
+ * Ogni cartella ha:
+ *   materiale/folders/{id}.json → metadati cartella
+ *
+ * I file devono appartenere a una cartella (folderId obbligatorio in upload).
+ *
+ * GET    → elenco cartelle + file
+ * POST   → crea cartella / elimina cartella / carica file — richiede password admin
  * DELETE → rimuove file — richiede password admin
  */
 
 var FILES_PREFIX = 'materiale/files/';
 var META_PREFIX = 'materiale/meta/';
+var FOLDERS_PREFIX = 'materiale/folders/';
 var LEGACY_INDEX = 'priscilla-materiale.json';
 var MAX_SIZE_BYTES = 4 * 1024 * 1024;
 var ALLOWED_MIME = {
@@ -67,6 +73,13 @@ function sanitizeFilename(name) {
     .slice(0, 80) || 'documento';
 }
 
+function sanitizeFolderName(name) {
+  return String(name || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 80);
+}
+
 function guessMime(filename, mime) {
   if (mime && ALLOWED_MIME[mime]) return mime;
   var lower = String(filename || '').toLowerCase();
@@ -102,12 +115,25 @@ function publicItem(item) {
     mimeType: item.mimeType,
     url: item.url,
     size: item.size || 0,
-    createdAt: item.createdAt || 0
+    createdAt: item.createdAt || 0,
+    folderId: item.folderId || ''
+  };
+}
+
+function publicFolder(folder) {
+  return {
+    id: folder.id,
+    name: folder.name,
+    createdAt: folder.createdAt || 0
   };
 }
 
 function metaPath(id) {
   return META_PREFIX + id + '.json';
+}
+
+function folderPath(id) {
+  return FOLDERS_PREFIX + id + '.json';
 }
 
 async function listAllBlobs(blob, prefix) {
@@ -133,6 +159,18 @@ async function readMetaBlob(entry) {
   }
 }
 
+async function readFolderBlob(entry) {
+  try {
+    var res = await fetch(entry.url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    var parsed = await res.json();
+    if (!parsed || !parsed.id || !parsed.name) return null;
+    return publicFolder(parsed);
+  } catch (e) {
+    return null;
+  }
+}
+
 async function listItems(blob) {
   var metas = await listAllBlobs(blob, META_PREFIX);
   var items = [];
@@ -144,6 +182,29 @@ async function listItems(blob) {
     return (a.createdAt || 0) - (b.createdAt || 0);
   });
   return items;
+}
+
+async function listFolders(blob) {
+  var entries = await listAllBlobs(blob, FOLDERS_PREFIX);
+  var folders = [];
+  for (var i = 0; i < entries.length; i++) {
+    var folder = await readFolderBlob(entries[i]);
+    if (folder) folders.push(folder);
+  }
+  folders.sort(function (a, b) {
+    return (a.createdAt || 0) - (b.createdAt || 0);
+  });
+  return folders;
+}
+
+async function folderExists(blob, folderId) {
+  if (!folderId) return false;
+  try {
+    var head = await blob.head(folderPath(folderId));
+    return !!(head && head.url);
+  } catch (e) {
+    return false;
+  }
 }
 
 async function cleanupLegacyIndex(blob) {
@@ -180,12 +241,14 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
+      var folders = await listFolders(blob);
       var items = await listItems(blob);
       json(res, 200, {
         ok: true,
         available: true,
         source: 'blob',
-        version: 2,
+        version: 3,
+        folders: folders,
         items: items
       });
       return;
@@ -199,6 +262,63 @@ module.exports = async function handler(req, res) {
         return;
       }
 
+      var action = body && body.action ? String(body.action) : 'upload';
+
+      if (action === 'createFolder') {
+        var folderName = sanitizeFolderName(body && body.name);
+        if (!folderName) {
+          json(res, 400, { ok: false, error: 'Nome cartella obbligatorio.' });
+          return;
+        }
+        var folderId = 'fld_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        var folder = {
+          id: folderId,
+          name: folderName,
+          createdAt: Date.now()
+        };
+        await blob.put(folderPath(folderId), JSON.stringify(folder), {
+          access: 'public',
+          addRandomSuffix: false,
+          contentType: 'application/json',
+          cacheControlMaxAge: 60
+        });
+        cleanupLegacyIndex(blob);
+        json(res, 200, { ok: true, folder: publicFolder(folder) });
+        return;
+      }
+
+      if (action === 'deleteFolder') {
+        var folderIdToRemove = String((body && body.id) || '').trim();
+        if (!folderIdToRemove) {
+          json(res, 400, { ok: false, error: 'ID cartella mancante.' });
+          return;
+        }
+        var allItems = await listItems(blob);
+        var hasFiles = allItems.some(function (it) {
+          return it && String(it.folderId || '') === folderIdToRemove;
+        });
+        if (hasFiles) {
+          json(res, 400, {
+            ok: false,
+            error: 'La cartella non è vuota. Rimuovi prima i file al suo interno.'
+          });
+          return;
+        }
+        var folderUrl = null;
+        try {
+          var folderHead = await blob.head(folderPath(folderIdToRemove));
+          folderUrl = folderHead && folderHead.url;
+        } catch (e) {}
+        try {
+          await blob.del(folderUrl || folderPath(folderIdToRemove));
+        } catch (delFolderErr) {
+          console.warn('[materiale] deleteFolder', delFolderErr);
+        }
+        cleanupLegacyIndex(blob);
+        json(res, 200, { ok: true, id: folderIdToRemove });
+        return;
+      }
+
       var title = (body && body.title ? String(body.title) : '').trim();
       var filename = sanitizeFilename(body && body.filename);
       var mimeType = guessMime(
@@ -206,7 +326,16 @@ module.exports = async function handler(req, res) {
         body && body.mimeType
       );
       var dataBase64 = body && typeof body.dataBase64 === 'string' ? body.dataBase64 : '';
+      var folderIdUpload = String((body && body.folderId) || '').trim();
 
+      if (!folderIdUpload) {
+        json(res, 400, { ok: false, error: 'Seleziona una cartella per il file.' });
+        return;
+      }
+      if (!(await folderExists(blob, folderIdUpload))) {
+        json(res, 400, { ok: false, error: 'Cartella non trovata. Creane una prima di caricare.' });
+        return;
+      }
       if (!ALLOWED_MIME[mimeType]) {
         json(res, 400, { ok: false, error: 'Sono ammessi solo PDF e PNG.' });
         return;
@@ -250,7 +379,8 @@ module.exports = async function handler(req, res) {
         url: uploaded.url,
         pathname: uploaded.pathname || filePath,
         size: buffer.length,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        folderId: folderIdUpload
       };
 
       await blob.put(metaPath(id), JSON.stringify(item), {

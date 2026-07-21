@@ -265,6 +265,91 @@
   gap: 0.7rem;
 }
 
+.download-folder {
+  list-style: none;
+  margin: 0;
+  padding: 0.85rem 0.85rem 0.95rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: downloadFolderIn 0.55s var(--ease-out-expo) forwards;
+  animation-delay: calc(0.18s + var(--folder-i, 0) * 90ms);
+}
+
+@keyframes downloadFolderIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.download-folder-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.15rem 0.25rem 0.35rem;
+}
+
+.download-folder-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 12px;
+  background: rgba(17, 17, 17, 0.06);
+  color: #111;
+  flex-shrink: 0;
+}
+
+.download-folder-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.download-folder-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.download-folder-title {
+  margin: 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #111;
+  line-height: 1.2;
+}
+
+.download-folder-meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(17, 17, 17, 0.55);
+}
+
+.download-folder-download {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.download-folder-download.is-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.download-folder-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
 .download-card {
   position: relative;
   display: flex;
@@ -909,6 +994,16 @@ body.preview-modal-open {
 
   .download-card-title {
     white-space: normal;
+  }
+
+  .download-folder-header {
+    flex-wrap: wrap;
+  }
+
+  .download-folder-download {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.15rem;
   }
 }
 

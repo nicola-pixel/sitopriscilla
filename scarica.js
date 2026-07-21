@@ -5,6 +5,9 @@
   var STORAGE_KEY_DOWNLOAD_KEY = 'download_secret';
   var materialeStore = window.PriscillaMateriale || null;
   var cachedPdfs = [];
+  var cachedFolders = [];
+  var flatPreviewItems = [];
+  var folderGroupsById = {};
 
   var formSection = document.getElementById('scarica-form-section');
   var listaSection = document.getElementById('scarica-lista-section');
@@ -200,10 +203,143 @@
     );
   }
 
-  function renderListaPdfFromItems(pdfs) {
+  function sanitizeZipName(name) {
+    return String(name || 'cartella')
+      .replace(/[\\/:*?"<>|]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 80) || 'cartella';
+  }
+
+  function uniqueZipEntryName(baseName, usedNames) {
+    var name = baseName;
+    var n = 2;
+    while (usedNames[name]) {
+      var dot = baseName.lastIndexOf('.');
+      if (dot > 0) {
+        name = baseName.slice(0, dot) + ' (' + n + ')' + baseName.slice(dot);
+      } else {
+        name = baseName + ' (' + n + ')';
+      }
+      n += 1;
+    }
+    usedNames[name] = true;
+    return name;
+  }
+
+  function itemToBlob(item) {
+    if (!item) return Promise.reject(new Error('File non valido.'));
+    if (item.url) {
+      return fetch(item.url, { cache: 'no-store' }).then(function (res) {
+        if (!res.ok) throw new Error('Impossibile scaricare un file della cartella.');
+        return res.blob();
+      });
+    }
+    if (item.dataBase64) {
+      var binary = atob(item.dataBase64);
+      var len = binary.length;
+      var bytes = new Uint8Array(len);
+      for (var i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+      return Promise.resolve(new Blob([bytes], { type: item.mimeType || 'application/octet-stream' }));
+    }
+    return Promise.reject(new Error('File non disponibile.'));
+  }
+
+  function downloadBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 1500);
+  }
+
+  function downloadFolderZip(folderId, triggerBtn) {
+    var group = folderGroupsById[String(folderId || '')];
+    if (!group || !group.files || !group.files.length) return Promise.resolve();
+    if (typeof JSZip === 'undefined') {
+      window.alert('Download cartella non disponibile. Ricarica la pagina e riprova.');
+      return Promise.resolve();
+    }
+
+    var folderName = sanitizeZipName(group.folder && group.folder.name);
+    var zipFilename = folderName + '.zip';
+    var originalLabel = triggerBtn ? triggerBtn.innerHTML : '';
+
+    if (triggerBtn) {
+      triggerBtn.disabled = true;
+      triggerBtn.classList.add('is-loading');
+      triggerBtn.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v4m0 8v4m8-8h-4M8 12H4m11.3-5.3-2.8 2.8M9.5 14.5l-2.8 2.8m10.6 0-2.8-2.8M9.5 9.5 6.7 6.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>' +
+        '<span>Preparazione…</span>';
+    }
+
+    var zip = new JSZip();
+    var usedNames = {};
+    var chain = Promise.resolve();
+
+    group.files.forEach(function (item) {
+      chain = chain.then(function () {
+        var mime = item.mimeType || 'application/pdf';
+        var ext = mime === 'image/png' ? '.png' : '.pdf';
+        var base = sanitizeZipName(item.filename || item.title || 'documento') + ext;
+        var entryName = uniqueZipEntryName(base, usedNames);
+        return itemToBlob(item).then(function (blob) {
+          zip.file(entryName, blob);
+        });
+      });
+    });
+
+    return chain.then(function () {
+      return zip.generateAsync({ type: 'blob' });
+    }).then(function (blob) {
+      downloadBlob(blob, zipFilename);
+      if (window.PriscillaAnalytics) {
+        window.PriscillaAnalytics.trackDownload(
+          group.folder && group.folder.name ? group.folder.name : 'Cartella',
+          zipFilename,
+          'application/zip'
+        );
+      }
+    }).catch(function (err) {
+      window.alert((err && err.message) || 'Impossibile scaricare la cartella. Riprova.');
+    }).then(function () {
+      if (triggerBtn) {
+        triggerBtn.disabled = false;
+        triggerBtn.classList.remove('is-loading');
+        triggerBtn.innerHTML = originalLabel;
+      }
+    });
+  }
+
+  function renderListaPdfFromItems(pdfs, folders) {
     cachedPdfs = Array.isArray(pdfs) ? pdfs : [];
+    cachedFolders = Array.isArray(folders) ? folders : [];
+    flatPreviewItems = [];
+    folderGroupsById = {};
     listaPdf.innerHTML = '';
-    if (cachedPdfs.length === 0) {
+
+    var groups = [];
+    var used = {};
+    cachedFolders.forEach(function (folder) {
+      if (!folder || !folder.id) return;
+      var files = cachedPdfs.filter(function (it) {
+        return it && String(it.folderId || '') === String(folder.id);
+      });
+      if (!files.length) return;
+      files.forEach(function (it) {
+        if (it && it.id) used[String(it.id)] = true;
+      });
+      groups.push({ folder: folder, files: files });
+    });
+
+    // Solo file in cartella: i legacy senza folderId non compaiono nell'area pubblica
+    if (groups.length === 0) {
       listaPdf.innerHTML =
         '<li class="download-empty">' +
           '<span class="download-empty-icon" aria-hidden="true"></span>' +
@@ -212,58 +348,92 @@
         '</li>';
       return;
     }
-    cachedPdfs.forEach(function (item, index) {
-      var mime = item.mimeType || 'application/pdf';
-      var meta = fileMeta(item);
-      var isPng = meta.kind === 'png';
-      var ext = isPng ? '.png' : '.pdf';
-      var title = item.title || 'Documento ' + (index + 1);
-      var filename = (item.filename || item.title || 'documento') + ext;
-      var href = itemHref(item);
-      var canPreview = itemCanPreview(item);
 
-      var li = document.createElement('li');
-      li.className = 'download-card download-card--' + meta.kind;
-      li.style.setProperty('--card-i', String(index));
-      li.setAttribute('data-file-index', String(index));
-      li.setAttribute('data-file-title', title);
-      li.setAttribute('data-file-name', filename);
-      li.setAttribute('data-file-mime', mime);
+    var cardIndex = 0;
+    groups.forEach(function (group, groupIndex) {
+      folderGroupsById[String(group.folder.id)] = group;
 
-      li.innerHTML =
-        '<div class="download-card-visual" aria-hidden="true">' +
-          '<div class="download-card-glyph">' +
-            fileIconSvg(meta.kind) +
-            '<span class="download-card-ext">' + meta.label + '</span>' +
+      var folderLi = document.createElement('li');
+      folderLi.className = 'download-folder';
+      folderLi.style.setProperty('--folder-i', String(groupIndex));
+      folderLi.setAttribute('data-folder-id', group.folder.id);
+      folderLi.innerHTML =
+        '<div class="download-folder-header">' +
+          '<span class="download-folder-icon" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>' +
+          '</span>' +
+          '<div class="download-folder-copy">' +
+            '<h3 class="download-folder-title">' + escapeHtml(group.folder.name || 'Cartella') + '</h3>' +
+            '<p class="download-folder-meta">' + group.files.length + (group.files.length === 1 ? ' file' : ' file') + '</p>' +
           '</div>' +
-        '</div>' +
-        '<div class="download-card-body">' +
-          '<div class="download-card-copy">' +
-            '<div class="download-card-meta">' +
-              '<span class="download-card-pill">' + meta.hint + '</span>' +
-              '<span class="download-card-pill download-card-pill--lock">Riservato</span>' +
-            '</div>' +
-            '<span class="download-card-title">' + escapeHtml(title) + '</span>' +
-            '<span class="download-card-type">Formato ' + meta.label + ' · pronto da aprire o scaricare</span>' +
-          '</div>' +
-          '<div class="download-card-actions">' +
-            '<button type="button" class="download-card-btn download-card-btn--apri"' +
-              (canPreview ? '' : ' disabled') +
-              ' data-action-preview="1">' +
-              '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>' +
-              '<span>Apri</span>' +
-            '</button>' +
-            '<a href="' + href + '" download="' + escapeHtml(filename) +
-              '" class="download-card-btn download-card-btn--scarica" data-track-download="1"' +
-              (item.url ? ' target="_blank" rel="noopener"' : '') +
-              '>' +
-              '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 18h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-              '<span>Scarica</span>' +
-            '</a>' +
-          '</div>' +
+          '<button type="button" class="download-card-btn download-card-btn--scarica download-folder-download" data-action-download-folder="1" aria-label="Scarica cartella ' + escapeHtml(group.folder.name || '') + '">' +
+            '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 18h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '<span>Scarica cartella</span>' +
+          '</button>' +
         '</div>';
 
-      listaPdf.appendChild(li);
+      var filesUl = document.createElement('ul');
+      filesUl.className = 'download-folder-files';
+
+      group.files.forEach(function (item) {
+        var previewIndex = flatPreviewItems.length;
+        flatPreviewItems.push(item);
+        var mime = item.mimeType || 'application/pdf';
+        var meta = fileMeta(item);
+        var isPng = meta.kind === 'png';
+        var ext = isPng ? '.png' : '.pdf';
+        var title = item.title || 'Documento ' + (previewIndex + 1);
+        var filename = (item.filename || item.title || 'documento') + ext;
+        var href = itemHref(item);
+        var canPreview = itemCanPreview(item);
+
+        var li = document.createElement('li');
+        li.className = 'download-card download-card--' + meta.kind;
+        li.style.setProperty('--card-i', String(cardIndex));
+        cardIndex += 1;
+        li.setAttribute('data-file-index', String(previewIndex));
+        li.setAttribute('data-file-title', title);
+        li.setAttribute('data-file-name', filename);
+        li.setAttribute('data-file-mime', mime);
+
+        li.innerHTML =
+          '<div class="download-card-visual" aria-hidden="true">' +
+            '<div class="download-card-glyph">' +
+              fileIconSvg(meta.kind) +
+              '<span class="download-card-ext">' + meta.label + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="download-card-body">' +
+            '<div class="download-card-copy">' +
+              '<div class="download-card-meta">' +
+                '<span class="download-card-pill">' + meta.hint + '</span>' +
+                '<span class="download-card-pill download-card-pill--lock">Riservato</span>' +
+              '</div>' +
+              '<span class="download-card-title">' + escapeHtml(title) + '</span>' +
+              '<span class="download-card-type">Formato ' + meta.label + ' · pronto da aprire o scaricare</span>' +
+            '</div>' +
+            '<div class="download-card-actions">' +
+              '<button type="button" class="download-card-btn download-card-btn--apri"' +
+                (canPreview ? '' : ' disabled') +
+                ' data-action-preview="1">' +
+                '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>' +
+                '<span>Apri</span>' +
+              '</button>' +
+              '<a href="' + href + '" download="' + escapeHtml(filename) +
+                '" class="download-card-btn download-card-btn--scarica" data-track-download="1"' +
+                (item.url ? ' target="_blank" rel="noopener"' : '') +
+                '>' +
+                '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 18h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+                '<span>Scarica</span>' +
+              '</a>' +
+            '</div>' +
+          '</div>';
+
+        filesUl.appendChild(li);
+      });
+
+      folderLi.appendChild(filesUl);
+      listaPdf.appendChild(folderLi);
     });
   }
 
@@ -271,13 +441,16 @@
     if (!listaPdf) return Promise.resolve();
     listaPdf.innerHTML = '<li class="download-empty">Caricamento file…</li>';
     if (!materialeStore) {
-      renderListaPdfFromItems([]);
+      renderListaPdfFromItems([], []);
       return Promise.resolve();
     }
     return materialeStore.list().then(function (result) {
-      renderListaPdfFromItems(result && result.items ? result.items : []);
+      renderListaPdfFromItems(
+        result && result.items ? result.items : [],
+        result && result.folders ? result.folders : []
+      );
     }).catch(function () {
-      renderListaPdfFromItems([]);
+      renderListaPdfFromItems([], []);
     });
   }
 
@@ -297,6 +470,16 @@
 
   if (listaPdf) {
     listaPdf.addEventListener('click', function (e) {
+      var folderBtn = e.target.closest('[data-action-download-folder]');
+      if (folderBtn) {
+        e.preventDefault();
+        if (folderBtn.disabled) return;
+        var folderEl = folderBtn.closest('[data-folder-id]');
+        if (!folderEl) return;
+        downloadFolderZip(folderEl.getAttribute('data-folder-id'), folderBtn);
+        return;
+      }
+
       var previewBtn = e.target.closest('[data-action-preview]');
       if (previewBtn) {
         e.preventDefault();
@@ -304,8 +487,8 @@
         var card = previewBtn.closest('[data-file-index]');
         if (!card) return;
         var index = parseInt(card.getAttribute('data-file-index'), 10);
-        if (!cachedPdfs[index]) return;
-        openPreview(cachedPdfs[index], index, previewBtn);
+        if (!flatPreviewItems[index]) return;
+        openPreview(flatPreviewItems[index], index, previewBtn);
         return;
       }
 

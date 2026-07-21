@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="../styles-blog.css">
-  <link rel="stylesheet" href="../styles-admin.css">
+  <link rel="stylesheet" href="../styles-admin.css?v=20260721l">
 </head>
 <body class="admin-body">
   <aside class="admin-sidebar">
@@ -141,12 +141,40 @@
 
             <div class="form-row form-row--split">
               <div class="form-group form-group--select">
-                <label for="ricettaCategoria">Categoria <span class="label-hint">(visibile sulla card)</span></label>
-                <div class="select-wrap">
-                  <select id="ricettaCategoria" name="ricettaCategoria" class="select-modern" aria-label="Categoria ricetta">
-                    <option value="">Scegli categoria</option>
-                  </select>
-                  <span class="select-chevron" aria-hidden="true"></span>
+                <label id="ricettaCategoriaLabel">Categoria <span class="label-hint">(visibile sulla card)</span></label>
+                <div class="multi-select" id="ricettaCategoriaMulti">
+                  <button
+                    type="button"
+                    class="multi-select-trigger select-modern"
+                    id="ricettaCategoriaTrigger"
+                    aria-labelledby="ricettaCategoriaLabel"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="ricettaCategoriaDropdown"
+                  >
+                    <span class="multi-select-label" id="ricettaCategoriaLabelText">Scegli categoria</span>
+                    <span class="select-chevron" aria-hidden="true"></span>
+                  </button>
+                  <div
+                    class="multi-select-dropdown"
+                    id="ricettaCategoriaDropdown"
+                    role="listbox"
+                    hidden
+                  >
+                    <div class="multi-select-create">
+                      <input
+                        type="text"
+                        id="ricettaCategoriaCreateInput"
+                        class="input-inline"
+                        placeholder="Nuova categoria..."
+                        autocomplete="off"
+                        aria-label="Nuova categoria"
+                      >
+                      <button type="button" id="ricettaCategoriaCreateBtn" class="btn btn-outline btn-sm">Aggiungi</button>
+                    </div>
+                    <div class="multi-select-options" id="ricettaCategoriaOptions"></div>
+                  </div>
+                  <input type="hidden" id="ricettaCategoria" name="ricettaCategoria" value="">
                 </div>
               </div>
               <div class="form-group form-group--select">
@@ -170,7 +198,20 @@
                     role="listbox"
                     aria-multiselectable="true"
                     hidden
-                  ></div>
+                  >
+                    <div class="multi-select-create">
+                      <input
+                        type="text"
+                        id="ricettaTagCreateInput"
+                        class="input-inline"
+                        placeholder="Nuovo tag..."
+                        autocomplete="off"
+                        aria-label="Nuovo tag"
+                      >
+                      <button type="button" id="ricettaTagCreateBtn" class="btn btn-outline btn-sm">Aggiungi</button>
+                    </div>
+                    <div class="multi-select-options" id="ricettaTagOptions"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -197,10 +238,10 @@
             <details class="recipe-cats-panel">
               <summary>
                 <span class="recipe-cats-panel-title">Gestione categorie</span>
-                <span class="recipe-cats-panel-hint">Aggiungi Primi, Dessert, Zuppe…</span>
+                <span class="recipe-cats-panel-hint">Modifica o elimina quelle personalizzate</span>
               </summary>
               <div class="recipe-cats-panel-body">
-                <p class="form-hint">Nel menu categoria trovi già Pre-workout, Post-workout, Colazione, ecc. Qui puoi crearne di nuove.</p>
+                <p class="form-hint">Nel menu categoria trovi già Pre-workout, Post-workout, Colazione, ecc. Puoi crearne di nuove dal menu a tendina oppure qui sotto.</p>
                 <div class="categorie-add-row">
                   <input type="text" id="nuovaCategoriaInput" placeholder="es. Primi, Dessert, Zuppe..." class="input-inline" autocomplete="off">
                   <button type="button" id="btnAggiungiCategoria" class="btn btn-outline btn-sm">Aggiungi</button>
@@ -212,10 +253,10 @@
             <details class="recipe-cats-panel">
               <summary>
                 <span class="recipe-cats-panel-title">Gestione tag</span>
-                <span class="recipe-cats-panel-hint">Aggiungi Proteico, Veloce, Vegano…</span>
+                <span class="recipe-cats-panel-hint">Modifica o elimina i tag creati</span>
               </summary>
               <div class="recipe-cats-panel-body">
-                <p class="form-hint">Crea i tag che vuoi assegnare alle ricette. Nel menu Tag sopra puoi selezionarne più di uno.</p>
+                <p class="form-hint">Crea i tag dal menu Tag sopra (campo + Aggiungi) oppure qui. Nel menu puoi selezionarne più di uno.</p>
                 <div class="categorie-add-row">
                   <input type="text" id="nuovoTagInput" placeholder="es. Proteico, Veloce, Vegano..." class="input-inline" autocomplete="off">
                   <button type="button" id="btnAggiungiTag" class="btn btn-outline btn-sm">Aggiungi</button>
@@ -307,6 +348,6 @@
   <script src="../impostazioni.js?v=20260721i"></script>
   <script src="../admin-auth.js?v=20260721i"></script>
   <script src="../content-format.js?v=20260721i"></script>
-  <script src="../admin.js?v=20260721j"></script>
+  <script src="../admin.js?v=20260721l"></script>
 </body>
 </html>

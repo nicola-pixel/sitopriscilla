@@ -15,9 +15,16 @@
   var formUploadPdf = document.getElementById('formUploadPdf');
   var pdfTitleInput = document.getElementById('pdfTitle');
   var pdfFileInput = document.getElementById('pdfFile');
+  var pdfFolderSelect = document.getElementById('pdfFolder');
   var msgUpload = document.getElementById('msgUpload');
   var listaPdfAdmin = document.getElementById('listaPdfAdmin');
+  var listaCartelleAdmin = document.getElementById('listaCartelleAdmin');
+  var formCartellaMateriale = document.getElementById('formCartellaMateriale');
+  var folderNameInput = document.getElementById('folderName');
+  var msgCartella = document.getElementById('msgCartella');
+  var btnCreaCartella = document.getElementById('btnCreaCartella');
   var materialeAdminItems = [];
+  var materialeAdminFolders = [];
   var materialeStore = window.PriscillaMateriale || null;
 
   function getCv() {
@@ -162,20 +169,138 @@
     });
   }
 
-  function renderListaPdfAdminFromItems(pdfs) {
-    if (!listaPdfAdmin) return;
-    materialeAdminItems = Array.isArray(pdfs) ? pdfs : [];
-    listaPdfAdmin.innerHTML = '';
-    if (materialeAdminItems.length === 0) {
-      listaPdfAdmin.innerHTML = '<li class="empty">Nessun file caricato.</li>';
+  function refreshFolderSelect(preferredId) {
+    if (!pdfFolderSelect) return;
+    var current = preferredId || pdfFolderSelect.value || '';
+    pdfFolderSelect.innerHTML = '';
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = materialeAdminFolders.length
+      ? 'Seleziona una cartella…'
+      : 'Crea prima una cartella…';
+    pdfFolderSelect.appendChild(placeholder);
+    materialeAdminFolders.forEach(function (folder) {
+      if (!folder || !folder.id) return;
+      var opt = document.createElement('option');
+      opt.value = folder.id;
+      opt.textContent = folder.name || 'Cartella';
+      pdfFolderSelect.appendChild(opt);
+    });
+    if (current && Array.prototype.some.call(pdfFolderSelect.options, function (o) { return o.value === current; })) {
+      pdfFolderSelect.value = current;
+    } else {
+      pdfFolderSelect.value = '';
+    }
+    pdfFolderSelect.disabled = materialeAdminFolders.length === 0;
+  }
+
+  function renderListaCartelleAdmin() {
+    if (!listaCartelleAdmin) return;
+    listaCartelleAdmin.innerHTML = '';
+    if (!materialeAdminFolders.length) {
+      listaCartelleAdmin.innerHTML = '<li class="empty">Nessuna cartella. Creane una per iniziare a caricare i file.</li>';
       return;
     }
-    materialeAdminItems.forEach(function (item, index) {
+    materialeAdminFolders.forEach(function (folder) {
+      var count = materialeAdminItems.filter(function (it) {
+        return it && String(it.folderId || '') === String(folder.id);
+      }).length;
       var li = document.createElement('li');
-      li.innerHTML = '<span class="pdf-title">' + escapeHtml(item.title || 'Senza titolo') + '</span> ' +
-        '<button type="button" class="btn-remove" data-index="' + index + '" aria-label="Rimuovi">Rimuovi</button>';
-      listaPdfAdmin.appendChild(li);
+      li.innerHTML =
+        '<span class="cartella-admin-info">' +
+          '<span class="cartella-admin-name">' + escapeHtml(folder.name || 'Cartella') + '</span>' +
+          '<span class="cartella-admin-meta">' + count + (count === 1 ? ' file' : ' file') + '</span>' +
+        '</span>' +
+        '<button type="button" class="btn-remove" data-folder-id="' + escapeHtml(folder.id) + '" aria-label="Rimuovi cartella">Rimuovi</button>';
+      listaCartelleAdmin.appendChild(li);
     });
+    listaCartelleAdmin.querySelectorAll('.btn-remove').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var folderId = btn.getAttribute('data-folder-id');
+        var folder = materialeAdminFolders.find(function (f) { return f && f.id === folderId; });
+        if (!materialeStore || !folder) return;
+        btn.disabled = true;
+        materialeStore.deleteFolder(folder).then(function () {
+          return renderListaPdfAdmin();
+        }).catch(function (err) {
+          btn.disabled = false;
+          if (msgCartella) {
+            msgCartella.textContent = (err && err.message) || 'Impossibile rimuovere la cartella.';
+            msgCartella.classList.add('msg-error');
+            msgCartella.classList.remove('msg-ok');
+            msgCartella.hidden = false;
+          }
+        });
+      });
+    });
+  }
+
+  function renderListaPdfAdminFromItems(pdfs, folders) {
+    if (!listaPdfAdmin) return;
+    materialeAdminItems = Array.isArray(pdfs) ? pdfs : [];
+    if (Array.isArray(folders)) materialeAdminFolders = folders;
+    refreshFolderSelect();
+    renderListaCartelleAdmin();
+    listaPdfAdmin.innerHTML = '';
+
+    if (!materialeAdminFolders.length && materialeAdminItems.length === 0) {
+      listaPdfAdmin.innerHTML = '<p class="empty">Nessun file caricato. Crea una cartella e carica i documenti.</p>';
+      return;
+    }
+
+    var groups = [];
+    var used = {};
+    materialeAdminFolders.forEach(function (folder) {
+      if (!folder || !folder.id) return;
+      var files = materialeAdminItems.filter(function (it) {
+        return it && String(it.folderId || '') === String(folder.id);
+      });
+      files.forEach(function (it) {
+        if (it && it.id) used[String(it.id)] = true;
+      });
+      groups.push({ folder: folder, files: files });
+    });
+    var orphanFiles = materialeAdminItems.filter(function (it) {
+      return it && it.id && !used[String(it.id)];
+    });
+    if (orphanFiles.length) {
+      groups.push({
+        folder: { id: '', name: 'Senza cartella (carica di nuovo in una cartella)' },
+        files: orphanFiles
+      });
+    }
+
+    if (!groups.length) {
+      listaPdfAdmin.innerHTML = '<p class="empty">Nessun file caricato.</p>';
+      return;
+    }
+
+    groups.forEach(function (group) {
+      var section = document.createElement('section');
+      section.className = 'materiale-folder-group';
+      var heading = document.createElement('h3');
+      heading.className = 'materiale-folder-title';
+      heading.textContent = group.folder.name || 'Cartella';
+      section.appendChild(heading);
+
+      var ul = document.createElement('ul');
+      ul.className = 'lista-pdf-admin';
+      if (!group.files.length) {
+        ul.innerHTML = '<li class="empty">Cartella vuota.</li>';
+      } else {
+        group.files.forEach(function (item) {
+          var globalIndex = materialeAdminItems.indexOf(item);
+          var li = document.createElement('li');
+          li.innerHTML =
+            '<span class="pdf-title">' + escapeHtml(item.title || 'Senza titolo') + '</span> ' +
+            '<button type="button" class="btn-remove" data-index="' + globalIndex + '" aria-label="Rimuovi">Rimuovi</button>';
+          ul.appendChild(li);
+        });
+      }
+      section.appendChild(ul);
+      listaPdfAdmin.appendChild(section);
+    });
+
     listaPdfAdmin.querySelectorAll('.btn-remove').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var idx = parseInt(btn.getAttribute('data-index'), 10);
@@ -215,13 +340,15 @@
   function renderListaPdfAdmin(options) {
     options = options || {};
     var keepIfEmpty = Array.isArray(options.keepIfEmpty) ? options.keepIfEmpty : null;
+    var keepFolders = Array.isArray(options.keepFolders) ? options.keepFolders : null;
     if (!listaPdfAdmin) return Promise.resolve();
     if (!materialeStore) {
-      renderListaPdfAdminFromItems(keepIfEmpty || []);
+      renderListaPdfAdminFromItems(keepIfEmpty || [], keepFolders || materialeAdminFolders);
       return Promise.resolve();
     }
     return materialeStore.list().then(function (result) {
       var items = result && result.items ? result.items : [];
+      var folders = result && result.folders ? result.folders : [];
       if (items.length === 0 && keepIfEmpty && keepIfEmpty.length) {
         items = keepIfEmpty;
       } else if (keepIfEmpty && keepIfEmpty.length) {
@@ -233,10 +360,21 @@
           if (it && it.id && !ids[String(it.id)]) items.push(it);
         });
       }
-      renderListaPdfAdminFromItems(items);
+      if (folders.length === 0 && keepFolders && keepFolders.length) {
+        folders = keepFolders;
+      } else if (keepFolders && keepFolders.length) {
+        var fids = {};
+        folders.forEach(function (it) {
+          if (it && it.id) fids[String(it.id)] = true;
+        });
+        keepFolders.forEach(function (it) {
+          if (it && it.id && !fids[String(it.id)]) folders.push(it);
+        });
+      }
+      renderListaPdfAdminFromItems(items, folders);
       updateMaterialeStorageHint(result);
     }).catch(function () {
-      renderListaPdfAdminFromItems(keepIfEmpty || []);
+      renderListaPdfAdminFromItems(keepIfEmpty || [], keepFolders || materialeAdminFolders);
     });
   }
 
@@ -1278,12 +1416,22 @@
   var ricettaIdInput = document.getElementById('ricettaId');
   var ricettaTitoloInput = document.getElementById('ricettaTitolo');
   var ricettaCategoriaInput = document.getElementById('ricettaCategoria');
+  var ricettaCategoriaMulti = document.getElementById('ricettaCategoriaMulti');
+  var ricettaCategoriaTrigger = document.getElementById('ricettaCategoriaTrigger');
+  var ricettaCategoriaDropdown = document.getElementById('ricettaCategoriaDropdown');
+  var ricettaCategoriaOptions = document.getElementById('ricettaCategoriaOptions');
+  var ricettaCategoriaLabelText = document.getElementById('ricettaCategoriaLabelText');
+  var ricettaCategoriaCreateInput = document.getElementById('ricettaCategoriaCreateInput');
+  var ricettaCategoriaCreateBtn = document.getElementById('ricettaCategoriaCreateBtn');
   var ricettaCategoriaAltroInput = document.getElementById('ricettaCategoriaAltro');
   var ricettaCategoriaAltroWrap = document.getElementById('ricettaCategoriaAltroWrap');
   var ricettaTagMulti = document.getElementById('ricettaTagMulti');
   var ricettaTagTrigger = document.getElementById('ricettaTagTrigger');
   var ricettaTagDropdown = document.getElementById('ricettaTagDropdown');
+  var ricettaTagOptions = document.getElementById('ricettaTagOptions');
   var ricettaTagLabelText = document.getElementById('ricettaTagLabelText');
+  var ricettaTagCreateInput = document.getElementById('ricettaTagCreateInput');
+  var ricettaTagCreateBtn = document.getElementById('ricettaTagCreateBtn');
   var ricettaSelectedTags = [];
   var ricettaEstrattoInput = document.getElementById('ricettaEstratto');
   var recipePreviewMeta = document.getElementById('recipePreviewMeta');
@@ -1353,18 +1501,64 @@
         ricettaTagLabelText.textContent = ricettaSelectedTags.length + ' tag selezionati';
       }
     }
-    if (ricettaTagDropdown) {
-      ricettaTagDropdown.querySelectorAll('.multi-select-option input[type="checkbox"]').forEach(function (cb) {
+    var optionsRoot = ricettaTagOptions || ricettaTagDropdown;
+    if (optionsRoot) {
+      optionsRoot.querySelectorAll('.multi-select-option input[type="checkbox"]').forEach(function (cb) {
         cb.checked = ricettaSelectedTags.indexOf(cb.value) >= 0;
       });
     }
   }
 
+  function syncCategoriaSelectUI() {
+    var value = ricettaCategoriaInput ? (ricettaCategoriaInput.value || '').trim() : '';
+    if (ricettaCategoriaLabelText) {
+      ricettaCategoriaLabelText.textContent = value || 'Scegli categoria';
+    }
+    if (ricettaCategoriaOptions) {
+      ricettaCategoriaOptions.querySelectorAll('.multi-select-option').forEach(function (btn) {
+        btn.classList.toggle('is-selected', btn.getAttribute('data-value') === value);
+      });
+    }
+  }
+
+  function setSelectedRecipeCategory(cat) {
+    var value = (cat || '').trim();
+    if (ricettaCategoriaInput) ricettaCategoriaInput.value = value;
+    syncCategoriaSelectUI();
+    if (ricettaCategoriaAltroWrap) {
+      if (value === 'Altro') ricettaCategoriaAltroWrap.removeAttribute('hidden');
+      else ricettaCategoriaAltroWrap.setAttribute('hidden', '');
+    }
+    if (value !== 'Altro' && ricettaCategoriaAltroInput) ricettaCategoriaAltroInput.value = '';
+  }
+
   function setTagDropdownOpen(open) {
     if (!ricettaTagDropdown || !ricettaTagTrigger) return;
+    if (open) {
+      if (ricettaCategoriaDropdown) ricettaCategoriaDropdown.hidden = true;
+      if (ricettaCategoriaTrigger) ricettaCategoriaTrigger.setAttribute('aria-expanded', 'false');
+      if (ricettaCategoriaMulti) ricettaCategoriaMulti.classList.remove('is-open');
+    }
     ricettaTagDropdown.hidden = !open;
     ricettaTagTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (ricettaTagMulti) ricettaTagMulti.classList.toggle('is-open', open);
+  }
+
+  function setCategoriaDropdownOpen(open) {
+    if (!ricettaCategoriaDropdown || !ricettaCategoriaTrigger) return;
+    if (open) {
+      if (ricettaTagDropdown) ricettaTagDropdown.hidden = true;
+      if (ricettaTagTrigger) ricettaTagTrigger.setAttribute('aria-expanded', 'false');
+      if (ricettaTagMulti) ricettaTagMulti.classList.remove('is-open');
+    }
+    ricettaCategoriaDropdown.hidden = !open;
+    ricettaCategoriaTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (ricettaCategoriaMulti) ricettaCategoriaMulti.classList.toggle('is-open', open);
+  }
+
+  function closeAllRecipeDropdowns() {
+    setTagDropdownOpen(false);
+    setCategoriaDropdownOpen(false);
   }
 
   function updateRecipePreview() {
@@ -1424,11 +1618,13 @@
   function resetRicettaFormFields() {
     if (ricettaIdInput) ricettaIdInput.value = '';
     if (ricettaTitoloInput) ricettaTitoloInput.value = '';
-    if (ricettaCategoriaInput) ricettaCategoriaInput.value = '';
+    setSelectedRecipeCategory('');
     if (ricettaCategoriaAltroInput) ricettaCategoriaAltroInput.value = '';
     if (ricettaCategoriaAltroWrap) ricettaCategoriaAltroWrap.setAttribute('hidden', '');
     setSelectedRecipeTags([]);
-    setTagDropdownOpen(false);
+    closeAllRecipeDropdowns();
+    if (ricettaTagCreateInput) ricettaTagCreateInput.value = '';
+    if (ricettaCategoriaCreateInput) ricettaCategoriaCreateInput.value = '';
     if (ricettaEstrattoInput) ricettaEstrattoInput.value = '';
     if (recipeComposer) recipeComposer.reset();
     clearRecipeCover();
@@ -1439,7 +1635,6 @@
 
   if (ricettaTitoloInput) ricettaTitoloInput.addEventListener('input', updateRecipePreview);
   if (ricettaEstrattoInput) ricettaEstrattoInput.addEventListener('input', updateRecipePreview);
-  if (ricettaCategoriaInput) ricettaCategoriaInput.addEventListener('change', updateRecipePreview);
   if (ricettaCategoriaAltroInput) ricettaCategoriaAltroInput.addEventListener('input', updateRecipePreview);
   if (ricettaTagTrigger && ricettaTagDropdown) {
     ricettaTagTrigger.addEventListener('click', function (e) {
@@ -1450,11 +1645,23 @@
     ricettaTagDropdown.addEventListener('click', function (e) {
       e.stopPropagation();
     });
+  }
+  if (ricettaCategoriaTrigger && ricettaCategoriaDropdown) {
+    ricettaCategoriaTrigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setCategoriaDropdownOpen(ricettaCategoriaDropdown.hidden);
+    });
+    ricettaCategoriaDropdown.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+  }
+  if ((ricettaTagTrigger && ricettaTagDropdown) || (ricettaCategoriaTrigger && ricettaCategoriaDropdown)) {
     document.addEventListener('click', function () {
-      setTagDropdownOpen(false);
+      closeAllRecipeDropdowns();
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') setTagDropdownOpen(false);
+      if (e.key === 'Escape') closeAllRecipeDropdowns();
     });
   }
   var _setPreviewCover = recipeCover.setPreview;
@@ -1470,8 +1677,42 @@
 
   function refreshSelectsCategorie() {
     var cats = getAllRecipeCategories();
-    if (ricettaCategoriaInput) {
-      var sel = ricettaCategoriaInput.value;
+    var sel = ricettaCategoriaInput ? (ricettaCategoriaInput.value || '').trim() : '';
+    if (ricettaCategoriaOptions) {
+      if (cats.length === 0) {
+        ricettaCategoriaOptions.innerHTML =
+          '<p class="multi-select-empty">Nessuna categoria. Scrivine una sopra e clicca Aggiungi.</p>';
+      } else {
+        ricettaCategoriaOptions.innerHTML = cats
+          .map(function (c) {
+            return (
+              '<button type="button" class="multi-select-option' +
+              (c === sel ? ' is-selected' : '') +
+              '" role="option" data-value="' +
+              escapeHtml(c) +
+              '" aria-selected="' +
+              (c === sel ? 'true' : 'false') +
+              '">' +
+              escapeHtml(c) +
+              '</button>'
+            );
+          })
+          .join('');
+        ricettaCategoriaOptions.querySelectorAll('.multi-select-option').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            setSelectedRecipeCategory(btn.getAttribute('data-value') || '');
+            setCategoriaDropdownOpen(false);
+            updateRecipePreview();
+          });
+        });
+      }
+      if (sel && cats.indexOf(sel) < 0) {
+        // Keep unknown custom value visible on the trigger
+        syncCategoriaSelectUI();
+      } else if (!sel || cats.indexOf(sel) >= 0) {
+        syncCategoriaSelectUI();
+      }
+    } else if (ricettaCategoriaInput && ricettaCategoriaInput.tagName === 'SELECT') {
       ricettaCategoriaInput.innerHTML = '<option value="">Scegli categoria</option>';
       cats.forEach(function (c) {
         var opt = document.createElement('option');
@@ -1496,12 +1737,13 @@
 
   function refreshSelectsTag() {
     var tags = getAllRecipeTags();
-    if (ricettaTagDropdown) {
+    var optionsRoot = ricettaTagOptions || ricettaTagDropdown;
+    if (optionsRoot) {
       if (tags.length === 0) {
-        ricettaTagDropdown.innerHTML =
-          '<p class="multi-select-empty">Nessun tag. Creane uno in Gestione tag.</p>';
+        optionsRoot.innerHTML =
+          '<p class="multi-select-empty">Nessun tag. Scrivine uno sopra e clicca Aggiungi.</p>';
       } else {
-        ricettaTagDropdown.innerHTML = tags
+        optionsRoot.innerHTML = tags
           .map(function (t, index) {
             var id = 'ricettaTagOpt_' + index;
             return (
@@ -1522,7 +1764,7 @@
             );
           })
           .join('');
-        ricettaTagDropdown.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+        optionsRoot.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
           cb.addEventListener('change', function () {
             if (cb.checked) {
               if (ricettaSelectedTags.indexOf(cb.value) < 0) ricettaSelectedTags.push(cb.value);
@@ -1551,6 +1793,94 @@
     }
   }
 
+  function renameCategoryInRecipes(oldName, newName) {
+    var recipes = getRecipes();
+    var changed = false;
+    recipes.forEach(function (r) {
+      if (getRecipeCategory(r) === oldName) {
+        r.category = newName;
+        changed = true;
+      }
+    });
+    if (changed) {
+      setRecipes(recipes);
+      renderListaRicetteAdmin();
+    }
+    if (ricettaCategoriaInput && (ricettaCategoriaInput.value || '').trim() === oldName) {
+      setSelectedRecipeCategory(newName);
+      updateRecipePreview();
+    }
+  }
+
+  function removeCategoryFromRecipes(name) {
+    var recipes = getRecipes();
+    var changed = false;
+    recipes.forEach(function (r) {
+      if (getRecipeCategory(r) === name) {
+        r.category = '';
+        changed = true;
+      }
+    });
+    if (changed) {
+      setRecipes(recipes);
+      renderListaRicetteAdmin();
+    }
+    if (ricettaCategoriaInput && (ricettaCategoriaInput.value || '').trim() === name) {
+      setSelectedRecipeCategory('');
+      updateRecipePreview();
+    }
+  }
+
+  function renameTagInRecipes(oldName, newName) {
+    var recipes = getRecipes();
+    var changed = false;
+    recipes.forEach(function (r) {
+      var tags = getRecipeTags(r);
+      var idx = tags.indexOf(oldName);
+      if (idx < 0) return;
+      tags[idx] = newName;
+      var deduped = [];
+      tags.forEach(function (t) {
+        if (t && deduped.indexOf(t) < 0) deduped.push(t);
+      });
+      r.tags = deduped;
+      r.tag = deduped[0] || '';
+      changed = true;
+    });
+    if (changed) {
+      setRecipes(recipes);
+      renderListaRicetteAdmin();
+    }
+    if (ricettaSelectedTags.indexOf(oldName) >= 0) {
+      var next = ricettaSelectedTags
+        .map(function (t) { return t === oldName ? newName : t; })
+        .filter(function (t, i, arr) { return t && arr.indexOf(t) === i; });
+      setSelectedRecipeTags(next);
+      updateRecipePreview();
+    }
+  }
+
+  function removeTagFromRecipes(name) {
+    var recipes = getRecipes();
+    var changed = false;
+    recipes.forEach(function (r) {
+      var tags = getRecipeTags(r);
+      if (tags.indexOf(name) < 0) return;
+      var next = tags.filter(function (t) { return t !== name; });
+      r.tags = next;
+      r.tag = next[0] || '';
+      changed = true;
+    });
+    if (changed) {
+      setRecipes(recipes);
+      renderListaRicetteAdmin();
+    }
+    if (ricettaSelectedTags.indexOf(name) >= 0) {
+      setSelectedRecipeTags(ricettaSelectedTags.filter(function (t) { return t !== name; }));
+      updateRecipePreview();
+    }
+  }
+
   function renderListaCategorieRicette() {
     if (!listaCategorieRicette) return;
     var custom = getCustomRecipeCategories();
@@ -1561,18 +1891,104 @@
     }
     custom.forEach(function (cat, index) {
       var li = document.createElement('li');
-      li.innerHTML = '<span class="categoria-nome">' + escapeHtml(cat) + '</span> ' +
-        '<button type="button" class="btn-remove btn-remove-cat" data-index="' + index + '" aria-label="Rimuovi categoria">Rimuovi</button>';
+      li.setAttribute('data-index', String(index));
+      li.innerHTML =
+        '<span class="categoria-nome">' + escapeHtml(cat) + '</span>' +
+        '<span class="categoria-actions">' +
+        '<button type="button" class="btn-edit-cat" data-index="' + index + '">Modifica</button>' +
+        '<button type="button" class="btn-remove-cat" data-index="' + index + '">Elimina</button>' +
+        '</span>';
       listaCategorieRicette.appendChild(li);
     });
+
+    listaCategorieRicette.querySelectorAll('.btn-edit-cat').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(btn.getAttribute('data-index'), 10);
+        var list = getCustomRecipeCategories();
+        var current = list[idx];
+        if (current == null) return;
+        var li = btn.closest('li');
+        if (!li) return;
+        li.innerHTML = '';
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'categoria-edit-input';
+        input.value = current;
+        input.setAttribute('aria-label', 'Modifica categoria');
+        var actions = document.createElement('span');
+        actions.className = 'categoria-actions';
+        var saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn-save-cat';
+        saveBtn.textContent = 'Salva';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn-cancel-cat';
+        cancelBtn.textContent = 'Annulla';
+        actions.appendChild(saveBtn);
+        actions.appendChild(cancelBtn);
+        li.appendChild(input);
+        li.appendChild(actions);
+        input.focus();
+        input.select();
+        function commit() {
+          var nuovo = (input.value || '').trim();
+          if (!nuovo) {
+            showRicettaMsg('Il nome della categoria non può essere vuoto.', true);
+            input.focus();
+            return;
+          }
+          if (nuovo === current) {
+            renderListaCategorieRicette();
+            return;
+          }
+          var all = getAllRecipeCategories();
+          if (all.indexOf(nuovo) >= 0) {
+            showRicettaMsg('Esiste già una categoria con questo nome.', true);
+            input.focus();
+            return;
+          }
+          list = getCustomRecipeCategories();
+          if (list[idx] !== current) {
+            renderListaCategorieRicette();
+            return;
+          }
+          list[idx] = nuovo;
+          setCustomRecipeCategories(list);
+          renameCategoryInRecipes(current, nuovo);
+          refreshSelectsCategorie();
+          renderListaCategorieRicette();
+          showRicettaMsg('Categoria rinominata in "' + nuovo + '".', false);
+        }
+        saveBtn.addEventListener('click', commit);
+        cancelBtn.addEventListener('click', function () {
+          renderListaCategorieRicette();
+        });
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            renderListaCategorieRicette();
+          }
+        });
+      });
+    });
+
     listaCategorieRicette.querySelectorAll('.btn-remove-cat').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var idx = parseInt(btn.getAttribute('data-index'), 10);
         var list = getCustomRecipeCategories();
+        var name = list[idx];
+        if (name == null) return;
+        if (!window.confirm('Eliminare la categoria "' + name + '"? Verrà tolta anche dalle ricette che la usano.')) return;
         list.splice(idx, 1);
         setCustomRecipeCategories(list);
+        removeCategoryFromRecipes(name);
         renderListaCategorieRicette();
         refreshSelectsCategorie();
+        showRicettaMsg('Categoria "' + name + '" eliminata.', false);
       });
     });
   }
@@ -1587,18 +2003,104 @@
     }
     custom.forEach(function (tag, index) {
       var li = document.createElement('li');
-      li.innerHTML = '<span class="categoria-nome">' + escapeHtml(tag) + '</span> ' +
-        '<button type="button" class="btn-remove btn-remove-tag" data-index="' + index + '" aria-label="Rimuovi tag">Rimuovi</button>';
+      li.setAttribute('data-index', String(index));
+      li.innerHTML =
+        '<span class="categoria-nome">' + escapeHtml(tag) + '</span>' +
+        '<span class="categoria-actions">' +
+        '<button type="button" class="btn-edit-tag" data-index="' + index + '">Modifica</button>' +
+        '<button type="button" class="btn-remove-tag" data-index="' + index + '">Elimina</button>' +
+        '</span>';
       listaTagRicette.appendChild(li);
     });
+
+    listaTagRicette.querySelectorAll('.btn-edit-tag').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(btn.getAttribute('data-index'), 10);
+        var list = getCustomRecipeTags();
+        var current = list[idx];
+        if (current == null) return;
+        var li = btn.closest('li');
+        if (!li) return;
+        li.innerHTML = '';
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'categoria-edit-input';
+        input.value = current;
+        input.setAttribute('aria-label', 'Modifica tag');
+        var actions = document.createElement('span');
+        actions.className = 'categoria-actions';
+        var saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn-save-tag';
+        saveBtn.textContent = 'Salva';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn-cancel-tag';
+        cancelBtn.textContent = 'Annulla';
+        actions.appendChild(saveBtn);
+        actions.appendChild(cancelBtn);
+        li.appendChild(input);
+        li.appendChild(actions);
+        input.focus();
+        input.select();
+        function commit() {
+          var nuovo = (input.value || '').trim();
+          if (!nuovo) {
+            showRicettaMsg('Il nome del tag non può essere vuoto.', true);
+            input.focus();
+            return;
+          }
+          if (nuovo === current) {
+            renderListaTagRicette();
+            return;
+          }
+          var all = getAllRecipeTags();
+          if (all.indexOf(nuovo) >= 0) {
+            showRicettaMsg('Esiste già un tag con questo nome.', true);
+            input.focus();
+            return;
+          }
+          list = getCustomRecipeTags();
+          if (list[idx] !== current) {
+            renderListaTagRicette();
+            return;
+          }
+          list[idx] = nuovo;
+          setCustomRecipeTags(list);
+          renameTagInRecipes(current, nuovo);
+          refreshSelectsTag();
+          renderListaTagRicette();
+          showRicettaMsg('Tag rinominato in "' + nuovo + '".', false);
+        }
+        saveBtn.addEventListener('click', commit);
+        cancelBtn.addEventListener('click', function () {
+          renderListaTagRicette();
+        });
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            renderListaTagRicette();
+          }
+        });
+      });
+    });
+
     listaTagRicette.querySelectorAll('.btn-remove-tag').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var idx = parseInt(btn.getAttribute('data-index'), 10);
         var list = getCustomRecipeTags();
+        var name = list[idx];
+        if (name == null) return;
+        if (!window.confirm('Eliminare il tag "' + name + '"? Verrà tolto anche dalle ricette che lo usano.')) return;
         list.splice(idx, 1);
         setCustomRecipeTags(list);
+        removeTagFromRecipes(name);
         renderListaTagRicette();
         refreshSelectsTag();
+        showRicettaMsg('Tag "' + name + '" eliminato.', false);
       });
     });
   }
@@ -1649,46 +2151,37 @@
     });
   }
 
-  if (ricettaCategoriaInput && ricettaCategoriaAltroWrap) {
-    ricettaCategoriaInput.addEventListener('change', function () {
-      var isAltro = ricettaCategoriaInput.value === 'Altro';
-      if (isAltro) {
-        ricettaCategoriaAltroWrap.removeAttribute('hidden');
-      } else {
-        ricettaCategoriaAltroWrap.setAttribute('hidden', '');
-      }
-    });
-  }
-
   if (filtroCategoriaEl) filtroCategoriaEl.addEventListener('change', renderListaRicetteAdmin);
   if (filtroTagEl) filtroTagEl.addEventListener('change', renderListaRicetteAdmin);
   if (filtroRicercaEl) filtroRicercaEl.addEventListener('input', renderListaRicetteAdmin);
 
-  function aggiungiCategoriaDaInput() {
+  function showRicettaMsg(text, isError) {
     var msgEl = document.getElementById('msgRicetta');
-    var inputEl = document.getElementById('nuovaCategoriaInput');
+    if (!msgEl) return;
+    msgEl.textContent = text;
+    msgEl.classList.toggle('msg-error', !!isError);
+    msgEl.classList.toggle('msg-ok', !isError);
+    msgEl.hidden = false;
+    setTimeout(function () { if (msgEl) msgEl.hidden = true; }, isError ? 3000 : 4000);
+  }
+
+  function aggiungiCategoriaDaInput(sourceInput) {
+    var inputEl = sourceInput || document.getElementById('nuovaCategoriaInput');
     if (!inputEl) return;
     var nome = (inputEl.value || '').trim();
     if (!nome) {
-      if (msgEl) {
-        msgEl.textContent = 'Scrivi il nome della categoria nel campo qui sopra.';
-        msgEl.classList.add('msg-error');
-        msgEl.classList.remove('msg-ok');
-        msgEl.hidden = false;
-        setTimeout(function () { if (msgEl) msgEl.hidden = true; }, 3000);
-      }
+      showRicettaMsg('Scrivi il nome della categoria nel campo.', true);
+      inputEl.focus();
       return;
     }
     try {
       var all = getAllRecipeCategories();
       if (all.indexOf(nome) >= 0) {
-        if (msgEl) {
-          msgEl.textContent = 'Questa categoria esiste già.';
-          msgEl.classList.add('msg-error');
-          msgEl.classList.remove('msg-ok');
-          msgEl.hidden = false;
-          setTimeout(function () { if (msgEl) msgEl.hidden = true; }, 3000);
-        }
+        setSelectedRecipeCategory(nome);
+        updateRecipePreview();
+        setCategoriaDropdownOpen(false);
+        inputEl.value = '';
+        showRicettaMsg('Categoria "' + nome + '" già presente: selezionata.', false);
         return;
       }
       var custom = getCustomRecipeCategories();
@@ -1696,21 +2189,17 @@
       setCustomRecipeCategories(custom);
       refreshSelectsCategorie();
       renderListaCategorieRicette();
+      setSelectedRecipeCategory(nome);
+      updateRecipePreview();
+      setCategoriaDropdownOpen(false);
       inputEl.value = '';
-      if (msgEl) {
-        msgEl.textContent = 'Categoria "' + nome + '" aggiunta. Compare nel menu Categoria e nella lista sotto.';
-        msgEl.classList.remove('msg-error');
-        msgEl.classList.add('msg-ok');
-        msgEl.hidden = false;
-        setTimeout(function () { if (msgEl) msgEl.hidden = true; }, 4000);
+      if (nuovaCategoriaInput && nuovaCategoriaInput !== inputEl) nuovaCategoriaInput.value = '';
+      if (ricettaCategoriaCreateInput && ricettaCategoriaCreateInput !== inputEl) {
+        ricettaCategoriaCreateInput.value = '';
       }
+      showRicettaMsg('Categoria "' + nome + '" aggiunta e selezionata.', false);
     } catch (err) {
-      if (msgEl) {
-        msgEl.textContent = 'Errore: ' + (err && err.message ? err.message : 'impossibile aggiungere');
-        msgEl.classList.add('msg-error');
-        msgEl.classList.remove('msg-ok');
-        msgEl.hidden = false;
-      }
+      showRicettaMsg('Errore: ' + (err && err.message ? err.message : 'impossibile aggiungere'), true);
       console.error('Aggiungi categoria', err);
     }
   }
@@ -1718,41 +2207,48 @@
   if (btnAggiungiCategoria && nuovaCategoriaInput) {
     btnAggiungiCategoria.addEventListener('click', function (e) {
       e.preventDefault();
-      aggiungiCategoriaDaInput();
+      aggiungiCategoriaDaInput(nuovaCategoriaInput);
     });
     nuovaCategoriaInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        aggiungiCategoriaDaInput();
+        aggiungiCategoriaDaInput(nuovaCategoriaInput);
+      }
+    });
+  }
+  if (ricettaCategoriaCreateBtn && ricettaCategoriaCreateInput) {
+    ricettaCategoriaCreateBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      aggiungiCategoriaDaInput(ricettaCategoriaCreateInput);
+    });
+    ricettaCategoriaCreateInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        aggiungiCategoriaDaInput(ricettaCategoriaCreateInput);
       }
     });
   }
 
-  function aggiungiTagDaInput() {
-    var msgEl = document.getElementById('msgRicetta');
-    var inputEl = document.getElementById('nuovoTagInput');
+  function aggiungiTagDaInput(sourceInput) {
+    var inputEl = sourceInput || document.getElementById('nuovoTagInput');
     if (!inputEl) return;
     var nome = (inputEl.value || '').trim();
     if (!nome) {
-      if (msgEl) {
-        msgEl.textContent = 'Scrivi il nome del tag nel campo qui sopra.';
-        msgEl.classList.add('msg-error');
-        msgEl.classList.remove('msg-ok');
-        msgEl.hidden = false;
-        setTimeout(function () { if (msgEl) msgEl.hidden = true; }, 3000);
-      }
+      showRicettaMsg('Scrivi il nome del tag nel campo.', true);
+      inputEl.focus();
       return;
     }
     try {
       var all = getAllRecipeTags();
       if (all.indexOf(nome) >= 0) {
-        if (msgEl) {
-          msgEl.textContent = 'Questo tag esiste già.';
-          msgEl.classList.add('msg-error');
-          msgEl.classList.remove('msg-ok');
-          msgEl.hidden = false;
-          setTimeout(function () { if (msgEl) msgEl.hidden = true; }, 3000);
-        }
+        var existing = getSelectedRecipeTags();
+        if (existing.indexOf(nome) < 0) existing.push(nome);
+        setSelectedRecipeTags(existing);
+        updateRecipePreview();
+        inputEl.value = '';
+        showRicettaMsg('Tag "' + nome + '" già presente: selezionato.', false);
         return;
       }
       var custom = getCustomRecipeTags();
@@ -1761,24 +2257,15 @@
       refreshSelectsTag();
       renderListaTagRicette();
       inputEl.value = '';
+      if (nuovoTagInput && nuovoTagInput !== inputEl) nuovoTagInput.value = '';
+      if (ricettaTagCreateInput && ricettaTagCreateInput !== inputEl) ricettaTagCreateInput.value = '';
       var next = getSelectedRecipeTags();
       if (next.indexOf(nome) < 0) next.push(nome);
       setSelectedRecipeTags(next);
       updateRecipePreview();
-      if (msgEl) {
-        msgEl.textContent = 'Tag "' + nome + '" aggiunto. Compare nel menu Tag e nella lista sotto.';
-        msgEl.classList.remove('msg-error');
-        msgEl.classList.add('msg-ok');
-        msgEl.hidden = false;
-        setTimeout(function () { if (msgEl) msgEl.hidden = true; }, 4000);
-      }
+      showRicettaMsg('Tag "' + nome + '" aggiunto e selezionato.', false);
     } catch (err) {
-      if (msgEl) {
-        msgEl.textContent = 'Errore: ' + (err && err.message ? err.message : 'impossibile aggiungere');
-        msgEl.classList.add('msg-error');
-        msgEl.classList.remove('msg-ok');
-        msgEl.hidden = false;
-      }
+      showRicettaMsg('Errore: ' + (err && err.message ? err.message : 'impossibile aggiungere'), true);
       console.error('Aggiungi tag', err);
     }
   }
@@ -1786,12 +2273,26 @@
   if (btnAggiungiTag && nuovoTagInput) {
     btnAggiungiTag.addEventListener('click', function (e) {
       e.preventDefault();
-      aggiungiTagDaInput();
+      aggiungiTagDaInput(nuovoTagInput);
     });
     nuovoTagInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        aggiungiTagDaInput();
+        aggiungiTagDaInput(nuovoTagInput);
+      }
+    });
+  }
+  if (ricettaTagCreateBtn && ricettaTagCreateInput) {
+    ricettaTagCreateBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      aggiungiTagDaInput(ricettaTagCreateInput);
+    });
+    ricettaTagCreateInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        aggiungiTagDaInput(ricettaTagCreateInput);
       }
     });
   }
@@ -1840,17 +2341,22 @@
           if (ricettaCategoriaInput) {
             var allCats = getAllRecipeCategories();
             if (allCats.indexOf(cat) >= 0) {
-              ricettaCategoriaInput.value = cat;
-              if (ricettaCategoriaAltroWrap) ricettaCategoriaAltroWrap.setAttribute('hidden', '');
-              if (ricettaCategoriaAltroInput) ricettaCategoriaAltroInput.value = '';
+              setSelectedRecipeCategory(cat);
             } else if (cat && ricettaCategoriaAltroWrap && ricettaCategoriaAltroInput) {
-              ricettaCategoriaInput.value = 'Altro';
+              setSelectedRecipeCategory('Altro');
               ricettaCategoriaAltroWrap.removeAttribute('hidden');
               ricettaCategoriaAltroInput.value = cat;
             } else {
-              ricettaCategoriaInput.value = cat || '';
-              if (ricettaCategoriaAltroWrap) ricettaCategoriaAltroWrap.setAttribute('hidden', '');
-              if (ricettaCategoriaAltroInput) ricettaCategoriaAltroInput.value = '';
+              if (cat) {
+                var customCats = getCustomRecipeCategories();
+                if (customCats.indexOf(cat) < 0) {
+                  customCats.push(cat);
+                  setCustomRecipeCategories(customCats);
+                  refreshSelectsCategorie();
+                  renderListaCategorieRicette();
+                }
+              }
+              setSelectedRecipeCategory(cat || '');
             }
           }
           var allTags = getAllRecipeTags();
@@ -1920,7 +2426,8 @@
             msgEl.classList.remove('msg-ok');
             msgEl.hidden = false;
           }
-          if (ricettaCategoriaInput) ricettaCategoriaInput.focus();
+          if (ricettaCategoriaTrigger) ricettaCategoriaTrigger.focus();
+          else if (ricettaCategoriaInput) ricettaCategoriaInput.focus();
           return;
         }
         if (catSelect === 'Altro' && catCustom && RICETTE_CATEGORIE.indexOf(catCustom) < 0) {
@@ -2170,6 +2677,55 @@
     pdfFileInput.addEventListener('change', updateUploadZoneLabel);
   }
 
+  if (formCartellaMateriale) {
+    formCartellaMateriale.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!msgCartella) return;
+      msgCartella.hidden = true;
+      if (!materialeStore || typeof materialeStore.createFolder !== 'function') {
+        msgCartella.textContent = 'Modulo materiale non disponibile. Ricarica la pagina.';
+        msgCartella.classList.add('msg-error');
+        msgCartella.classList.remove('msg-ok');
+        msgCartella.hidden = false;
+        return;
+      }
+      var name = (folderNameInput && folderNameInput.value || '').trim();
+      if (!name) {
+        msgCartella.textContent = 'Inserisci un nome per la cartella.';
+        msgCartella.classList.add('msg-error');
+        msgCartella.classList.remove('msg-ok');
+        msgCartella.hidden = false;
+        return;
+      }
+      if (btnCreaCartella) {
+        btnCreaCartella.disabled = true;
+        btnCreaCartella.textContent = 'Creazione…';
+      }
+      materialeStore.createFolder(name).then(function (folder) {
+        if (folderNameInput) folderNameInput.value = '';
+        msgCartella.textContent = 'Cartella creata.';
+        msgCartella.classList.remove('msg-error');
+        msgCartella.classList.add('msg-ok');
+        msgCartella.hidden = false;
+        var keepFolders = materialeAdminFolders.slice();
+        if (folder && folder.id) keepFolders.push(folder);
+        return renderListaPdfAdmin({ keepFolders: keepFolders }).then(function () {
+          if (folder && folder.id) refreshFolderSelect(folder.id);
+        });
+      }).catch(function (err) {
+        msgCartella.textContent = (err && err.message) || 'Impossibile creare la cartella.';
+        msgCartella.classList.add('msg-error');
+        msgCartella.classList.remove('msg-ok');
+        msgCartella.hidden = false;
+      }).then(function () {
+        if (btnCreaCartella) {
+          btnCreaCartella.disabled = false;
+          btnCreaCartella.textContent = 'Crea cartella';
+        }
+      });
+    });
+  }
+
   if (formUploadPdf) {
     formUploadPdf.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -2178,6 +2734,16 @@
       if (!materialeStore) {
         msgUpload.textContent = 'Modulo materiale non disponibile. Ricarica la pagina.';
         msgUpload.classList.add('msg-error');
+        msgUpload.hidden = false;
+        return;
+      }
+      var folderId = (pdfFolderSelect && pdfFolderSelect.value || '').trim();
+      if (!folderId) {
+        msgUpload.textContent = materialeAdminFolders.length
+          ? 'Seleziona una cartella per i file.'
+          : 'Crea prima una cartella, poi carica i file.';
+        msgUpload.classList.add('msg-error');
+        msgUpload.classList.remove('msg-ok');
         msgUpload.hidden = false;
         return;
       }
@@ -2243,7 +2809,7 @@
             uploadedItems.forEach(function (it) {
               if (it && it.id && !seen[String(it.id)]) merged.push(it);
             });
-            renderListaPdfAdminFromItems(merged);
+            renderListaPdfAdminFromItems(merged, materialeAdminFolders);
           }
           renderListaPdfAdmin({ keepIfEmpty: uploadedItems }).then(function () {
             // Secondo sync: l'indice Blob a volte non è subito aggiornato
@@ -2270,7 +2836,7 @@
         if (queue.length > 1 && !titleBase) title = cleanName;
         else if (queue.length > 1 && titleBase) title = titleBase + ' ' + (index + 1);
 
-        materialeStore.add(file, title).then(function (item) {
+        materialeStore.add(file, title, folderId).then(function (item) {
           added++;
           if (item) uploadedItems.push(item);
           processNext(index + 1);
