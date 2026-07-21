@@ -160,14 +160,15 @@
 
 .article-tag {
   margin: 0 0.15rem;
-  padding: 0.28em 0.7em;
+  padding: 0.3em 0.75em;
   color: var(--tag-color, #5a5a5a);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.01em;
   text-transform: lowercase;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--tag-color, #8a8a8a) 16%, transparent);
-  border: 1px solid color-mix(in srgb, var(--tag-color, #8a8a8a) 28%, transparent);
+  background: color-mix(in srgb, var(--tag-color, #8a8a8a) 18%, #fff 82%);
+  border: 1px solid color-mix(in srgb, var(--tag-color, #8a8a8a) 32%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-color, #8a8a8a) 8%, transparent);
 }
 
 .article-title {

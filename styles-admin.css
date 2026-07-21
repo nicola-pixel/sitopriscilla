@@ -824,9 +824,10 @@
 
 .recipe-preview-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.65rem 1rem;
+  gap: 0.45rem 0.75rem;
   width: 100%;
   margin-bottom: 0.5rem;
   padding: 0;
@@ -843,6 +844,8 @@
 .recipe-preview-meta .blog-meta-category {
   display: inline-flex;
   align-items: center;
+  flex: 0 0 auto;
+  max-width: 100%;
   color: var(--admin-text);
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -854,23 +857,30 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex: 1 1 10rem;
+  min-width: min(100%, 10rem);
+  max-width: 100%;
   text-align: right;
 }
 
 .recipe-preview-meta .blog-meta-tag {
   display: inline-flex;
   align-items: center;
-  margin: 0 0.15rem;
-  padding: 0.28em 0.7em;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.3em 0.75em;
   color: var(--tag-color, #5a5a5a);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.01em;
   text-transform: lowercase;
   line-height: 1.2;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--tag-color, #8a8a8a) 16%, transparent);
-  border: 1px solid color-mix(in srgb, var(--tag-color, #8a8a8a) 28%, transparent);
+  background: color-mix(in srgb, var(--tag-color, #8a8a8a) 18%, #fff 82%);
+  border: 1px solid color-mix(in srgb, var(--tag-color, #8a8a8a) 32%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-color, #8a8a8a) 8%, transparent);
 }
 
 .multi-select {
@@ -1887,8 +1897,9 @@
 .categorie-list .categoria-actions {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 .categorie-list .categoria-edit-input {
@@ -1909,41 +1920,55 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-.categorie-list .btn-edit-cat,
-.categorie-list .btn-edit-tag,
 .categorie-list .btn-save-cat,
 .categorie-list .btn-save-tag,
 .categorie-list .btn-cancel-cat,
-.categorie-list .btn-cancel-tag,
-.categorie-list .btn-remove-cat,
-.categorie-list .btn-remove-tag {
+.categorie-list .btn-cancel-tag {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--admin-border);
-  background: var(--admin-bg);
+  background: transparent;
   color: var(--admin-text-muted);
-  border-radius: 999px;
-  padding: 0.28rem 0.7rem;
+  border-radius: var(--admin-radius-pill);
+  padding: 0.45rem 1rem;
   font-size: 0.75rem;
-  font-weight: 550;
-  font-family: inherit;
+  font-weight: 600;
+  font-family: var(--admin-font);
   cursor: pointer;
   line-height: 1.2;
+  letter-spacing: 0.02em;
+  transition:
+    background var(--admin-transition),
+    border-color var(--admin-transition),
+    color var(--admin-transition),
+    box-shadow var(--admin-transition),
+    transform var(--admin-transition);
 }
 
-.categorie-list .btn-edit-cat:hover,
-.categorie-list .btn-edit-tag:hover,
+.categorie-list .btn-save-cat,
+.categorie-list .btn-save-tag {
+  background: var(--admin-text);
+  border-color: var(--admin-text);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.12);
+}
+
 .categorie-list .btn-save-cat:hover,
 .categorie-list .btn-save-tag:hover {
-  color: #1d4ed8;
-  border-color: #93c5fd;
-  background: rgba(37, 99, 235, 0.06);
+  background: #000;
+  border-color: #000;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.18);
+  transform: translateY(-1px);
 }
 
-.categorie-list .btn-remove-cat:hover,
-.categorie-list .btn-remove-tag:hover {
-  color: #be123c;
+.categorie-list .btn-cancel-cat:hover,
+.categorie-list .btn-cancel-tag:hover {
+  background: var(--admin-rose-soft);
   border-color: #fecdd3;
-  background: rgba(190, 18, 60, 0.06);
+  color: #be123c;
 }
 
 .admin-filters,
@@ -2059,19 +2084,27 @@
 .lista-articoli-admin .btn-edit,
 .lista-articoli-admin .btn-remove,
 .lista-sedi-admin .btn-move,
+.lista-cv-admin .btn-move,
 .lista-pdf-admin .btn-edit,
 .lista-pdf-admin .btn-remove,
-.lista-cartelle-admin .btn-remove {
+.lista-cartelle-admin .btn-remove,
+.categorie-list .btn-edit-cat,
+.categorie-list .btn-edit-tag,
+.categorie-list .btn-remove-cat,
+.categorie-list .btn-remove-tag,
+.btn-remove-cv {
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 1rem;
   font-size: 0.75rem;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: var(--admin-radius-pill);
   cursor: pointer;
   font-family: var(--admin-font);
   line-height: 1.2;
+  letter-spacing: 0.02em;
   transition:
     background var(--admin-transition),
     border-color var(--admin-transition),
@@ -2081,18 +2114,19 @@
 }
 
 .lista-articoli-admin .btn-edit,
-.lista-pdf-admin .btn-edit {
+.lista-pdf-admin .btn-edit,
+.categorie-list .btn-edit-cat,
+.categorie-list .btn-edit-tag {
   background: var(--admin-text);
   border: 1px solid var(--admin-text);
   color: #fff;
-  border-radius: var(--admin-radius-pill);
-  padding: 0.45rem 1rem;
-  letter-spacing: 0.02em;
   box-shadow: 0 1px 2px rgba(17, 24, 39, 0.12);
 }
 
 .lista-articoli-admin .btn-edit:hover,
-.lista-pdf-admin .btn-edit:hover {
+.lista-pdf-admin .btn-edit:hover,
+.categorie-list .btn-edit-cat:hover,
+.categorie-list .btn-edit-tag:hover {
   background: #000;
   border-color: #000;
   color: #fff;
@@ -2101,7 +2135,9 @@
 }
 
 .lista-articoli-admin .btn-edit:active,
-.lista-pdf-admin .btn-edit:active {
+.lista-pdf-admin .btn-edit:active,
+.categorie-list .btn-edit-cat:active,
+.categorie-list .btn-edit-tag:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(17, 24, 39, 0.12);
 }
@@ -2137,6 +2173,10 @@
 .lista-articoli-admin .btn-remove,
 .lista-pdf-admin .btn-remove,
 .lista-cartelle-admin .btn-remove,
+.lista-sedi-admin .btn-move,
+.lista-cv-admin .btn-move,
+.categorie-list .btn-remove-cat,
+.categorie-list .btn-remove-tag,
 .btn-remove-cv {
   background: transparent;
   border: 1px solid var(--admin-border);
@@ -2146,10 +2186,19 @@
 .lista-articoli-admin .btn-remove:hover,
 .lista-pdf-admin .btn-remove:hover,
 .lista-cartelle-admin .btn-remove:hover,
+.categorie-list .btn-remove-cat:hover,
+.categorie-list .btn-remove-tag:hover,
 .btn-remove-cv:hover {
   background: var(--admin-rose-soft);
   border-color: #fecdd3;
   color: #be123c;
+}
+
+.lista-sedi-admin .btn-move:hover,
+.lista-cv-admin .btn-move:hover {
+  background: var(--admin-bg-soft);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
 }
 
 .lista-articoli-admin .empty,
@@ -2379,12 +2428,7 @@
 }
 
 .btn-remove-cv {
-  padding: 0.55rem 1rem;
-  font-size: 0.8125rem;
   margin-top: 0.75rem;
-  border-radius: 10px;
-  cursor: pointer;
-  font-family: var(--admin-font);
 }
 
 /* ---------- Dashboard widgets ---------- */
@@ -3320,7 +3364,9 @@ body.admin-confirm-open {
 
   .lista-articoli-admin .articolo-actions,
   .lista-pdf-admin .pdf-actions,
-  .lista-sedi-admin .articolo-actions {
+  .lista-sedi-admin .articolo-actions,
+  .lista-cv-admin .articolo-actions,
+  .categorie-list .categoria-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.45rem;
@@ -3330,15 +3376,21 @@ body.admin-confirm-open {
   .lista-articoli-admin .btn-edit,
   .lista-articoli-admin .btn-remove,
   .lista-sedi-admin .btn-move,
+  .lista-cv-admin .btn-move,
   .lista-pdf-admin .btn-edit,
-  .lista-pdf-admin .btn-remove {
+  .lista-pdf-admin .btn-remove,
+  .categorie-list .btn-edit-cat,
+  .categorie-list .btn-edit-tag,
+  .categorie-list .btn-remove-cat,
+  .categorie-list .btn-remove-tag {
     flex: 1 1 auto;
     min-height: 40px;
     justify-content: center;
     text-align: center;
   }
 
-  .lista-sedi-admin .btn-move {
+  .lista-sedi-admin .btn-move,
+  .lista-cv-admin .btn-move {
     flex: 0 0 40px;
     min-width: 40px;
     padding-left: 0;

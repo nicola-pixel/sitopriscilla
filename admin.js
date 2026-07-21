@@ -2517,8 +2517,8 @@
         (isBaseRecipeCategory(cat) ? ' <span class="categoria-badge">predefinita</span>' : '') +
         '</span>' +
         '<span class="categoria-actions">' +
-        '<button type="button" class="btn-edit-cat" data-name="' + escapeHtml(cat) + '">Modifica</button>' +
-        '<button type="button" class="btn-remove-cat" data-name="' + escapeHtml(cat) + '">Elimina</button>' +
+        '<button type="button" class="btn-edit-cat" data-name="' + escapeHtml(cat) + '" aria-label="Modifica">Modifica</button>' +
+        '<button type="button" class="btn-remove-cat" data-name="' + escapeHtml(cat) + '" aria-label="Rimuovi">Rimuovi</button>' +
         '</span>';
       listaCategorieRicette.appendChild(li);
     });
@@ -2596,9 +2596,9 @@
         var name = btn.getAttribute('data-name') || '';
         if (!name) return;
         adminConfirm({
-          title: 'Eliminare la categoria?',
+          title: 'Rimuovere la categoria?',
           text: 'La categoria "' + name + '" verrà tolta anche dalle ricette che la usano.',
-          confirmLabel: 'Elimina'
+          confirmLabel: 'Rimuovi'
         }).then(function (ok) {
           if (!ok) return;
           deleteManagedRecipeCategory(name);
@@ -2624,8 +2624,8 @@
       li.innerHTML =
         '<span class="categoria-nome">' + escapeHtml(tag) + '</span>' +
         '<span class="categoria-actions">' +
-        '<button type="button" class="btn-edit-tag" data-name="' + escapeHtml(tag) + '">Modifica</button>' +
-        '<button type="button" class="btn-remove-tag" data-name="' + escapeHtml(tag) + '">Elimina</button>' +
+        '<button type="button" class="btn-edit-tag" data-name="' + escapeHtml(tag) + '" aria-label="Modifica">Modifica</button>' +
+        '<button type="button" class="btn-remove-tag" data-name="' + escapeHtml(tag) + '" aria-label="Rimuovi">Rimuovi</button>' +
         '</span>';
       listaTagRicette.appendChild(li);
     });
@@ -2703,9 +2703,9 @@
         var name = btn.getAttribute('data-name') || '';
         if (!name) return;
         adminConfirm({
-          title: 'Eliminare il tag?',
+          title: 'Rimuovere il tag?',
           text: 'Il tag "' + name + '" verrà tolto anche dalle ricette che lo usano.',
-          confirmLabel: 'Elimina'
+          confirmLabel: 'Rimuovi'
         }).then(function (ok) {
           if (!ok) return;
           deleteManagedRecipeTag(name);
@@ -3012,13 +3012,13 @@
         if (!id || btn.disabled) return;
         var recipe = getRecipes().find(function (r) { return r.id === id; });
         adminConfirm({
-          title: 'Eliminare questa ricetta?',
-          text: '"' + ((recipe && recipe.title) || 'Senza titolo') + '" verrà eliminata. L\'operazione non è reversibile.',
-          confirmLabel: 'Elimina'
+          title: 'Rimuovere questa ricetta?',
+          text: '"' + ((recipe && recipe.title) || 'Senza titolo') + '" verrà rimossa. L\'operazione non è reversibile.',
+          confirmLabel: 'Rimuovi'
         }).then(function (ok) {
           if (!ok) return;
           btn.disabled = true;
-          btn.textContent = 'Eliminazione…';
+          btn.textContent = 'Rimozione…';
           var deletePromise = removePersistedRecipe(id);
           // Ridisegna subito: deleteRecipe ha già tolto l’id in locale + tombstone.
           renderListaRicetteAdmin();

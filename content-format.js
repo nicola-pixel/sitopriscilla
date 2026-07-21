@@ -303,16 +303,16 @@
 
   /** Palette fissa: stesso nome → stesso colore su tutte le pagine. */
   var TAG_COLORS = [
-    '#E07A5F',
-    '#3D8B7A',
-    '#D4A017',
-    '#6B8F71',
-    '#C45C6A',
-    '#5B7C99',
-    '#B87D4B',
-    '#7A6B9A',
-    '#2A9D8F',
-    '#C97B4A',
+    '#E85D4C', /* pomodoro */
+    '#0F9B8E', /* teal */
+    '#E6A817', /* zafferano */
+    '#3B8C5A', /* basilico */
+    '#D63B6E', /* lampone */
+    '#3B6FE0', /* oceano */
+    '#C45A1A', /* paprika */
+    '#8B5CF6', /* violetto */
+    '#0891B2', /* acqua */
+    '#DB2777', /* fucsia */
   ];
 
   function tagColor(name) {
