@@ -25,7 +25,7 @@
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
   <link rel="preload" href="https://assets.calendly.com/assets/external/widget.js" as="script">
   <script defer src="https://assets.calendly.com/assets/external/widget.js"></script>
-  <link rel="stylesheet" href="styles.css?v=20260721g">
+  <link rel="stylesheet" href="styles.css?v=20260721t">
 </head>
 <body>
   <header class="header">
@@ -83,8 +83,25 @@
           </div>
         </div>
         <div class="hero-image reveal reveal-delay-2">
-          <span class="hero-image-glow" aria-hidden="true"></span>
-          <img src="assets/priscilla-portrait.png?v=7" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" class="hero-photo" width="361" height="528">
+          <svg class="hero-glow-clip" width="0" height="0" aria-hidden="true" focusable="false">
+            <defs>
+              <clipPath id="hero-glow-shape" clipPathUnits="objectBoundingBox">
+                <path d="M0.07 0.48
+                  C0.04 0.34 0.07 0.16 0.20 0.10
+                  C0.32 0.04 0.42 0.09 0.52 0.13
+                  C0.66 0.19 0.78 0.16 0.88 0.26
+                  C0.96 0.34 1.00 0.48 0.95 0.60
+                  C0.89 0.76 0.76 0.88 0.60 0.91
+                  C0.48 0.94 0.40 0.82 0.31 0.86
+                  C0.22 0.91 0.14 0.88 0.10 0.74
+                  C0.06 0.64 0.08 0.56 0.07 0.48 Z"/>
+              </clipPath>
+            </defs>
+          </svg>
+          <span class="hero-image-glow" aria-hidden="true">
+            <span class="hero-image-glow-shape"></span>
+          </span>
+          <img src="assets/priscilla-portrait.png?v=8" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" class="hero-photo" width="650" height="829">
         </div>
       </div>
     </section>
@@ -489,19 +506,21 @@
               </div>
               <p class="about-card-label">Energia</p>
             </article>
-            <article class="about-card about-card--macro">
+            <article class="about-card about-card--personalizzazione">
               <div class="about-card-frame">
-                <svg class="about-card-chart about-card-chart--donut" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="40" r="26" stroke="#E8ECF8" stroke-width="10"/>
-                  <circle cx="40" cy="40" r="26" stroke="#6B8CFF" stroke-width="10" stroke-linecap="round"
-                    stroke-dasharray="98 163" transform="rotate(-90 40 40)"/>
-                  <circle cx="40" cy="40" r="26" stroke="#B8A4F5" stroke-width="10" stroke-linecap="round"
-                    stroke-dasharray="52 163" stroke-dashoffset="-98" transform="rotate(-90 40 40)"/>
-                  <circle cx="40" cy="40" r="26" stroke="#E879A9" stroke-width="10" stroke-linecap="round"
-                    stroke-dasharray="28 163" stroke-dashoffset="-150" transform="rotate(-90 40 40)"/>
+                <svg class="about-card-chart about-card-chart--sliders" viewBox="0 0 120 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="14" y="17" width="92" height="8" rx="4" fill="#E8ECF8"/>
+                  <rect x="14" y="17" width="58" height="8" rx="4" fill="#B8A4F5"/>
+                  <circle cx="72" cy="21" r="6" fill="#B8A4F5" stroke="#fff" stroke-width="2"/>
+                  <rect x="14" y="33" width="92" height="8" rx="4" fill="#E8ECF8"/>
+                  <rect x="14" y="33" width="42" height="8" rx="4" fill="#6B8CFF"/>
+                  <circle cx="56" cy="37" r="6" fill="#6B8CFF" stroke="#fff" stroke-width="2"/>
+                  <rect x="14" y="49" width="92" height="8" rx="4" fill="#E8ECF8"/>
+                  <rect x="14" y="49" width="76" height="8" rx="4" fill="#E879A9"/>
+                  <circle cx="90" cy="53" r="6" fill="#E879A9" stroke="#fff" stroke-width="2"/>
                 </svg>
               </div>
-              <p class="about-card-label">Macronutrienti</p>
+              <p class="about-card-label">Personalizzazione</p>
             </article>
             <article class="about-card about-card--equilibrio">
               <div class="about-card-frame">
@@ -819,7 +838,7 @@
   <script src="sedi.js"></script>
   <script src="cv.js"></script>
   <script src="site-nav.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js?v=20260721j"></script>
   <script>
     (function() {
       var STORAGE_KEY_CV = 'scarica_cv';

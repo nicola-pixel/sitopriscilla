@@ -3,6 +3,28 @@
 
   var STORAGE_KEY_BLOG = 'blog_articoli';
   var STORAGE_KEY_RICETTE = 'ricette';
+  var STORAGE_KEY_CATEGORIE_RICETTE = 'ricette_categorie';
+  var STORAGE_KEY_TAG_RICETTE = 'ricette_tag';
+  var RICETTE_CATEGORIE = [
+    'Pre-workout',
+    'Post-workout',
+    'Snack',
+    'Colazione',
+    'Pranzo',
+    'Cena',
+    'Primi',
+    'Secondi',
+    'Dessert',
+    'Bevande',
+    'Altro',
+  ];
+  var ARTICOLI_CATEGORIE = [
+    'Nutrizione',
+    'Sport',
+    'Alimentazione',
+    'Salute',
+    'Approfondimenti',
+  ];
 
   function getBlogPosts() {
     try {
@@ -20,6 +42,27 @@
     } catch (e) {
       return [];
     }
+  }
+
+  function readJsonArray(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function uniqueSorted(values) {
+    var out = [];
+    values.forEach(function (value) {
+      var name = String(value || '').trim();
+      if (name && out.indexOf(name) < 0) out.push(name);
+    });
+    return out.sort(function (a, b) {
+      return a.localeCompare(b, 'it');
+    });
   }
 
   function getParam(name) {
@@ -228,12 +271,67 @@
   }
 
   function postCategory(post) {
-    return String((post && post.meta) || 'Articolo').trim() || 'Articolo';
+    var raw = String((post && post.meta) || '').trim();
+    if (!raw) return '';
+    // Meta admin: "Categoria · 5 min" → usa solo la categoria
+    var cat = raw.split(/\s*[·|]\s*/)[0].trim();
+    return cat || raw;
   }
 
-  /** Per le ricette «Ricetta» è la categoria di default (filtrabile). */
+  function postMetaLabel(post) {
+    return postCategory(post) || 'Articolo';
+  }
+
+  /** Categoria ricetta (non usa il tag; gestisce il vecchio mirror tag === categoria). */
   function recipeCategory(recipe) {
-    return String((recipe && (recipe.category || recipe.tag)) || 'Ricetta').trim() || 'Ricetta';
+    if (!recipe) return '';
+    var cat = String(recipe.category || '').trim();
+    if (cat) return cat;
+    if (!Object.prototype.hasOwnProperty.call(recipe, 'category')) {
+      return String(recipe.tag || '').trim();
+    }
+    return '';
+  }
+
+  /** Tag dedicati; ignora il vecchio mirror tag === categoria. Supporta tags[] e tag singolo. */
+  function recipeTags(recipe) {
+    if (!recipe) return [];
+    if (Array.isArray(recipe.tags)) {
+      return recipe.tags
+        .map(function (t) {
+          return String(t || '').trim();
+        })
+        .filter(Boolean);
+    }
+    var tag = String(recipe.tag || '').trim();
+    if (!tag) return [];
+    var cat = String(recipe.category || '').trim();
+    if (cat && tag === cat) return [];
+    if (!Object.prototype.hasOwnProperty.call(recipe, 'category')) return [];
+    return [tag];
+  }
+
+  function recipeTag(recipe) {
+    var tags = recipeTags(recipe);
+    return tags.length ? tags[0] : '';
+  }
+
+  function recipeMetaHtml(recipe) {
+    var cat = recipeCategory(recipe);
+    var tags = recipeTags(recipe);
+    var tagsHtml = tags
+      .map(function (t) {
+        return '<span class="blog-meta-tag">' + escapeHtml(t) + '</span>';
+      })
+      .join('');
+    /* Badge «Ricetta» resta sull'immagine; sopra il titolo solo categoria (sx) + tag (dx). */
+    if (!cat && !tags.length) return '';
+    return (
+      '<div class="blog-meta blog-meta--split">' +
+      (cat ? '<span class="blog-meta-category">' + escapeHtml(cat) + '</span>' : '<span class="blog-meta-category"></span>') +
+      (tagsHtml ? '<span class="blog-meta-tags">' + tagsHtml + '</span>' : '') +
+      '</div>'
+    );
   }
 
   function itemCategory(item) {
@@ -241,15 +339,59 @@
     return postCategory(item.post);
   }
 
-  function getCategories(items) {
-    var categories = [];
+  function getPostCategoriesFromItems(items) {
+    var fromPosts = [];
     items.forEach(function (item) {
-      var cat = itemCategory(item);
-      if (cat && categories.indexOf(cat) < 0) categories.push(cat);
+      if (item.type !== 'post') return;
+      var cat = postCategory(item.post);
+      if (cat) fromPosts.push(cat);
     });
-    return categories.sort(function (a, b) {
-      return a.localeCompare(b, 'it');
+    return uniqueSorted(ARTICOLI_CATEGORIE.concat(fromPosts));
+  }
+
+  function getRecipeCategoryOptions(items) {
+    var fromRecipes = [];
+    items.forEach(function (item) {
+      if (item.type !== 'recipe') return;
+      var cat = recipeCategory(item.recipe);
+      if (cat) fromRecipes.push(cat);
     });
+    return uniqueSorted(
+      RICETTE_CATEGORIE.concat(readJsonArray(STORAGE_KEY_CATEGORIE_RICETTE), fromRecipes)
+    );
+  }
+
+  function getRecipeTagOptions(items) {
+    var fromRecipes = [];
+    items.forEach(function (item) {
+      if (item.type !== 'recipe') return;
+      recipeTags(item.recipe).forEach(function (tag) {
+        fromRecipes.push(tag);
+      });
+    });
+    return uniqueSorted(readJsonArray(STORAGE_KEY_TAG_RICETTE).concat(fromRecipes));
+  }
+
+  function countLabel(count, typeFilter) {
+    if (typeFilter === 'recipe') {
+      return count === 1 ? '1 ricetta' : count + ' ricette';
+    }
+    if (typeFilter === 'post') {
+      return count === 1 ? '1 articolo' : count + ' articoli';
+    }
+    return count === 1 ? '1 contenuto' : count + ' contenuti';
+  }
+
+  function emptyMessage(typeFilter, categoryFilter, tagFilter) {
+    if (tagFilter) return 'Nessuna ricetta con questo tag.';
+    if (categoryFilter) {
+      if (typeFilter === 'recipe') return 'Nessuna ricetta in questa categoria.';
+      if (typeFilter === 'post') return 'Nessun articolo in questa categoria.';
+      return 'Nessun contenuto in questa categoria.';
+    }
+    if (typeFilter === 'recipe') return 'Non ci sono ancora ricette pubblicate.';
+    if (typeFilter === 'post') return 'Non ci sono ancora articoli pubblicati.';
+    return 'Non ci sono ancora contenuti pubblicati.';
   }
 
   function renderListing() {
@@ -257,9 +399,15 @@
     var articleMain = document.getElementById('articleMain');
     var grid = document.getElementById('blogGrid');
     var emptyEl = document.getElementById('blogEmpty');
+    var emptyTextEl = document.getElementById('blogEmptyText');
     var toolbar = document.getElementById('blogToolbar');
     var countEl = document.getElementById('blogCount');
+    var typeFilterEl = document.getElementById('filtroTipoBlog');
+    var categoryFilterWrap = document.getElementById('blogCategoryFilterWrap');
+    var categoryFilterLabel = document.getElementById('blogCategoryFilterLabel');
     var filterEl = document.getElementById('filtroCategoriaBlog');
+    var tagFilterWrap = document.getElementById('blogTagFilterWrap');
+    var tagFilterEl = document.getElementById('filtroTagBlog');
 
     if (listing) listing.hidden = false;
     if (articleMain) {
@@ -270,41 +418,96 @@
     var allItems = buildItems();
     applyListingSeo(allItems);
 
-    if (filterEl) {
-      var current = filterEl.value || '';
-      filterEl.innerHTML = '<option value="">Tutte le categorie</option>';
-      getCategories(allItems).forEach(function (cat) {
+    function fillSelect(selectEl, placeholderHtml, values, current) {
+      if (!selectEl) return;
+      selectEl.innerHTML = placeholderHtml;
+      values.forEach(function (value) {
         var opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        filterEl.appendChild(opt);
+        opt.value = value;
+        opt.textContent = value;
+        selectEl.appendChild(opt);
       });
-      if (current) filterEl.value = current;
+      if (current && values.indexOf(current) >= 0) {
+        selectEl.value = current;
+      } else {
+        selectEl.value = '';
+      }
+    }
+
+    function syncFilters(typeFilter) {
+      if (!typeFilter) {
+        if (categoryFilterWrap) categoryFilterWrap.hidden = true;
+        if (tagFilterWrap) tagFilterWrap.hidden = true;
+        if (filterEl) filterEl.value = '';
+        if (tagFilterEl) tagFilterEl.value = '';
+        return;
+      }
+
+      if (categoryFilterWrap) categoryFilterWrap.hidden = false;
+      if (categoryFilterLabel) {
+        categoryFilterLabel.textContent =
+          typeFilter === 'recipe' ? 'Categoria ricetta' : 'Categoria articolo';
+      }
+
+      var categories =
+        typeFilter === 'recipe'
+          ? getRecipeCategoryOptions(allItems)
+          : getPostCategoriesFromItems(allItems);
+      fillSelect(
+        filterEl,
+        '<option value="">Tutte le categorie</option>',
+        categories,
+        filterEl ? filterEl.value || '' : ''
+      );
+
+      if (typeFilter === 'recipe') {
+        if (tagFilterWrap) tagFilterWrap.hidden = false;
+        fillSelect(
+          tagFilterEl,
+          '<option value="">Tutti i tag</option>',
+          getRecipeTagOptions(allItems),
+          tagFilterEl ? tagFilterEl.value || '' : ''
+        );
+      } else {
+        if (tagFilterWrap) tagFilterWrap.hidden = true;
+        if (tagFilterEl) tagFilterEl.value = '';
+      }
     }
 
     function paint() {
-      var filter = filterEl ? filterEl.value : '';
+      var typeFilter = typeFilterEl ? typeFilterEl.value : '';
+      syncFilters(typeFilter);
+
+      var categoryFilter = filterEl ? filterEl.value : '';
+      var tagFilter = tagFilterEl && typeFilter === 'recipe' ? tagFilterEl.value : '';
       var items = allItems.filter(function (item) {
-        if (!filter) return true;
-        return itemCategory(item) === filter;
+        if (typeFilter && item.type !== typeFilter) return false;
+        if (categoryFilter && itemCategory(item) !== categoryFilter) return false;
+        if (tagFilter) {
+          if (item.type !== 'recipe') return false;
+          if (recipeTags(item.recipe).indexOf(tagFilter) < 0) return false;
+        }
+        return true;
       });
 
       if (toolbar) toolbar.hidden = allItems.length === 0;
       if (countEl) {
-        countEl.textContent =
-          items.length === 1 ? '1 contenuto' : items.length + ' contenuti';
+        countEl.textContent = countLabel(items.length, typeFilter);
       }
 
       if (!items.length) {
         if (grid) grid.innerHTML = '';
         if (emptyEl) emptyEl.hidden = false;
+        if (emptyTextEl) {
+          emptyTextEl.textContent = emptyMessage(typeFilter, categoryFilter, tagFilter);
+        }
         return;
       }
       if (emptyEl) emptyEl.hidden = true;
 
       var html = '';
       var imageClasses = ['', ' blog-card-image--2', ' blog-card-image--3'];
-      var showFeatured = !filter && items.length >= 3;
+      var showFeatured = !typeFilter && !categoryFilter && !tagFilter && items.length >= 3;
       items.forEach(function (item, i) {
         var imgClass = 'blog-card-image' + (imageClasses[i % 3] || '');
         var featuredClass = showFeatured && i === 0 ? ' blog-card--featured' : '';
@@ -313,7 +516,7 @@
           var post = item.post;
           var imgStyle = post.imageUrl ? bgImageStyle(post.imageUrl) : '';
           var postHref = '/blog?id=' + encodeURIComponent(post.id);
-          var postCat = postCategory(post);
+          var postCat = postMetaLabel(post);
           var postDate = formatDate(post.createdAt);
           var postRead = readingMinutes(post);
           html +=
@@ -356,7 +559,6 @@
           var recipe = item.recipe;
           var recipeImgStyle = recipe.imageUrl ? bgImageStyle(recipe.imageUrl) : '';
           var recipeHref = '/ricetta?id=' + encodeURIComponent(recipe.id);
-          var recipeCat = recipeCategory(recipe);
           var recipeDate = formatDate(recipe.createdAt);
           html +=
             '<a href="' +
@@ -375,9 +577,7 @@
             '<span class="blog-card-badge">Ricetta</span>' +
             '</div>' +
             '<div class="blog-card-content">' +
-            '<span class="blog-meta">' +
-            escapeHtml(recipeCat) +
-            '</span>' +
+            recipeMetaHtml(recipe) +
             '<h2>' +
             escapeHtml(recipe.title) +
             '</h2>' +
@@ -396,9 +596,17 @@
       if (grid) grid.innerHTML = html;
     }
 
+    if (typeFilterEl && !typeFilterEl._blogBound) {
+      typeFilterEl._blogBound = true;
+      typeFilterEl.addEventListener('change', paint);
+    }
     if (filterEl && !filterEl._blogBound) {
       filterEl._blogBound = true;
       filterEl.addEventListener('change', paint);
+    }
+    if (tagFilterEl && !tagFilterEl._blogBound) {
+      tagFilterEl._blogBound = true;
+      tagFilterEl.addEventListener('change', paint);
     }
     paint();
   }
@@ -437,7 +645,7 @@
           : '') +
         '<div class="article-related-card-body">' +
         '<span class="blog-meta">' +
-        escapeHtml(post.meta || 'Articolo') +
+        escapeHtml(postMetaLabel(post)) +
         '</span>' +
         '<h3>' +
         escapeHtml(post.title) +
@@ -481,7 +689,7 @@
     applyArticleSeo(post, id);
 
     if (titleEl) titleEl.textContent = post.title || '';
-    if (metaEl) metaEl.textContent = post.meta || 'Articolo';
+    if (metaEl) metaEl.textContent = postMetaLabel(post);
 
     var dateLabel = formatDate(post.createdAt);
     if (dateEl) {

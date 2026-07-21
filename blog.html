@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260721g">
-  <link rel="stylesheet" href="styles-blog.css?v=20260721b">
+  <link rel="stylesheet" href="styles.css?v=20260721j">
+  <link rel="stylesheet" href="styles-blog.css?v=20260721j">
 </head>
 <body>
   <header class="header">
@@ -75,13 +75,35 @@
 
     <div class="container blog-listing-body">
       <div class="ricette-toolbar blog-listing-toolbar" id="blogToolbar" hidden>
-        <div class="ricette-filters">
-          <label for="filtroCategoriaBlog" class="ricette-filter-label">Categoria</label>
-          <div class="select-wrap select-wrap--filter">
-            <select id="filtroCategoriaBlog" class="select-modern select-modern--filter" aria-label="Filtra per categoria">
-              <option value="">Tutte le categorie</option>
-            </select>
-            <span class="select-chevron" aria-hidden="true"></span>
+        <div class="blog-listing-filters">
+          <div class="ricette-filters">
+            <label for="filtroTipoBlog" class="ricette-filter-label">Contenuto</label>
+            <div class="select-wrap select-wrap--filter">
+              <select id="filtroTipoBlog" class="select-modern select-modern--filter" aria-label="Filtra per tipo di contenuto">
+                <option value="">Tutti i contenuti</option>
+                <option value="recipe">Ricette</option>
+                <option value="post">Articoli</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="ricette-filters" id="blogCategoryFilterWrap" hidden>
+            <label for="filtroCategoriaBlog" class="ricette-filter-label" id="blogCategoryFilterLabel">Categoria</label>
+            <div class="select-wrap select-wrap--filter">
+              <select id="filtroCategoriaBlog" class="select-modern select-modern--filter" aria-label="Filtra per categoria">
+                <option value="">Tutte le categorie</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="ricette-filters" id="blogTagFilterWrap" hidden>
+            <label for="filtroTagBlog" class="ricette-filter-label">Tag</label>
+            <div class="select-wrap select-wrap--filter">
+              <select id="filtroTagBlog" class="select-modern select-modern--filter" aria-label="Filtra per tag">
+                <option value="">Tutti i tag</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </div>
           </div>
         </div>
         <p class="ricette-count" id="blogCount" aria-live="polite"></p>
@@ -90,8 +112,7 @@
       <div class="blog-grid ricette-grid blog-listing-grid" id="blogGrid"></div>
 
       <div class="ricette-empty" id="blogEmpty" hidden>
-        <p>Non ci sono ancora ricette pubblicate.</p>
-        <a href="index.html#blog" class="btn btn-primary">Crea la prima ricetta</a>
+        <p id="blogEmptyText">Non ci sono ancora contenuti pubblicati.</p>
       </div>
     </div>
   </main>
@@ -231,8 +252,8 @@
   <script src="config.js?v=20260721c"></script>
   <script src="seo.js?v=20260721c"></script>
   <script src="site-nav.js?v=20260721c"></script>
-  <script src="script.js?v=20260721c"></script>
+  <script src="script.js?v=20260721j"></script>
   <script src="content-format.js?v=20260721c"></script>
-  <script src="blog.js?v=20260721c"></script>
+  <script src="blog.js?v=20260721j"></script>
 </body>
 </html>

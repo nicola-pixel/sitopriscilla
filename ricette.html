@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260721g">
+  <link rel="stylesheet" href="styles.css?v=20260721j">
   <link rel="stylesheet" href="styles-blog.css">
 </head>
 <body>
@@ -64,13 +64,24 @@
       </div>
 
       <div class="ricette-toolbar" id="ricetteToolbar" hidden>
-        <div class="ricette-filters">
-          <label for="filtroCategoriaRicette" class="ricette-filter-label">Categoria</label>
-          <div class="select-wrap select-wrap--filter">
-            <select id="filtroCategoriaRicette" class="select-modern select-modern--filter" aria-label="Filtra per categoria">
-              <option value="">Tutte le categorie</option>
-            </select>
-            <span class="select-chevron" aria-hidden="true"></span>
+        <div class="blog-listing-filters">
+          <div class="ricette-filters">
+            <label for="filtroCategoriaRicette" class="ricette-filter-label">Categoria</label>
+            <div class="select-wrap select-wrap--filter">
+              <select id="filtroCategoriaRicette" class="select-modern select-modern--filter" aria-label="Filtra per categoria">
+                <option value="">Tutte le categorie</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="ricette-filters">
+            <label for="filtroTagRicette" class="ricette-filter-label">Tag</label>
+            <div class="select-wrap select-wrap--filter">
+              <select id="filtroTagRicette" class="select-modern select-modern--filter" aria-label="Filtra per tag">
+                <option value="">Tutti i tag</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </div>
           </div>
         </div>
         <p class="ricette-count" id="ricetteCount" aria-live="polite"></p>
@@ -136,10 +147,10 @@
     </div>
   </footer>
 
-  <script src="config.js"></script>
-  <script src="seo.js"></script>
-  <script src="site-nav.js"></script>
-  <script src="script.js"></script>
-  <script src="ricette.js"></script>
+  <script src="config.js?v=20260721i"></script>
+  <script src="seo.js?v=20260721i"></script>
+  <script src="site-nav.js?v=20260721i"></script>
+  <script src="script.js?v=20260721j"></script>
+  <script src="ricette.js?v=20260721j"></script>
 </body>
 </html>

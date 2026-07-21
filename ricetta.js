@@ -78,7 +78,7 @@
       style = document.createElement('style');
       style.id = 'ricetta-visibility-fix';
       style.textContent =
-        '.article-header,.article-title,.article-excerpt,.article-category,.article-body.prose,.article-cover{' +
+        '.article-header,.article-title,.article-excerpt,.article-category,.article-tag,.article-meta-chips,.article-body.prose,.article-cover{' +
         'opacity:1!important;transform:none!important;animation:none!important;visibility:visible!important}' +
         '.article-title,.article-body.prose{color:#111!important}';
       document.head.appendChild(style);
@@ -136,8 +136,57 @@
       title: title,
       description: description,
       path: path,
-      category: (recipe && (recipe.category || recipe.tag)) || '',
+      category: recipeCategory(recipe) || '',
     });
+  }
+
+  function recipeCategory(recipe) {
+    if (!recipe) return '';
+    var cat = String(recipe.category || '').trim();
+    if (cat) return cat;
+    if (!Object.prototype.hasOwnProperty.call(recipe, 'category')) {
+      return String(recipe.tag || '').trim();
+    }
+    return '';
+  }
+
+  function recipeTags(recipe) {
+    if (!recipe) return [];
+    if (Array.isArray(recipe.tags)) {
+      return recipe.tags
+        .map(function (t) {
+          return String(t || '').trim();
+        })
+        .filter(Boolean);
+    }
+    var tag = String(recipe.tag || '').trim();
+    if (!tag) return [];
+    if (!Object.prototype.hasOwnProperty.call(recipe, 'category')) return [];
+    var cat = String(recipe.category || '').trim();
+    if (cat && tag === cat) return [];
+    return [tag];
+  }
+
+  function recipeTag(recipe) {
+    var tags = recipeTags(recipe);
+    return tags.length ? tags[0] : '';
+  }
+
+  function recipeMetaHtml(recipe) {
+    var cat = recipeCategory(recipe);
+    var tags = recipeTags(recipe);
+    var tagsHtml = tags
+      .map(function (t) {
+        return '<span class="blog-meta-tag">' + escapeHtml(t) + '</span>';
+      })
+      .join('');
+    if (!cat && !tags.length) return '';
+    return (
+      '<div class="blog-meta blog-meta--split">' +
+      (cat ? '<span class="blog-meta-category">' + escapeHtml(cat) + '</span>' : '<span class="blog-meta-category"></span>') +
+      (tagsHtml ? '<span class="blog-meta-tags">' + tagsHtml + '</span>' : '') +
+      '</div>'
+    );
   }
 
   function getPublishedRecipes() {
@@ -181,9 +230,7 @@
         '">' +
         (hasImage ? '<div class="' + imgClass + '"' + imgStyle + '></div>' : '') +
         '<div class="article-related-card-body">' +
-        '<span class="blog-meta">' +
-        escapeHtml(recipe.category || recipe.tag || 'Ricetta') +
-        '</span>' +
+        recipeMetaHtml(recipe) +
         '<h3>' +
         escapeHtml(recipe.title) +
         '</h3>' +
@@ -198,7 +245,6 @@
     var wrap = document.getElementById('ricettaWrap');
     var errorEl = document.getElementById('ricettaError');
     var titleEl = document.getElementById('ricettaTitle');
-    var tagEl = document.getElementById('ricettaTag');
     var excerptEl = document.getElementById('ricettaExcerpt');
     var bodyEl = document.getElementById('ricettaBody');
     var coverEl = document.getElementById('ricettaCover');
@@ -233,10 +279,25 @@
       applySeo(recipe, id);
 
       if (titleEl) titleEl.textContent = recipe.title || '';
-      if (tagEl) {
-        var cat = recipe.category || recipe.tag || 'Ricetta';
-        tagEl.textContent = cat;
-        setHidden(tagEl, !cat);
+      var categoryEl = document.getElementById('ricettaCategory');
+      var chipsEl = document.getElementById('ricettaMetaChips');
+      var cat = recipeCategory(recipe);
+      var tags = recipeTags(recipe);
+      if (categoryEl) {
+        categoryEl.textContent = cat;
+        setHidden(categoryEl, !cat);
+      }
+      if (chipsEl) {
+        chipsEl.querySelectorAll('.article-tag').forEach(function (el) {
+          el.parentNode.removeChild(el);
+        });
+        tags.forEach(function (tag) {
+          var span = document.createElement('span');
+          span.className = 'article-tag';
+          span.textContent = tag;
+          chipsEl.appendChild(span);
+        });
+        setHidden(chipsEl, !cat && !tags.length);
       }
 
       var excerpt = String(recipe.excerpt || '').trim();

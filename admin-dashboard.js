@@ -200,22 +200,38 @@
   }
 
   function renderContentStats() {
+    function applyCounts(pdfCount) {
+      try {
+        var blog = JSON.parse(localStorage.getItem('blog_articoli') || '[]');
+        var ricette = JSON.parse(localStorage.getItem('ricette') || '[]');
+        var sedi = window.PriscillaSedi ? window.PriscillaSedi.getActiveSedi() : [];
+        var map = {
+          statFile: pdfCount,
+          statArticoli: blog.length,
+          statRicette: ricette.length,
+          statSedi: sedi.length
+        };
+        Object.keys(map).forEach(function (id) {
+          var el = $(id);
+          if (el) el.textContent = map[id];
+        });
+      } catch (e) {}
+    }
+
+    var localCount = 0;
     try {
-      var pdfs = JSON.parse(localStorage.getItem('scarica_pdfs') || '[]');
-      var blog = JSON.parse(localStorage.getItem('blog_articoli') || '[]');
-      var ricette = JSON.parse(localStorage.getItem('ricette') || '[]');
-      var sedi = window.PriscillaSedi ? window.PriscillaSedi.getActiveSedi() : [];
-      var map = {
-        statFile: pdfs.length,
-        statArticoli: blog.length,
-        statRicette: ricette.length,
-        statSedi: sedi.length
-      };
-      Object.keys(map).forEach(function (id) {
-        var el = $(id);
-        if (el) el.textContent = map[id];
-      });
+      localCount = JSON.parse(localStorage.getItem('scarica_pdfs') || '[]').length;
     } catch (e) {}
+
+    if (window.PriscillaMateriale && typeof window.PriscillaMateriale.list === 'function') {
+      window.PriscillaMateriale.list().then(function (result) {
+        applyCounts(result && result.items ? result.items.length : localCount);
+      }).catch(function () {
+        applyCounts(localCount);
+      });
+      return;
+    }
+    applyCounts(localCount);
   }
 
   function applySummary(summary) {

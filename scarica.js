@@ -2,8 +2,9 @@
   'use strict';
 
   var STORAGE_KEY_UNLOCK = 'scarica_unlocked';
-  var STORAGE_KEY_PDFS = 'scarica_pdfs';
   var STORAGE_KEY_DOWNLOAD_KEY = 'download_secret';
+  var materialeStore = window.PriscillaMateriale || null;
+  var cachedPdfs = [];
 
   var formSection = document.getElementById('scarica-form-section');
   var listaSection = document.getElementById('scarica-lista-section');
@@ -40,15 +41,6 @@
     }
   }
 
-  function getPdfs() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY_PDFS);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
   function escapeHtml(text) {
     var div = document.createElement('div');
     div.textContent = text;
@@ -70,6 +62,33 @@
       bytes[i] = binary.charCodeAt(i);
     }
     return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  }
+
+  function itemPreviewUrl(item) {
+    if (!item) return '';
+    if (item.url) return item.url;
+    if (item.dataBase64) {
+      return base64ToObjectUrl(item.dataBase64, item.mimeType || 'application/pdf');
+    }
+    return '';
+  }
+
+  function itemHref(item) {
+    if (materialeStore && typeof materialeStore.getFileHref === 'function') {
+      return materialeStore.getFileHref(item);
+    }
+    if (item && item.url) return item.url;
+    if (item && item.dataBase64) {
+      return 'data:' + (item.mimeType || 'application/pdf') + ';base64,' + item.dataBase64;
+    }
+    return '#';
+  }
+
+  function itemCanPreview(item) {
+    if (materialeStore && typeof materialeStore.canPreview === 'function') {
+      return materialeStore.canPreview(item);
+    }
+    return !!(item && (item.url || item.dataBase64));
   }
 
   function trackDownloadFromEl(el) {
@@ -103,7 +122,7 @@
   }
 
   function openPreview(item, index, triggerEl) {
-    if (!previewModal || !previewBody || !item || !item.dataBase64) return;
+    if (!previewModal || !previewBody || !item || !itemCanPreview(item)) return;
 
     var mime = item.mimeType || 'application/pdf';
     var isPng = mime === 'image/png';
@@ -113,12 +132,16 @@
 
     lastFocusEl = triggerEl || document.activeElement;
     revokePreviewUrl();
-    previewObjectUrl = base64ToObjectUrl(item.dataBase64, mime);
+    var src = itemPreviewUrl(item);
+    if (!src) return;
+    if (item.dataBase64 && !item.url) {
+      previewObjectUrl = src;
+    }
 
     if (previewTitle) previewTitle.textContent = title;
 
     if (previewDownload) {
-      previewDownload.href = previewObjectUrl;
+      previewDownload.href = item.url || src;
       previewDownload.setAttribute('download', filename);
       previewDownload.setAttribute('data-file-title', title);
       previewDownload.setAttribute('data-file-name', filename);
@@ -129,14 +152,14 @@
     if (isPng) {
       var img = document.createElement('img');
       img.className = 'preview-modal-image';
-      img.src = previewObjectUrl;
+      img.src = src;
       img.alt = title;
       previewBody.appendChild(img);
       previewBody.className = 'preview-modal-body preview-modal-body--image';
     } else {
       var iframe = document.createElement('iframe');
       iframe.className = 'preview-modal-frame';
-      iframe.src = previewObjectUrl + '#toolbar=1&navpanes=0&view=FitH';
+      iframe.src = src + (src.indexOf('#') >= 0 ? '' : '#toolbar=1&navpanes=0&view=FitH');
       iframe.title = 'Anteprima di ' + title;
       iframe.setAttribute('allow', 'fullscreen');
       previewBody.appendChild(iframe);
@@ -150,26 +173,54 @@
 
   function fileMeta(item) {
     var mime = item.mimeType || 'application/pdf';
-    if (mime === 'image/png') return { label: 'PNG', kind: 'png' };
-    return { label: 'PDF', kind: 'pdf' };
+    if (mime === 'image/png') {
+      return { label: 'PNG', kind: 'png', hint: 'Immagine' };
+    }
+    return { label: 'PDF', kind: 'pdf', hint: 'Documento' };
   }
 
-  function renderListaPdf() {
-    var pdfs = getPdfs();
+  function fileIconSvg(kind) {
+    if (kind === 'png') {
+      return (
+        '<svg class="download-card-icon" viewBox="0 0 48 56" fill="none" aria-hidden="true">' +
+          '<path class="download-card-icon-sheet" d="M8 4h22l10 10v38a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z"/>' +
+          '<path class="download-card-icon-fold" d="M30 4v8a2 2 0 0 0 2 2h8"/>' +
+          '<rect class="download-card-icon-preview" x="12" y="22" width="24" height="16" rx="2"/>' +
+          '<circle class="download-card-icon-dot" cx="17" cy="27" r="2"/>' +
+          '<path class="download-card-icon-mount" d="M12 34l6-5 5 4 4-3 9 7H12Z"/>' +
+        '</svg>'
+      );
+    }
+    return (
+      '<svg class="download-card-icon" viewBox="0 0 48 56" fill="none" aria-hidden="true">' +
+        '<path class="download-card-icon-sheet" d="M8 4h22l10 10v38a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z"/>' +
+        '<path class="download-card-icon-fold" d="M30 4v8a2 2 0 0 0 2 2h8"/>' +
+        '<path class="download-card-icon-line" d="M14 24h20M14 30h20M14 36h12"/>' +
+      '</svg>'
+    );
+  }
+
+  function renderListaPdfFromItems(pdfs) {
+    cachedPdfs = Array.isArray(pdfs) ? pdfs : [];
     listaPdf.innerHTML = '';
-    if (pdfs.length === 0) {
-      listaPdf.innerHTML = '<li class="download-empty">Nessun file disponibile al momento.</li>';
+    if (cachedPdfs.length === 0) {
+      listaPdf.innerHTML =
+        '<li class="download-empty">' +
+          '<span class="download-empty-icon" aria-hidden="true"></span>' +
+          '<span class="download-empty-title">Nessun file disponibile</span>' +
+          '<span class="download-empty-text">Al momento non ci sono documenti in quest’area.</span>' +
+        '</li>';
       return;
     }
-    pdfs.forEach(function (item, index) {
+    cachedPdfs.forEach(function (item, index) {
       var mime = item.mimeType || 'application/pdf';
       var meta = fileMeta(item);
       var isPng = meta.kind === 'png';
       var ext = isPng ? '.png' : '.pdf';
       var title = item.title || 'Documento ' + (index + 1);
       var filename = (item.filename || item.title || 'documento') + ext;
-      var href = item.dataBase64 ? 'data:' + mime + ';base64,' + item.dataBase64 : '#';
-      var canPreview = !!item.dataBase64;
+      var href = itemHref(item);
+      var canPreview = itemCanPreview(item);
 
       var li = document.createElement('li');
       li.className = 'download-card download-card--' + meta.kind;
@@ -180,24 +231,53 @@
       li.setAttribute('data-file-mime', mime);
 
       li.innerHTML =
-        '<div class="download-card-badge" aria-hidden="true">' +
-          '<span class="download-card-badge-label">' + meta.label + '</span>' +
+        '<div class="download-card-visual" aria-hidden="true">' +
+          '<div class="download-card-glyph">' +
+            fileIconSvg(meta.kind) +
+            '<span class="download-card-ext">' + meta.label + '</span>' +
+          '</div>' +
         '</div>' +
         '<div class="download-card-body">' +
           '<div class="download-card-copy">' +
+            '<div class="download-card-meta">' +
+              '<span class="download-card-pill">' + meta.hint + '</span>' +
+              '<span class="download-card-pill download-card-pill--lock">Riservato</span>' +
+            '</div>' +
             '<span class="download-card-title">' + escapeHtml(title) + '</span>' +
-            '<span class="download-card-type">' + meta.label + ' · Documento riservato</span>' +
+            '<span class="download-card-type">Formato ' + meta.label + ' · pronto da aprire o scaricare</span>' +
           '</div>' +
           '<div class="download-card-actions">' +
             '<button type="button" class="download-card-btn download-card-btn--apri"' +
               (canPreview ? '' : ' disabled') +
-              ' data-action-preview="1">Apri</button>' +
+              ' data-action-preview="1">' +
+              '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>' +
+              '<span>Apri</span>' +
+            '</button>' +
             '<a href="' + href + '" download="' + escapeHtml(filename) +
-              '" class="download-card-btn download-card-btn--scarica" data-track-download="1">Scarica</a>' +
+              '" class="download-card-btn download-card-btn--scarica" data-track-download="1"' +
+              (item.url ? ' target="_blank" rel="noopener"' : '') +
+              '>' +
+              '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 18h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+              '<span>Scarica</span>' +
+            '</a>' +
           '</div>' +
         '</div>';
 
       listaPdf.appendChild(li);
+    });
+  }
+
+  function renderListaPdf() {
+    if (!listaPdf) return Promise.resolve();
+    listaPdf.innerHTML = '<li class="download-empty">Caricamento file…</li>';
+    if (!materialeStore) {
+      renderListaPdfFromItems([]);
+      return Promise.resolve();
+    }
+    return materialeStore.list().then(function (result) {
+      renderListaPdfFromItems(result && result.items ? result.items : []);
+    }).catch(function () {
+      renderListaPdfFromItems([]);
     });
   }
 
@@ -224,9 +304,8 @@
         var card = previewBtn.closest('[data-file-index]');
         if (!card) return;
         var index = parseInt(card.getAttribute('data-file-index'), 10);
-        var pdfs = getPdfs();
-        if (!pdfs[index]) return;
-        openPreview(pdfs[index], index, previewBtn);
+        if (!cachedPdfs[index]) return;
+        openPreview(cachedPdfs[index], index, previewBtn);
         return;
       }
 

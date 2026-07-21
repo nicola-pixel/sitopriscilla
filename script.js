@@ -138,7 +138,41 @@
         var recipe = item.recipe;
         var recipeImgStyle = recipe.imageUrl ? bgImageStyle(recipe.imageUrl) : '';
         var recipeHref = '/ricetta?id=' + encodeURIComponent(recipe.id);
-        var recipeMeta = recipe.category || recipe.tag || 'Ricetta';
+        var recipeMetaHtml = (function () {
+          var cat = '';
+          if (recipe.category != null && recipe.category !== undefined) {
+            cat = String(recipe.category).trim();
+          } else {
+            cat = String(recipe.tag || '').trim();
+          }
+          var tags = [];
+          if (Array.isArray(recipe.tags)) {
+            tags = recipe.tags
+              .map(function (t) {
+                return String(t || '').trim();
+              })
+              .filter(Boolean);
+          } else if (recipe.category != null && recipe.category !== undefined) {
+            var tag = String(recipe.tag || '').trim();
+            if (tag && !(cat && tag === cat)) tags = [tag];
+          }
+          var tagsHtml = tags
+            .map(function (t) {
+              return '<span class="blog-meta-tag">' + escapeHtml(t) + '</span>';
+            })
+            .join('');
+          if (!cat && !tags.length) {
+            return '';
+          }
+          return (
+            '<div class="blog-meta blog-meta--split">' +
+            (cat
+              ? '<span class="blog-meta-category">' + escapeHtml(cat) + '</span>'
+              : '<span class="blog-meta-category"></span>') +
+            (tagsHtml ? '<span class="blog-meta-tags">' + tagsHtml + '</span>' : '') +
+            '</div>'
+          );
+        })();
         html +=
           '<a href="' +
           recipeHref +
@@ -149,9 +183,7 @@
           recipeImgStyle +
           '></div>' +
           '<div class="blog-card-content">' +
-          '<span class="blog-meta">' +
-          escapeHtml(recipeMeta) +
-          '</span>' +
+          recipeMetaHtml +
           '<h3>' +
           escapeHtml(recipe.title) +
           '</h3>' +

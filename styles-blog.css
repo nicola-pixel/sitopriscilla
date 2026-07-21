@@ -110,6 +110,8 @@
 .article-title,
 .article-excerpt,
 .article-category,
+.article-tag,
+.article-meta-chips,
 .article-body.prose,
 .article-cover {
   opacity: 1 !important;
@@ -118,23 +120,48 @@
 }
 
 .article-category:empty,
-.article-category[hidden] {
+.article-category[hidden],
+.article-tag:empty,
+.article-tag[hidden] {
   display: none !important;
 }
 
-.article-category {
-  display: inline-block;
+.article-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0 0 1.1rem;
+}
+
+.article-meta-chips:empty {
+  display: none;
+}
+
+.article-category,
+.article-tag {
+  display: inline-block;
+  margin: 0;
   padding: 0.4rem 0.85rem;
   font-family: var(--font-body);
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  border-radius: var(--radius-btn);
+  line-height: 1.2;
+}
+
+.article-category {
   color: var(--color-text);
   background: var(--color-white);
   border: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: var(--radius-btn);
+}
+
+.article-tag {
+  color: var(--color-text);
+  background: rgba(17, 17, 17, 0.04);
+  border: 1px solid rgba(17, 17, 17, 0.12);
 }
 
 .article-title {
@@ -924,6 +951,10 @@
   gap: 0.35rem;
 }
 
+.ricette-filters[hidden] {
+  display: none !important;
+}
+
 .ricette-filter-label {
   font-size: 0.75rem;
   font-weight: 600;
@@ -1142,6 +1173,13 @@
   box-shadow: 0 8px 28px rgba(17, 17, 17, 0.04);
 }
 
+.blog-listing-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.25rem;
+}
+
 .blog-listing-toolbar .ricette-filters {
   flex-direction: row;
   align-items: center;
@@ -1339,6 +1377,10 @@
   margin-bottom: 0.4rem;
 }
 
+.blog-listing .blog-meta--split {
+  margin-bottom: 0.4rem;
+}
+
 /* Featured: stesso peso delle altre card (niente hero oversized) */
 .blog-listing .blog-card--featured {
   grid-column: auto;
@@ -1426,6 +1468,12 @@
     flex-direction: column;
     align-items: stretch;
     padding: 1rem;
+  }
+
+  .blog-listing-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
   }
 
   .blog-listing-toolbar .ricette-filters {

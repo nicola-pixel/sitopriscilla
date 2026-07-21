@@ -47,18 +47,19 @@ async function streamToText(stream) {
 
 async function loadStore(blob) {
   try {
-    var result = await blob.get(PATHNAME, { access: 'private', useCache: false });
-    if (!result || result.statusCode === 404 || !result.stream) {
-      return emptyStore();
-    }
-    var text = await streamToText(result.stream);
+    var meta = await blob.head(PATHNAME);
+    if (!meta || !meta.url) return emptyStore();
+    var bust = meta.url.indexOf('?') >= 0 ? '&' : '?';
+    var res = await fetch(meta.url + bust + 'v=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return emptyStore();
+    var text = await res.text();
     if (!text) return emptyStore();
     var parsed = JSON.parse(text);
     if (!parsed || !Array.isArray(parsed.events)) return emptyStore();
     return { events: pruneEvents(parsed.events), version: parsed.version || 1 };
   } catch (err) {
     var msg = (err && err.message) || '';
-    if (/not found|404|does not exist/i.test(msg) || (err && err.status === 404)) {
+    if (/not found|404|does not exist|400|Access denied/i.test(msg) || (err && (err.status === 404 || err.statusCode === 404))) {
       return emptyStore();
     }
     throw err;
@@ -68,10 +69,11 @@ async function loadStore(blob) {
 async function saveStore(blob, store) {
   store.events = pruneEvents(store.events);
   await blob.put(PATHNAME, JSON.stringify(store), {
-    access: 'private',
+    access: 'public',
     allowOverwrite: true,
     addRandomSuffix: false,
-    contentType: 'application/json'
+    contentType: 'application/json',
+    cacheControlMaxAge: 60
   });
 }
 

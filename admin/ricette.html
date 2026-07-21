@@ -134,18 +134,43 @@
               <p class="form-hint" id="recipeCoverHint">JPG, PNG o WebP · ottimizzata automaticamente · senza foto resta lo sfondo predefinito</p>
             </div>
 
+            <div class="form-group">
+              <label for="ricettaTitolo">Titolo ricetta</label>
+              <input type="text" id="ricettaTitolo" name="ricettaTitolo" placeholder="es. Porridge energetico" required>
+            </div>
+
             <div class="form-row form-row--split">
-              <div class="form-group">
-                <label for="ricettaTitolo">Titolo ricetta</label>
-                <input type="text" id="ricettaTitolo" name="ricettaTitolo" placeholder="es. Porridge energetico" required>
-              </div>
               <div class="form-group form-group--select">
-                <label for="ricettaCategoria">Categoria</label>
+                <label for="ricettaCategoria">Categoria <span class="label-hint">(visibile sulla card)</span></label>
                 <div class="select-wrap">
                   <select id="ricettaCategoria" name="ricettaCategoria" class="select-modern" aria-label="Categoria ricetta">
                     <option value="">Scegli categoria</option>
                   </select>
                   <span class="select-chevron" aria-hidden="true"></span>
+                </div>
+              </div>
+              <div class="form-group form-group--select">
+                <label id="ricettaTagLabel">Tag <span class="label-hint">(più di uno)</span></label>
+                <div class="multi-select" id="ricettaTagMulti">
+                  <button
+                    type="button"
+                    class="multi-select-trigger select-modern"
+                    id="ricettaTagTrigger"
+                    aria-labelledby="ricettaTagLabel"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="ricettaTagDropdown"
+                  >
+                    <span class="multi-select-label" id="ricettaTagLabelText">Scegli tag</span>
+                    <span class="select-chevron" aria-hidden="true"></span>
+                  </button>
+                  <div
+                    class="multi-select-dropdown"
+                    id="ricettaTagDropdown"
+                    role="listbox"
+                    aria-multiselectable="true"
+                    hidden
+                  ></div>
                 </div>
               </div>
             </div>
@@ -184,6 +209,21 @@
               </div>
             </details>
 
+            <details class="recipe-cats-panel">
+              <summary>
+                <span class="recipe-cats-panel-title">Gestione tag</span>
+                <span class="recipe-cats-panel-hint">Aggiungi Proteico, Veloce, Vegano…</span>
+              </summary>
+              <div class="recipe-cats-panel-body">
+                <p class="form-hint">Crea i tag che vuoi assegnare alle ricette. Nel menu Tag sopra puoi selezionarne più di uno.</p>
+                <div class="categorie-add-row">
+                  <input type="text" id="nuovoTagInput" placeholder="es. Proteico, Veloce, Vegano..." class="input-inline" autocomplete="off">
+                  <button type="button" id="btnAggiungiTag" class="btn btn-outline btn-sm">Aggiungi</button>
+                </div>
+                <ul id="listaTagRicette" class="categorie-list"></ul>
+              </div>
+            </details>
+
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" id="btnSalvaRicetta">Pubblica ricetta</button>
               <button type="button" class="btn btn-outline" id="btnAnnullaRicetta" style="display: none;">Annulla</button>
@@ -201,7 +241,10 @@
                   <img id="recipePreviewCoverImg" alt="">
                 </div>
                 <div class="recipe-preview-header">
-                  <span class="recipe-preview-meta" id="recipePreviewMeta">Categoria</span>
+                  <div class="recipe-preview-meta blog-meta--split" id="recipePreviewMeta">
+                    <span class="blog-meta-category">Categoria</span>
+                    <span class="blog-meta-tags"></span>
+                  </div>
                   <h3 class="recipe-preview-title" id="recipePreviewTitle">Titolo della ricetta</h3>
                   <p class="recipe-preview-excerpt" id="recipePreviewExcerpt" hidden></p>
                 </div>
@@ -230,9 +273,20 @@
                   <option value="Colazione">Colazione</option>
                   <option value="Pranzo">Pranzo</option>
                   <option value="Cena">Cena</option>
+                  <option value="Primi">Primi</option>
+                  <option value="Secondi">Secondi</option>
                   <option value="Dessert">Dessert</option>
                   <option value="Bevande">Bevande</option>
                   <option value="Altro">Altro</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true"></span>
+              </div>
+            </div>
+            <div class="filter-group filter-group--select">
+              <label for="filtroTag" class="filter-label">Tag</label>
+              <div class="select-wrap select-wrap--filter">
+                <select id="filtroTag" class="select-modern select-modern--filter" aria-label="Filtra per tag">
+                  <option value="">Tutti</option>
                 </select>
                 <span class="select-chevron" aria-hidden="true"></span>
               </div>
@@ -249,10 +303,10 @@
   </main>
   </div>
 
-  <script src="../config.js"></script>
-  <script src="../impostazioni.js"></script>
-  <script src="../admin-auth.js"></script>
-  <script src="../content-format.js"></script>
-  <script src="../admin.js"></script>
+  <script src="../config.js?v=20260721i"></script>
+  <script src="../impostazioni.js?v=20260721i"></script>
+  <script src="../admin-auth.js?v=20260721i"></script>
+  <script src="../content-format.js?v=20260721i"></script>
+  <script src="../admin.js?v=20260721j"></script>
 </body>
 </html>

@@ -83,7 +83,8 @@
 
     <div class="admin-block">
       <h2>Carica PDF e PNG</h2>
-      <p>Aggiungi uno o più file PDF o immagini PNG. I file vengono salvati nel browser (consigliato sotto i 5 MB ciascuno).</p>
+      <p>Aggiungi uno o più file PDF o immagini PNG (max 4 MB ciascuno). I file vengono salvati sul server se Vercel Blob è collegato.</p>
+      <p id="materialeStorageHint" class="admin-page-desc" hidden></p>
       <form id="formUploadPdf">
         <label for="pdfTitle">Titolo (visibile ai clienti)</label>
         <input type="text" id="pdfTitle" name="pdfTitle" placeholder="es. Guida alimentare (opzionale con più file)">
@@ -111,6 +112,7 @@
   <script src="../config.js"></script>
   <script src="../impostazioni.js"></script>
   <script src="../admin-auth.js"></script>
+  <script src="../materiale-store.js"></script>
   <script src="../admin.js"></script>
 </body>
 </html>
