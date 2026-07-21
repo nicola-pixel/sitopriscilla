@@ -569,16 +569,16 @@
 }
 
 .download-card-description {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
+  display: block;
+  margin: 0;
+  max-width: 36rem;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.45;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .download-card-type {

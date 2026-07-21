@@ -221,6 +221,38 @@
     );
   }
 
+  function normalizeVideoUrl(url) {
+    var s = String(url == null ? '' : url).trim();
+    if (!s) return '';
+    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+    try {
+      var parsed = new URL(s);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+      return parsed.href;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function videoBlockToHtml(block) {
+    if (!block || block.type !== 'video') return '';
+    var href = normalizeVideoUrl(block.url);
+    if (!href) return '';
+    var label = escapeHtml(String(block.label || 'Guarda il video').trim() || 'Guarda il video');
+    return (
+      '<div class="content-block content-block--video">' +
+      '<p class="prose-video-label">' +
+      label +
+      '</p>' +
+      '<a class="prose-video-link" href="' +
+      escapeHtml(href) +
+      '" target="_blank" rel="noopener noreferrer">' +
+      escapeHtml(href) +
+      '</a>' +
+      '</div>'
+    );
+  }
+
   function blocksToHtml(blocks) {
     if (!blocks || !blocks.length) return '';
     return blocks
@@ -240,6 +272,9 @@
         }
         if (block.type === 'ingredients' || block.type === 'steps') {
           return listBlockToHtml(block);
+        }
+        if (block.type === 'video') {
+          return videoBlockToHtml(block);
         }
         if (block.type === 'text') {
           var html = textToHtml(block.content || '');
@@ -317,6 +352,8 @@
     escapeHtml: escapeHtml,
     textToHtml: textToHtml,
     listBlockToHtml: listBlockToHtml,
+    videoBlockToHtml: videoBlockToHtml,
+    normalizeVideoUrl: normalizeVideoUrl,
     blocksToHtml: blocksToHtml,
     normalizeBlocks: normalizeBlocks,
     renderBodyHtml: renderBodyHtml,

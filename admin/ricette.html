@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css?v=20260721o">
-  <link rel="stylesheet" href="../styles-blog.css?v=20260721p">
+  <link rel="stylesheet" href="../styles.css?v=20260721q">
+  <link rel="stylesheet" href="../styles-blog.css?v=20260721q">
   <link rel="stylesheet" href="../styles-admin.css?v=20260721p">
 </head>
 <body class="admin-body">
@@ -85,7 +85,7 @@
     <div class="admin-block admin-block--ricette">
       <div class="admin-block-intro">
         <h2>Nuova ricetta</h2>
-        <p>Usa i blocchi Ingredienti e Procedimento per gli elenchi ordinati, aggiungi testo o immagini dove serve, e pubblica su <a href="../ricette.html" target="_blank" rel="noopener">/ricette</a> e sul blog.</p>
+        <p>Usa i blocchi Ingredienti e Procedimento per gli elenchi ordinati, aggiungi testo, immagini o un link video dove serve, e pubblica su <a href="../ricette.html" target="_blank" rel="noopener">/ricette</a> e sul blog.</p>
       </div>
       <form id="formRicetta" class="admin-form admin-form--ricette">
         <input type="hidden" id="ricettaId" name="ricettaId" value="">
@@ -224,7 +224,7 @@
             <div class="form-group form-group--blocks">
               <div class="block-editor-head">
                 <label>Contenuto ricetta</label>
-                <p class="form-hint">Usa i blocchi Ingredienti e Procedimento per l’elenco ordinato. Aggiungi testo o immagini dove serve.</p>
+                <p class="form-hint">Usa i blocchi Ingredienti e Procedimento per l’elenco ordinato. Aggiungi testo, immagini o un link video dove serve.</p>
               </div>
               <div id="recipeBlocks" class="block-editor" aria-label="Blocchi contenuto ricetta"></div>
               <div class="block-editor-add">
@@ -232,6 +232,7 @@
                 <button type="button" class="btn btn-outline btn-sm" id="btnAddStepsBlock">+ Procedimento</button>
                 <button type="button" class="btn btn-outline btn-sm" id="btnAddTextBlock">+ Testo</button>
                 <button type="button" class="btn btn-outline btn-sm" id="btnAddImageBlock">+ Immagine</button>
+                <button type="button" class="btn btn-outline btn-sm" id="btnAddVideoBlock">+ Video</button>
               </div>
             </div>
 

@@ -412,9 +412,8 @@
               '</div>' +
               '<span class="download-card-title">' + escapeHtml(title) + '</span>' +
               (description
-                ? '<span class="download-card-description">' + escapeHtml(description) + '</span>'
-                : '') +
-              '<span class="download-card-type">Formato ' + meta.label + ' · pronto da aprire o scaricare</span>' +
+                ? '<p class="download-card-description">' + escapeHtml(description) + '</p>'
+                : '<span class="download-card-type">Formato ' + meta.label + ' · pronto da aprire o scaricare</span>') +
             '</div>' +
             '<div class="download-card-actions">' +
               '<button type="button" class="download-card-btn download-card-btn--apri"' +

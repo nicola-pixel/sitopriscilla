@@ -388,16 +388,23 @@
   var btnRemoveCv = document.getElementById('btnRemoveCv');
   if (btnRemoveCv) {
     btnRemoveCv.addEventListener('click', function () {
-      setCv(null);
-      updateCvStatus();
-      msgCv = document.getElementById('msgCv');
-      if (msgCv) {
-        msgCv.textContent = 'CV rimosso.';
-        msgCv.classList.remove('msg-error');
-        msgCv.classList.add('msg-ok');
-        msgCv.hidden = false;
-        setTimeout(function () { msgCv.hidden = true; }, 3000);
-      }
+      adminConfirm({
+        title: 'Rimuovere il CV?',
+        text: 'Il file CV caricato verrà eliminato. L’operazione non è reversibile.',
+        confirmLabel: 'Rimuovi CV'
+      }).then(function (ok) {
+        if (!ok) return;
+        setCv(null);
+        updateCvStatus();
+        var msgCv = document.getElementById('msgCv');
+        if (msgCv) {
+          msgCv.textContent = 'CV rimosso.';
+          msgCv.classList.remove('msg-error');
+          msgCv.classList.add('msg-ok');
+          msgCv.hidden = false;
+          setTimeout(function () { msgCv.hidden = true; }, 3000);
+        }
+      });
     });
   }
 
@@ -518,17 +525,24 @@
         var folderId = btn.getAttribute('data-folder-id');
         var folder = materialeAdminFolders.find(function (f) { return f && f.id === folderId; });
         if (!materialeStore || !folder) return;
-        btn.disabled = true;
-        materialeStore.deleteFolder(folder).then(function () {
-          return renderListaPdfAdmin();
-        }).catch(function (err) {
-          btn.disabled = false;
-          if (msgCartella) {
-            msgCartella.textContent = (err && err.message) || 'Impossibile rimuovere la cartella.';
-            msgCartella.classList.add('msg-error');
-            msgCartella.classList.remove('msg-ok');
-            msgCartella.hidden = false;
-          }
+        adminConfirm({
+          title: 'Rimuovere la cartella?',
+          text: 'La cartella "' + (folder.name || 'Cartella') + '" verrà eliminata. Deve essere vuota.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (!ok) return;
+          btn.disabled = true;
+          materialeStore.deleteFolder(folder).then(function () {
+            return renderListaPdfAdmin();
+          }).catch(function (err) {
+            btn.disabled = false;
+            if (msgCartella) {
+              msgCartella.textContent = (err && err.message) || 'Impossibile rimuovere la cartella.';
+              msgCartella.classList.add('msg-error');
+              msgCartella.classList.remove('msg-ok');
+              msgCartella.hidden = false;
+            }
+          });
         });
       });
     });
@@ -621,17 +635,24 @@
         var idx = parseInt(btn.getAttribute('data-index'), 10);
         var item = materialeAdminItems[idx];
         if (!materialeStore || !item) return;
-        btn.disabled = true;
-        materialeStore.remove(item, idx).then(function () {
-          return renderListaPdfAdmin();
-        }).catch(function (err) {
-          btn.disabled = false;
-          if (msgUpload) {
-            msgUpload.textContent = (err && err.message) || 'Impossibile rimuovere il file.';
-            msgUpload.classList.add('msg-error');
-            msgUpload.classList.remove('msg-ok');
-            msgUpload.hidden = false;
-          }
+        adminConfirm({
+          title: 'Rimuovere questo file?',
+          text: '"' + (item.title || 'Senza titolo') + '" verrà eliminato. L\'operazione non è reversibile.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (!ok) return;
+          btn.disabled = true;
+          materialeStore.remove(item, idx).then(function () {
+            return renderListaPdfAdmin();
+          }).catch(function (err) {
+            btn.disabled = false;
+            if (msgUpload) {
+              msgUpload.textContent = (err && err.message) || 'Impossibile rimuovere il file.';
+              msgUpload.classList.add('msg-error');
+              msgUpload.classList.remove('msg-ok');
+              msgUpload.hidden = false;
+            }
+          });
         });
       });
     });
@@ -854,7 +875,13 @@
       btnRemove.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        clearCover();
+        adminConfirm({
+          title: 'Rimuovere la copertina?',
+          text: 'L’immagine di copertina verrà tolta da questo contenuto.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (ok) clearCover();
+        });
       });
     }
 
@@ -865,6 +892,91 @@
     var div = document.createElement('div');
     div.textContent = text == null ? '' : text;
     return div.innerHTML;
+  }
+
+  var adminConfirmState = { resolve: null, bound: false };
+
+  function ensureAdminConfirmModal() {
+    var existing = document.getElementById('adminConfirmModal');
+    if (existing) return existing;
+    var wrap = document.createElement('div');
+    wrap.className = 'admin-confirm';
+    wrap.id = 'adminConfirmModal';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.setAttribute('aria-labelledby', 'adminConfirmTitle');
+    wrap.hidden = true;
+    wrap.innerHTML =
+      '<div class="admin-confirm-overlay" data-admin-confirm-dismiss tabindex="-1"></div>' +
+      '<div class="admin-confirm-panel">' +
+        '<h2 class="admin-confirm-title" id="adminConfirmTitle">Conferma</h2>' +
+        '<p class="admin-confirm-text" id="adminConfirmText"></p>' +
+        '<div class="admin-confirm-actions">' +
+          '<button type="button" class="admin-modal-btn admin-modal-btn--ghost" data-admin-confirm-dismiss>Annulla</button>' +
+          '<button type="button" class="admin-modal-btn admin-modal-btn--danger" id="adminConfirmOk">Rimuovi</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+    return wrap;
+  }
+
+  function closeAdminConfirm(result) {
+    var modal = document.getElementById('adminConfirmModal');
+    if (modal) modal.hidden = true;
+    if (!document.querySelector('.admin-confirm:not([hidden])')) {
+      document.body.classList.remove('admin-confirm-open');
+    }
+    var resolve = adminConfirmState.resolve;
+    adminConfirmState.resolve = null;
+    if (typeof resolve === 'function') resolve(!!result);
+  }
+
+  function bindAdminConfirmModal(modal) {
+    if (adminConfirmState.bound || !modal) return;
+    adminConfirmState.bound = true;
+    modal.querySelectorAll('[data-admin-confirm-dismiss]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        closeAdminConfirm(false);
+      });
+    });
+    var ok = document.getElementById('adminConfirmOk');
+    if (ok) {
+      ok.addEventListener('click', function () {
+        closeAdminConfirm(true);
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      var m = document.getElementById('adminConfirmModal');
+      if (e.key === 'Escape' && m && !m.hidden) {
+        e.preventDefault();
+        closeAdminConfirm(false);
+      }
+    });
+  }
+
+  /** Popup di conferma admin. Risolve true se l’utente conferma. */
+  function adminConfirm(opts) {
+    opts = opts || {};
+    var modal = ensureAdminConfirmModal();
+    bindAdminConfirmModal(modal);
+    if (adminConfirmState.resolve) {
+      adminConfirmState.resolve(false);
+      adminConfirmState.resolve = null;
+    }
+    var titleEl = document.getElementById('adminConfirmTitle');
+    var textEl = document.getElementById('adminConfirmText');
+    var okEl = document.getElementById('adminConfirmOk');
+    if (titleEl) titleEl.textContent = opts.title || 'Confermare?';
+    if (textEl) {
+      textEl.textContent = opts.text || 'Questa operazione non è reversibile.';
+    }
+    if (okEl) okEl.textContent = opts.confirmLabel || 'Rimuovi';
+    modal.hidden = false;
+    document.body.classList.add('admin-confirm-open');
+    if (okEl && typeof okEl.focus === 'function') okEl.focus();
+    return new Promise(function (resolve) {
+      adminConfirmState.resolve = resolve;
+    });
   }
 
   function newBlockId() {
@@ -901,6 +1013,31 @@
       title: title || 'Procedimento',
       items: Array.isArray(items) && items.length ? items.slice() : ['']
     };
+  }
+
+  function createVideoBlock(url) {
+    return {
+      id: newBlockId(),
+      type: 'video',
+      label: 'Guarda il video',
+      url: url || ''
+    };
+  }
+
+  function normalizeVideoUrl(url) {
+    if (window.PriscillaContentFormat && window.PriscillaContentFormat.normalizeVideoUrl) {
+      return window.PriscillaContentFormat.normalizeVideoUrl(url);
+    }
+    var s = String(url == null ? '' : url).trim();
+    if (!s) return '';
+    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+    try {
+      var parsed = new URL(s);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+      return parsed.href;
+    } catch (e) {
+      return '';
+    }
   }
 
   function normalizeListItems(items) {
@@ -940,6 +1077,14 @@
             type: 'steps',
             title: (b.title || 'Procedimento').trim() || 'Procedimento',
             items: stepItems.length ? stepItems : ['']
+          };
+        }
+        if (b && b.type === 'video') {
+          return {
+            id: b.id || newBlockId(),
+            type: 'video',
+            label: (b.label || 'Guarda il video').trim() || 'Guarda il video',
+            url: b.url || ''
           };
         }
         return {
@@ -1046,6 +1191,24 @@
       if (block.type === 'ingredients' || block.type === 'steps') {
         return listBlockToPreviewHtml(block);
       }
+      if (block.type === 'video') {
+        var videoHref = normalizeVideoUrl(block.url);
+        if (!videoHref) {
+          return '<div class="content-block content-block--video"><p class="prose-video-label">Guarda il video</p><p class="recipe-preview-placeholder">Incolla l’URL del video…</p></div>';
+        }
+        if (window.PriscillaContentFormat && window.PriscillaContentFormat.videoBlockToHtml) {
+          return window.PriscillaContentFormat.videoBlockToHtml(block);
+        }
+        return (
+          '<div class="content-block content-block--video">' +
+          '<p class="prose-video-label">Guarda il video</p>' +
+          '<a class="prose-video-link" href="' +
+          escapeHtml(videoHref) +
+          '" target="_blank" rel="noopener noreferrer">' +
+          escapeHtml(videoHref) +
+          '</a></div>'
+        );
+      }
       var textHtml = textBlockToHtml(block.content || '');
       if (!textHtml) {
         return '<div class="content-block content-block--text"><p class="recipe-preview-placeholder">Scrivi qui il testo…</p></div>';
@@ -1109,6 +1272,14 @@
             items: normalizeListItems(b.items)
           };
         }
+        if (b.type === 'video') {
+          return {
+            id: b.id,
+            type: 'video',
+            label: 'Guarda il video',
+            url: normalizeVideoUrl(b.url)
+          };
+        }
         return {
           id: b.id,
           type: 'text',
@@ -1119,6 +1290,7 @@
         if (b.type === 'ingredients' || b.type === 'steps') {
           return normalizeListItems(b.items).length > 0;
         }
+        if (b.type === 'video') return !!(b.url && String(b.url).trim());
         return !!(b.content && String(b.content).trim());
       });
     }
@@ -1127,6 +1299,7 @@
       if (type === 'image') return 'Immagine';
       if (type === 'ingredients') return 'Ingredienti';
       if (type === 'steps') return 'Procedimento';
+      if (type === 'video') return 'Video';
       return 'Testo';
     }
 
@@ -1364,6 +1537,30 @@
           el.appendChild(ta);
         } else if (block.type === 'ingredients' || block.type === 'steps') {
           renderListEditor(block, el);
+        } else if (block.type === 'video') {
+          var videoEditor = document.createElement('div');
+          videoEditor.className = 'content-block-video-editor';
+
+          var videoLabel = document.createElement('p');
+          videoLabel.className = 'content-block-video-label';
+          videoLabel.textContent = 'Guarda il video';
+          videoEditor.appendChild(videoLabel);
+
+          var urlInput = document.createElement('input');
+          urlInput.type = 'url';
+          urlInput.className = 'content-block-video-url';
+          urlInput.placeholder = 'https://…';
+          urlInput.value = block.url || '';
+          urlInput.setAttribute('aria-label', 'URL del video');
+          urlInput.addEventListener('input', function () {
+            var idx = findBlockIndex(block.id);
+            if (idx < 0) return;
+            blocks[idx].url = urlInput.value;
+            blocks[idx].label = 'Guarda il video';
+            onChange();
+          });
+          videoEditor.appendChild(urlInput);
+          el.appendChild(videoEditor);
         } else {
           var media = document.createElement('div');
           media.className = 'content-block-media' + (block.src ? ' content-block-media--has-image' : '');
@@ -1492,6 +1689,12 @@
     if (opts.btnAddSteps) {
       opts.btnAddSteps.addEventListener('click', function () {
         blocks.push(createStepsBlock(['']));
+        render();
+      });
+    }
+    if (opts.btnAddVideo) {
+      opts.btnAddVideo.addEventListener('click', function () {
+        blocks.push(createVideoBlock(''));
         render();
       });
     }
@@ -1627,15 +1830,23 @@
     listaArticoliAdmin.querySelectorAll('.btn-remove').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = btn.getAttribute('data-id');
-        removePersistedPost(id).then(function () {
-          renderListaArticoliAdmin();
-          if (articoloIdInput.value === id) {
-            resetArticoloFormFields();
-          }
-        }).catch(function (err) {
-          console.error('Eliminazione articolo', err);
-          alert((err && err.message) || 'Impossibile eliminare l’articolo dal cloud.');
-          renderListaArticoliAdmin();
+        var post = getBlogPosts().find(function (p) { return p.id === id; });
+        adminConfirm({
+          title: 'Rimuovere questo articolo?',
+          text: '"' + ((post && post.title) || 'Senza titolo') + '" verrà eliminato. L\'operazione non è reversibile.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (!ok) return;
+          removePersistedPost(id).then(function () {
+            renderListaArticoliAdmin();
+            if (articoloIdInput.value === id) {
+              resetArticoloFormFields();
+            }
+          }).catch(function (err) {
+            console.error('Eliminazione articolo', err);
+            alert((err && err.message) || 'Impossibile eliminare l’articolo dal cloud.');
+            renderListaArticoliAdmin();
+          });
         });
       });
     });
@@ -1943,6 +2154,7 @@
       btnAddImage: document.getElementById('btnAddImageBlock'),
       btnAddIngredients: document.getElementById('btnAddIngredientsBlock'),
       btnAddSteps: document.getElementById('btnAddStepsBlock'),
+      btnAddVideo: document.getElementById('btnAddVideoBlock'),
       msgEl: msgRicetta,
       textPlaceholder: 'Introduzione, consigli, note…',
       onChange: updateRecipePreview
@@ -2383,11 +2595,17 @@
       btn.addEventListener('click', function () {
         var name = btn.getAttribute('data-name') || '';
         if (!name) return;
-        if (!window.confirm('Eliminare la categoria "' + name + '"? Verrà tolta anche dalle ricette che la usano.')) return;
-        deleteManagedRecipeCategory(name);
-        renderListaCategorieRicette();
-        refreshSelectsCategorie();
-        showRicettaMsg('Categoria "' + name + '" eliminata.', false);
+        adminConfirm({
+          title: 'Eliminare la categoria?',
+          text: 'La categoria "' + name + '" verrà tolta anche dalle ricette che la usano.',
+          confirmLabel: 'Elimina'
+        }).then(function (ok) {
+          if (!ok) return;
+          deleteManagedRecipeCategory(name);
+          renderListaCategorieRicette();
+          refreshSelectsCategorie();
+          showRicettaMsg('Categoria "' + name + '" eliminata.', false);
+        });
       });
     });
   }
@@ -2484,11 +2702,17 @@
       btn.addEventListener('click', function () {
         var name = btn.getAttribute('data-name') || '';
         if (!name) return;
-        if (!window.confirm('Eliminare il tag "' + name + '"? Verrà tolto anche dalle ricette che lo usano.')) return;
-        deleteManagedRecipeTag(name);
-        renderListaTagRicette();
-        refreshSelectsTag();
-        showRicettaMsg('Tag "' + name + '" eliminato.', false);
+        adminConfirm({
+          title: 'Eliminare il tag?',
+          text: 'Il tag "' + name + '" verrà tolto anche dalle ricette che lo usano.',
+          confirmLabel: 'Elimina'
+        }).then(function (ok) {
+          if (!ok) return;
+          deleteManagedRecipeTag(name);
+          renderListaTagRicette();
+          refreshSelectsTag();
+          showRicettaMsg('Tag "' + name + '" eliminato.', false);
+        });
       });
     });
   }
@@ -2786,29 +3010,36 @@
       btn.addEventListener('click', function () {
         var id = btn.getAttribute('data-id');
         if (!id || btn.disabled) return;
-        if (!window.confirm('Eliminare questa ricetta? L’operazione non è reversibile.')) return;
-        btn.disabled = true;
-        btn.textContent = 'Eliminazione…';
-        var deletePromise = removePersistedRecipe(id);
-        // Ridisegna subito: deleteRecipe ha già tolto l’id in locale + tombstone.
-        renderListaRicetteAdmin();
-        if (ricettaIdInput && ricettaIdInput.value === id) {
-          resetRicettaFormFields();
-        }
-        deletePromise.then(function () {
+        var recipe = getRecipes().find(function (r) { return r.id === id; });
+        adminConfirm({
+          title: 'Eliminare questa ricetta?',
+          text: '"' + ((recipe && recipe.title) || 'Senza titolo') + '" verrà eliminata. L\'operazione non è reversibile.',
+          confirmLabel: 'Elimina'
+        }).then(function (ok) {
+          if (!ok) return;
+          btn.disabled = true;
+          btn.textContent = 'Eliminazione…';
+          var deletePromise = removePersistedRecipe(id);
+          // Ridisegna subito: deleteRecipe ha già tolto l’id in locale + tombstone.
           renderListaRicetteAdmin();
-        }).catch(function (err) {
-          console.error('Eliminazione ricetta', err);
-          alert((err && err.message) || 'Impossibile eliminare la ricetta dal cloud.');
-          if (contentStore && typeof contentStore.load === 'function') {
-            contentStore.load({ force: true }).then(function () {
-              renderListaRicetteAdmin();
-            }).catch(function () {
-              renderListaRicetteAdmin();
-            });
-          } else {
-            renderListaRicetteAdmin();
+          if (ricettaIdInput && ricettaIdInput.value === id) {
+            resetRicettaFormFields();
           }
+          deletePromise.then(function () {
+            renderListaRicetteAdmin();
+          }).catch(function (err) {
+            console.error('Eliminazione ricetta', err);
+            alert((err && err.message) || 'Impossibile eliminare la ricetta dal cloud.');
+            if (contentStore && typeof contentStore.load === 'function') {
+              contentStore.load({ force: true }).then(function () {
+                renderListaRicetteAdmin();
+              }).catch(function () {
+                renderListaRicetteAdmin();
+              });
+            } else {
+              renderListaRicetteAdmin();
+            }
+          });
         });
       });
     });
@@ -3499,10 +3730,18 @@
     listaSediAdmin.querySelectorAll('.btn-remove').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = btn.getAttribute('data-id');
-        var sedi = api.getSedi().filter(function (s) { return s.id !== id; });
-        api.setSedi(sedi);
-        renderListaSediAdmin();
-        if (sedeIdInput && sedeIdInput.value === id) resetSedeForm();
+        var sede = api.getActiveSedi().find(function (s) { return s.id === id; });
+        adminConfirm({
+          title: 'Rimuovere questa sede?',
+          text: '"' + ((sede && sede.name) || 'Senza nome') + '" verrà eliminata. L\'operazione non è reversibile.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (!ok) return;
+          var sedi = api.getSedi().filter(function (s) { return s.id !== id; });
+          api.setSedi(sedi);
+          renderListaSediAdmin();
+          if (sedeIdInput && sedeIdInput.value === id) resetSedeForm();
+        });
       });
     });
   }
@@ -3723,10 +3962,22 @@
         var data = api.getCvContent();
         var section = data.sections.find(function (s) { return s.key === sectionKey; });
         if (!section) return;
-        section.entries = section.entries.filter(function (e) { return e.id !== id; });
-        api.setCvContent(data);
-        renderCvContentAdmin();
-        if (cvEntryIdInput && cvEntryIdInput.value === id) resetCvEntryForm();
+        var entry = section.entries.find(function (e) { return e.id === id; });
+        var label = (entry && (entry.org || entry.detail || entry.date)) || 'questa voce';
+        adminConfirm({
+          title: 'Rimuovere questa voce?',
+          text: '"' + label + '" verrà eliminata dal CV. L\'operazione non è reversibile.',
+          confirmLabel: 'Rimuovi'
+        }).then(function (ok) {
+          if (!ok) return;
+          var next = api.getCvContent();
+          var nextSection = next.sections.find(function (s) { return s.key === sectionKey; });
+          if (!nextSection) return;
+          nextSection.entries = nextSection.entries.filter(function (e) { return e.id !== id; });
+          api.setCvContent(next);
+          renderCvContentAdmin();
+          if (cvEntryIdInput && cvEntryIdInput.value === id) resetCvEntryForm();
+        });
       });
     });
   }
