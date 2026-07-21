@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260721g">
-  <link rel="stylesheet" href="styles-scarica.css?v=20260721o">
+  <link rel="stylesheet" href="styles-scarica.css?v=20260721r">
 </head>
 <body>
   <header class="header is-scrolled">
@@ -72,22 +72,24 @@
       <section class="scarica-section scarica-lista" id="scarica-lista-section" hidden>
         <div class="scarica-area">
           <aside class="scarica-sidebar" aria-label="Sezioni area riservata">
-            <p class="scarica-sidebar-label">Area riservata</p>
-            <nav class="scarica-side-nav">
-              <button type="button" class="scarica-side-link is-active" data-scarica-panel="materiale" aria-controls="panel-materiale" aria-current="page">
+            <div class="scarica-sidebar-top">
+              <p class="scarica-sidebar-label">Area riservata</p>
+              <button type="button" class="btn btn-esci scarica-side-esci" id="btnEsci">Esci</button>
+            </div>
+            <nav class="scarica-side-nav" role="tablist" aria-label="Sezioni">
+              <button type="button" class="scarica-side-link is-active" data-scarica-panel="materiale" aria-controls="panel-materiale" aria-current="page" role="tab" aria-selected="true">
                 <span class="scarica-side-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
                 </span>
-                Materiale
+                <span class="scarica-side-text">Materiale</span>
               </button>
-              <button type="button" class="scarica-side-link" data-scarica-panel="codici" aria-controls="panel-codici">
+              <button type="button" class="scarica-side-link" data-scarica-panel="codici" aria-controls="panel-codici" role="tab" aria-selected="false">
                 <span class="scarica-side-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M20.6 12.6a2 2 0 0 0 0-2.8l-6.4-6.4a2 2 0 0 0-2.8 0L4 10.6a2 2 0 0 0 0 2.8l6.4 6.4a2 2 0 0 0 2.8 0Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/></svg>
                 </span>
-                Codici sconto
+                <span class="scarica-side-text">Codici sconto</span>
               </button>
             </nav>
-            <button type="button" class="btn btn-esci scarica-side-esci" id="btnEsci">Esci</button>
           </aside>
 
           <div class="scarica-panels">
@@ -198,6 +200,6 @@
   <script src="analytics.js"></script>
   <script src="materiale-store.js?v=20260721m"></script>
   <script src="codici-store.js"></script>
-  <script src="scarica.js?v=20260721o"></script>
+  <script src="scarica.js?v=20260721q"></script>
 </body>
 </html>

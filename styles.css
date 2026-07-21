@@ -1166,21 +1166,9 @@ body:not(.admin-body) main > section:nth-child(even) {
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #9a9a9a;
+  color: #4479ad;
   margin: 0;
   flex-shrink: 0;
-}
-
-.about-card--energia .about-card-label {
-  color: #c06a4d;
-}
-
-.about-card--personalizzazione .about-card-label {
-  color: #7b6bc7;
-}
-
-.about-card--equilibrio .about-card-label {
-  color: #4479ad;
 }
 
 .about-content {
@@ -1682,7 +1670,7 @@ body.cv-modal-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.25rem;
+  padding: 0.6rem;
 }
 
 .calendly-modal[hidden] {
@@ -1703,9 +1691,9 @@ body.cv-modal-open {
 .calendly-modal-panel {
   position: relative;
   z-index: 1;
-  width: min(680px, 100%);
-  height: min(88vh, 740px);
-  max-height: 88vh;
+  width: min(720px, 100%);
+  height: min(94vh, 860px);
+  max-height: 94vh;
   display: flex;
   flex-direction: column;
   background: var(--color-white);
@@ -1741,8 +1729,8 @@ body.cv-modal-open {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.35rem 1.5rem 1.2rem;
+  gap: 0.75rem;
+  padding: 0.85rem 1.15rem 0.7rem;
   background:
     linear-gradient(180deg, rgba(243, 240, 252, 0.85) 0%, var(--color-white) 100%);
   border-bottom: 1px solid var(--color-border);
@@ -1757,31 +1745,31 @@ body.cv-modal-open {
 
 .calendly-modal-kicker {
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-soft-blue);
-  margin: 0 0 0.3rem;
+  margin: 0 0 0.15rem;
 }
 
 .calendly-modal-title {
   font-family: var(--font-heading);
-  font-size: clamp(1.35rem, 3.2vw, 1.65rem);
+  font-size: clamp(1.2rem, 2.8vw, 1.45rem);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--color-text);
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .calendly-modal-meta {
   font-family: var(--font-body);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 400;
   color: var(--color-text-muted);
-  margin: 0.4rem 0 0;
-  line-height: 1.4;
+  margin: 0.2rem 0 0;
+  line-height: 1.3;
 }
 
 .calendly-modal-meta:empty {
@@ -1792,8 +1780,8 @@ body.cv-modal-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.15rem;
+  height: 2.15rem;
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -1867,15 +1855,16 @@ body.cv-modal-open {
 
 .calendly-inline-host {
   flex: 1;
-  min-height: 0;
+  min-height: 640px;
   width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 .calendly-inline-host iframe {
   width: 100% !important;
   height: 100% !important;
-  min-height: 560px;
+  min-height: 640px;
   border: 0;
   display: block;
 }
@@ -1928,8 +1917,8 @@ body.calendly-modal-open {
 
   .calendly-modal-panel {
     width: 100%;
-    height: min(96vh, 900px);
-    max-height: 96vh;
+    height: min(98vh, 960px);
+    max-height: 98vh;
     border-radius: var(--calendly-modal-radius) var(--calendly-modal-radius) 0 0;
     animation-name: calendlyModalSheetIn;
   }
@@ -1939,11 +1928,15 @@ body.calendly-modal-open {
   }
 
   .calendly-modal-header {
-    padding: 1.15rem 1.15rem 1rem;
+    padding: 0.75rem 1rem 0.6rem;
+  }
+
+  .calendly-inline-host {
+    min-height: 600px;
   }
 
   .calendly-inline-host iframe {
-    min-height: 520px;
+    min-height: 600px;
   }
 }
 

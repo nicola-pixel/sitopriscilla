@@ -528,6 +528,7 @@
     links.forEach(function (link) {
       var isActive = link.getAttribute('data-scarica-panel') === activePanel;
       link.classList.toggle('is-active', isActive);
+      link.setAttribute('aria-selected', isActive ? 'true' : 'false');
       if (isActive) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
