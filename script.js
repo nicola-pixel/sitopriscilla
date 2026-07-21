@@ -248,6 +248,20 @@
     updateHeaderScroll();
   }
 
+  var waFloat = document.querySelector('.wa-float');
+  if (waFloat) {
+    var WA_SHOW_AFTER = 120;
+    function updateWaFloat() {
+      var show = window.scrollY > WA_SHOW_AFTER;
+      waFloat.classList.toggle('is-visible', show);
+      waFloat.setAttribute('aria-hidden', show ? 'false' : 'true');
+      if (show) waFloat.removeAttribute('tabindex');
+      else waFloat.setAttribute('tabindex', '-1');
+    }
+    window.addEventListener('scroll', updateWaFloat, { passive: true });
+    updateWaFloat();
+  }
+
   if (navToggle && mainNav) {
     var navBackdrop = document.getElementById('navBackdrop');
 

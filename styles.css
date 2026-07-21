@@ -2626,21 +2626,25 @@ body.cv-modal-open {
   text-decoration: none;
   color: inherit;
   opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transform: translateX(-50%) translateY(1.25rem);
   transition:
-    opacity 0.55s var(--ease-out-expo),
-    transform 0.55s var(--ease-out-expo),
+    opacity 0.45s var(--ease-out-expo),
+    transform 0.45s var(--ease-out-expo),
+    visibility 0.45s,
     background 0.35s var(--ease-out-expo),
     box-shadow 0.35s var(--ease-out-expo);
 }
 
-.page-loaded .wa-float {
+.wa-float.is-visible {
   opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
   transform: translateX(-50%) translateY(0);
-  transition-delay: 0.5s;
 }
 
-.wa-float:hover {
+.wa-float.is-visible:hover {
   background: rgba(255, 255, 255, 0.58);
   box-shadow: 0 10px 32px rgba(17, 17, 17, 0.08);
   transform: translateX(-50%) translateY(-2px);
