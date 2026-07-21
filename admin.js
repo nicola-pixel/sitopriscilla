@@ -106,10 +106,10 @@
   }
 
   function removePersistedRecipe(id) {
-    setRecipes(getRecipes().filter(function (item) { return !item || item.id !== id; }));
     if (contentStore && typeof contentStore.deleteRecipe === 'function') {
       return contentStore.deleteRecipe(id);
     }
+    setRecipes(getRecipes().filter(function (item) { return !item || item.id !== id; }));
     return Promise.resolve({ id: id, source: 'local' });
   }
 
@@ -2562,15 +2562,30 @@
     listaRicetteAdmin.querySelectorAll('.btn-remove').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = btn.getAttribute('data-id');
-        removePersistedRecipe(id).then(function () {
+        if (!id || btn.disabled) return;
+        if (!window.confirm('Eliminare questa ricetta? L’operazione non è reversibile.')) return;
+        btn.disabled = true;
+        btn.textContent = 'Eliminazione…';
+        var deletePromise = removePersistedRecipe(id);
+        // Ridisegna subito: deleteRecipe ha già tolto l’id in locale + tombstone.
+        renderListaRicetteAdmin();
+        if (ricettaIdInput && ricettaIdInput.value === id) {
+          resetRicettaFormFields();
+        }
+        deletePromise.then(function () {
           renderListaRicetteAdmin();
-          if (ricettaIdInput && ricettaIdInput.value === id) {
-            resetRicettaFormFields();
-          }
         }).catch(function (err) {
           console.error('Eliminazione ricetta', err);
           alert((err && err.message) || 'Impossibile eliminare la ricetta dal cloud.');
-          renderListaRicetteAdmin();
+          if (contentStore && typeof contentStore.load === 'function') {
+            contentStore.load({ force: true }).then(function () {
+              renderListaRicetteAdmin();
+            }).catch(function () {
+              renderListaRicetteAdmin();
+            });
+          } else {
+            renderListaRicetteAdmin();
+          }
         });
       });
     });

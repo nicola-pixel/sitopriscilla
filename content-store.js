@@ -9,6 +9,9 @@
   var API_URL = '/api/content';
   var remoteAvailable = null;
   var loadPromise = null;
+  // Evita che un load/save in volo ripristini un contenuto appena eliminato.
+  var deletedRecipeIds = Object.create(null);
+  var deletedPostIds = Object.create(null);
 
   function getAdminPassword() {
     try {
@@ -42,23 +45,46 @@
     };
   }
 
+  function filterDeleted(list, tombstones) {
+    return (list || []).filter(function (item) {
+      return item && item.id && !tombstones[item.id];
+    });
+  }
+
+  function pruneTombstones(tombstones, remoteList) {
+    var remoteIds = Object.create(null);
+    (remoteList || []).forEach(function (item) {
+      if (item && item.id) remoteIds[item.id] = true;
+    });
+    Object.keys(tombstones).forEach(function (id) {
+      if (!remoteIds[id]) delete tombstones[id];
+    });
+  }
+
   function applySnapshot(data) {
     if (!data) return getLocalSnapshot();
-    writeLocalArray(STORAGE_KEY_BLOG, data.posts || []);
-    writeLocalArray(STORAGE_KEY_RICETTE, data.recipes || []);
+    // Prima escludi gli id eliminati in questa sessione, poi togli i tombstone
+    // solo se il remote non li ha più (delete confermato).
+    var posts = filterDeleted(data.posts || [], deletedPostIds);
+    var recipes = filterDeleted(data.recipes || [], deletedRecipeIds);
+    pruneTombstones(deletedPostIds, data.posts || []);
+    pruneTombstones(deletedRecipeIds, data.recipes || []);
+    writeLocalArray(STORAGE_KEY_BLOG, posts);
+    writeLocalArray(STORAGE_KEY_RICETTE, recipes);
     writeLocalArray(STORAGE_KEY_CATEGORIE_RICETTE, data.categories || []);
     writeLocalArray(STORAGE_KEY_TAG_RICETTE, data.tags || []);
-    try {
-      global.dispatchEvent(new CustomEvent('priscilla-content-changed', { detail: data }));
-      global.dispatchEvent(new CustomEvent('priscilla-recipes-changed'));
-    } catch (e) {}
-    return {
-      posts: data.posts || [],
-      recipes: data.recipes || [],
+    var applied = {
+      posts: posts,
+      recipes: recipes,
       categories: data.categories || [],
       tags: data.tags || [],
       source: data.source || 'local'
     };
+    try {
+      global.dispatchEvent(new CustomEvent('priscilla-content-changed', { detail: applied }));
+      global.dispatchEvent(new CustomEvent('priscilla-recipes-changed'));
+    } catch (e) {}
+    return applied;
   }
 
   function notifyStorageListeners() {
@@ -200,7 +226,11 @@
     return loadPromise;
   }
 
-  function upsertLocal(key, item) {
+  function upsertLocal(key, item, tombstones) {
+    if (!item || !item.id) return readLocalArray(key);
+    if (tombstones && tombstones[item.id]) {
+      return readLocalArray(key);
+    }
     var list = readLocalArray(key);
     var idx = list.findIndex(function (it) { return it && it.id === item.id; });
     if (idx >= 0) list[idx] = item;
@@ -217,11 +247,28 @@
 
   function savePost(post) {
     if (!post || !post.id) return Promise.reject(new Error('Articolo non valido.'));
-    upsertLocal(STORAGE_KEY_BLOG, post);
+    // Un sync in ritardo non deve ripubblicare un articolo appena eliminato.
+    if (deletedPostIds[post.id]) {
+      return postAction('deletePost', { id: post.id }).then(function () {
+        return { post: null, source: 'blob', deleted: true };
+      }).catch(function () {
+        return { post: null, source: 'blob', deleted: true };
+      });
+    }
+    upsertLocal(STORAGE_KEY_BLOG, post, deletedPostIds);
     notifyStorageListeners();
     return postAction('savePost', { post: post }).then(function (data) {
+      if (deletedPostIds[post.id]) {
+        removeLocal(STORAGE_KEY_BLOG, post.id);
+        notifyStorageListeners();
+        return postAction('deletePost', { id: post.id }).then(function () {
+          return { post: null, source: 'blob', deleted: true };
+        }).catch(function () {
+          return { post: null, source: 'blob', deleted: true };
+        });
+      }
       var saved = data.post || post;
-      upsertLocal(STORAGE_KEY_BLOG, saved);
+      upsertLocal(STORAGE_KEY_BLOG, saved, deletedPostIds);
       notifyStorageListeners();
       return { post: saved, source: 'blob' };
     });
@@ -229,14 +276,34 @@
 
   function saveRecipe(recipe) {
     if (!recipe || !recipe.id) return Promise.reject(new Error('Ricetta non valida.'));
-    upsertLocal(STORAGE_KEY_RICETTE, recipe);
+    // Un sync in ritardo non deve ripubblicare una ricetta appena eliminata.
+    if (deletedRecipeIds[recipe.id]) {
+      return postAction('deleteRecipe', { id: recipe.id }).then(function () {
+        return { recipe: null, source: 'blob', deleted: true };
+      }).catch(function () {
+        return { recipe: null, source: 'blob', deleted: true };
+      });
+    }
+    upsertLocal(STORAGE_KEY_RICETTE, recipe, deletedRecipeIds);
     try {
       global.dispatchEvent(new CustomEvent('priscilla-recipes-changed'));
     } catch (e) {}
     notifyStorageListeners();
     return postAction('saveRecipe', { recipe: recipe }).then(function (data) {
+      if (deletedRecipeIds[recipe.id]) {
+        removeLocal(STORAGE_KEY_RICETTE, recipe.id);
+        try {
+          global.dispatchEvent(new CustomEvent('priscilla-recipes-changed'));
+        } catch (e3) {}
+        notifyStorageListeners();
+        return postAction('deleteRecipe', { id: recipe.id }).then(function () {
+          return { recipe: null, source: 'blob', deleted: true };
+        }).catch(function () {
+          return { recipe: null, source: 'blob', deleted: true };
+        });
+      }
       var saved = data.recipe || recipe;
-      upsertLocal(STORAGE_KEY_RICETTE, saved);
+      upsertLocal(STORAGE_KEY_RICETTE, saved, deletedRecipeIds);
       try {
         global.dispatchEvent(new CustomEvent('priscilla-recipes-changed'));
       } catch (e2) {}
@@ -247,22 +314,37 @@
 
   function deletePost(id) {
     if (!id) return Promise.reject(new Error('ID articolo mancante.'));
+    deletedPostIds[id] = true;
     removeLocal(STORAGE_KEY_BLOG, id);
     notifyStorageListeners();
     return postAction('deletePost', { id: id }).then(function () {
+      removeLocal(STORAGE_KEY_BLOG, id);
+      notifyStorageListeners();
       return { id: id, source: 'blob' };
+    }).catch(function (err) {
+      delete deletedPostIds[id];
+      throw err;
     });
   }
 
   function deleteRecipe(id) {
     if (!id) return Promise.reject(new Error('ID ricetta mancante.'));
+    deletedRecipeIds[id] = true;
     removeLocal(STORAGE_KEY_RICETTE, id);
     try {
       global.dispatchEvent(new CustomEvent('priscilla-recipes-changed'));
     } catch (e) {}
     notifyStorageListeners();
     return postAction('deleteRecipe', { id: id }).then(function () {
+      removeLocal(STORAGE_KEY_RICETTE, id);
+      try {
+        global.dispatchEvent(new CustomEvent('priscilla-recipes-changed'));
+      } catch (e2) {}
+      notifyStorageListeners();
       return { id: id, source: 'blob' };
+    }).catch(function (err) {
+      delete deletedRecipeIds[id];
+      throw err;
     });
   }
 
