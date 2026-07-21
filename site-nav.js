@@ -108,7 +108,8 @@
       '<span class="btn-header-cta-short" aria-hidden="true">Prenota</span>';
 
     var toggle = headerInner.querySelector('.nav-toggle');
-    if (toggle && toggle.parentElement !== actions) {
+    if (toggle) {
+      // Hamburger sempre ultimo a destra in header-actions
       actions.appendChild(toggle);
     }
   }

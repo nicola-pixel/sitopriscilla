@@ -28,13 +28,25 @@
 }
 
 /* ---------- Shell ---------- */
+html:has(body.admin-body) {
+  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
+  overscroll-behavior-x: none;
+}
+
 .admin-body {
   min-height: 100vh;
+  max-width: 100%;
+  width: 100%;
   background: var(--admin-bg);
   display: flex;
   font-family: var(--admin-font);
   color: var(--admin-text);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 
 /* Nasconde tutto il pannello finché non c'è autenticazione (niente flash di contenuti) */
@@ -163,12 +175,16 @@
 }
 
 .admin-workspace {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  width: calc(100% - var(--admin-sidebar-width));
+  max-width: calc(100% - var(--admin-sidebar-width));
   margin-left: var(--admin-sidebar-width);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ---------- Sidebar ---------- */
@@ -394,10 +410,14 @@
 .admin-main {
   flex: 1;
   padding: 0.35rem 1.75rem 3.5rem;
-  max-width: 1180px;
+  max-width: min(1180px, 100%);
   width: 100%;
+  min-width: 0;
   margin: 0 auto;
   animation: adminFadeIn 0.4s ease both;
+  overflow-x: hidden;
+  overflow-x: clip;
+  box-sizing: border-box;
 }
 
 @keyframes adminFadeIn {
@@ -463,6 +483,9 @@
   border: 1px solid var(--admin-border);
   box-shadow: var(--admin-shadow);
   transition: border-color var(--admin-transition), box-shadow var(--admin-transition);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-stat:hover {
@@ -533,6 +556,9 @@
   box-shadow: var(--admin-shadow);
   transition: border-color var(--admin-transition), box-shadow var(--admin-transition), transform var(--admin-transition);
   position: relative;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-card:hover {
@@ -2884,6 +2910,9 @@ body.admin-confirm-open {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .dash-panel--wide {
@@ -3082,7 +3111,8 @@ body.admin-confirm-open {
   justify-content: center;
   width: 40px;
   height: 40px;
-  margin-right: auto;
+  margin-left: auto;
+  order: 99;
   padding: 0;
   border: 1px solid var(--admin-border);
   border-radius: 12px;
@@ -3151,6 +3181,9 @@ body.admin-confirm-open {
   .admin-body {
     flex-direction: column;
     overflow-x: hidden;
+    overflow-x: clip;
+    width: 100%;
+    max-width: 100%;
   }
 
   .admin-body.admin-nav-open {
@@ -3183,8 +3216,9 @@ body.admin-confirm-open {
   }
 
   .admin-sidebar {
-    width: min(300px, 88vw);
+    width: min(300px, 85vw);
     min-width: 0;
+    max-width: 85vw;
     position: fixed;
     top: 0;
     left: 0;
@@ -3195,13 +3229,19 @@ body.admin-confirm-open {
     padding-bottom: max(1.1rem, env(safe-area-inset-bottom));
     border-right: 1px solid var(--admin-border);
     box-shadow: 8px 0 32px rgba(17, 24, 39, 0.12);
-    transform: translateX(-105%);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translate3d(-100%, 0, 0);
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0.25s;
     overscroll-behavior: contain;
   }
 
   .admin-body.admin-nav-open .admin-sidebar {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .admin-sidebar-brand {
@@ -3267,6 +3307,9 @@ body.admin-confirm-open {
   .admin-workspace {
     margin-left: 0;
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .admin-topbar {
@@ -3277,7 +3320,8 @@ body.admin-confirm-open {
   }
 
   .admin-menu-toggle {
-    margin-right: auto;
+    margin-left: auto;
+    order: 99;
   }
 
   .admin-topbar-btn {
@@ -3308,6 +3352,70 @@ body.admin-confirm-open {
 
   .admin-main {
     padding: 0.15rem max(0.75rem, env(safe-area-inset-right)) max(2.5rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
+  }
+
+  .admin-dashboard-stats,
+  .admin-dashboard-stats--analytics,
+  .admin-dashboard-stats--content,
+  .admin-cards,
+  .dash-grid,
+  .dash-insight,
+  .dash-insight-list,
+  .dash-toolbar,
+  .dash-header-row {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .admin-dashboard-stats,
+  .admin-dashboard-stats--analytics,
+  .admin-dashboard-stats--content {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .admin-cards {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .admin-card {
+    gap: 0.85rem;
+    padding: 1rem;
+  }
+
+  .admin-card-icon {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .admin-card h2,
+  .admin-card p,
+  .admin-stat-label,
+  .admin-stat-value,
+  .dash-panel-title,
+  .dash-panel-desc,
+  .dash-bar-label {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .admin-stat,
+  .dash-panel,
+  .dash-insight,
+  .admin-main .admin-block {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .admin-stat {
+    padding: 1rem;
   }
 
   /* Avoid iOS zoom-on-focus */
@@ -3363,15 +3471,20 @@ body.admin-confirm-open {
 
   .dash-period-filter {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .dash-filter-btn {
-    padding: 0.55rem 0.25rem;
+    padding: 0.55rem 0.35rem;
     font-size: 0.75rem;
     text-align: center;
     min-height: 44px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .dash-toolbar-actions {
@@ -3444,8 +3557,17 @@ body.admin-confirm-open {
 
   .admin-cards,
   .admin-card,
-  .dash-panel {
+  .dash-panel,
+  .admin-stat,
+  .dash-insight,
+  .dash-toolbar-actions,
+  .dash-action-btn {
     min-width: 0;
+    max-width: 100%;
+  }
+
+  .dash-action-btn {
+    box-sizing: border-box;
   }
 
   .admin-main .btn,
@@ -3744,11 +3866,6 @@ body.admin-confirm-open {
 }
 
 @media (max-width: 480px) {
-  .admin-dashboard-stats,
-  .admin-dashboard-stats--analytics {
-    grid-template-columns: 1fr;
-  }
-
   .admin-stat-value,
   .admin-stat--kpi .admin-stat-value {
     font-size: 1.55rem;
@@ -3756,6 +3873,11 @@ body.admin-confirm-open {
 
   .admin-main .admin-block {
     padding: 0.95rem;
+  }
+
+  .admin-card {
+    padding: 0.9rem;
+    gap: 0.75rem;
   }
 
   .admin-topbar-profile {
@@ -3772,10 +3894,6 @@ body.admin-confirm-open {
   .admin-logout-btn {
     padding: 0.3rem 0.55rem;
     font-size: 0.7rem;
-  }
-
-  .dash-period-filter {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dash-toolbar-actions {

@@ -131,7 +131,7 @@
     toggle.setAttribute('aria-controls', 'adminSidebar');
     toggle.innerHTML =
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>';
-    topbar.insertBefore(toggle, topbar.firstChild);
+    topbar.appendChild(toggle);
 
     if (!sidebar.id) sidebar.id = 'adminSidebar';
 

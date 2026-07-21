@@ -11,6 +11,13 @@
   var revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger';
   var revealObserver = null;
 
+  // Se l'init crasha a metà, i contenuti non restano invisibili
+  setTimeout(function () {
+    document.querySelectorAll(revealSelector).forEach(function (el) {
+      el.classList.add('is-visible');
+    });
+  }, 2000);
+
   function revealIfInView(el) {
     if (!el || el.classList.contains('is-visible') || el.closest('.hero')) return false;
     var rect = el.getBoundingClientRect();
@@ -96,7 +103,8 @@
     section.hidden = !visible;
     section.setAttribute('aria-hidden', visible ? 'false' : 'true');
     // Aggiorna sottolineatura nav quando la sezione blog appare/scompare
-    if (typeof updateActiveNav === 'function') updateActiveNav();
+    // (updateActiveNav è definita più sotto: evita di chiamarla prima dell'init)
+    if (typeof updateActiveNav === 'function' && Array.isArray(sections)) updateActiveNav();
   }
 
   function getHomepageBlogItems() {
@@ -282,15 +290,15 @@
     }
   }
 
-  loadHomepageBlog();
   window.addEventListener('storage', function (e) {
     if (e.key === STORAGE_KEY_BLOG || e.key === STORAGE_KEY_RICETTE) renderBlogGrid();
   });
   window.addEventListener('priscilla-content-changed', renderBlogGrid);
 
-  const header = document.querySelector('.header');
-  const navToggle = document.getElementById('navToggle');
-  const mainNav = document.getElementById('mainNav');
+  var header = document.querySelector('.header');
+  var navToggle = document.getElementById('navToggle');
+  var mainNav = document.getElementById('mainNav');
+  var sections = [];
 
   if (header) {
     function updateHeaderScroll() {
@@ -646,6 +654,8 @@
     var revealTargets = document.querySelectorAll(revealSelector);
     if (!revealTargets.length) return;
 
+    document.documentElement.classList.add('reveal-anim');
+
     if (!('IntersectionObserver' in window)) {
       revealTargets.forEach(function (el) {
         el.classList.add('is-visible');
@@ -700,13 +710,10 @@
     });
   }, { passive: true });
 
-  // Hero stagger: mark list visible on load
-  var heroStagger = document.querySelector('.hero .reveal-stagger');
-  if (heroStagger) {
-    requestAnimationFrame(function () {
-      heroStagger.classList.add('is-visible');
-    });
-  }
+  // Hero: mark reveals visible on load
+  document.querySelectorAll('.hero .reveal, .hero .reveal-stagger').forEach(function (el) {
+    el.classList.add('is-visible');
+  });
 
   // Subtle parallax on scroll
   var parallaxTargets = document.querySelectorAll('.parallax-target');
@@ -738,7 +745,6 @@
 
   // Active nav link on scroll (solo link nel menu, non CTA mobile)
   var navLinks = document.querySelectorAll('.nav ul a[href^="#"]');
-  var sections = [];
   var seenSectionIds = Object.create(null);
 
   navLinks.forEach(function (link) {
@@ -756,7 +762,7 @@
   }
 
   function updateActiveNav() {
-    if (!sections.length) return;
+    if (!Array.isArray(sections) || !sections.length) return;
     var scrollPos = window.scrollY + (header ? header.offsetHeight + 40 : 120);
     var current = null;
 
@@ -853,4 +859,7 @@
       closeCvModal();
     }
   });
+
+  // Dopo nav/reveal: evita che il blog chiami updateActiveNav a metà init
+  loadHomepageBlog();
 })();

@@ -147,13 +147,24 @@ body {
 }
 
 /* ========== Scroll reveal ========== */
-.reveal {
+/* Di default visibili: evita pagina bianca se lo JS fallisce.
+   L'animazione parte solo con html.reveal-anim (aggiunta da script.js). */
+.reveal,
+.reveal-left,
+.reveal-right,
+.reveal-scale,
+.reveal-stagger > * {
+  opacity: 1;
+  transform: none;
+}
+
+html.reveal-anim .reveal {
   opacity: 0;
   transform: translateY(32px);
   transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
 }
 
-.reveal.is-visible {
+html.reveal-anim .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -162,70 +173,67 @@ body {
   transition-delay: 0.15s;
 }
 
-.reveal-stagger > * {
+html.reveal-anim .reveal-stagger > * {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.65s var(--ease-out-expo), transform 0.65s var(--ease-out-expo);
 }
 
-.reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0.05s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 0.12s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 0.19s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 0.26s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 0.33s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(7) { transition-delay: 0.47s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(8) { transition-delay: 0.54s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(9) { transition-delay: 0.61s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(10) { transition-delay: 0.68s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(11) { transition-delay: 0.75s; opacity: 1; transform: translateY(0); }
-.reveal-stagger.is-visible > *:nth-child(12) { transition-delay: 0.82s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0.05s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 0.12s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 0.19s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 0.26s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 0.33s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(7) { transition-delay: 0.47s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(8) { transition-delay: 0.54s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(9) { transition-delay: 0.61s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(10) { transition-delay: 0.68s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(11) { transition-delay: 0.75s; opacity: 1; transform: translateY(0); }
+html.reveal-anim .reveal-stagger.is-visible > *:nth-child(12) { transition-delay: 0.82s; opacity: 1; transform: translateY(0); }
 
-.reveal-left {
+html.reveal-anim .reveal-left {
   opacity: 0;
   transform: translateX(-40px);
   transition: opacity 0.85s var(--ease-out-expo), transform 0.85s var(--ease-out-expo);
 }
 
-.reveal-right {
+html.reveal-anim .reveal-right {
   opacity: 0;
   transform: translateX(40px);
   transition: opacity 0.85s var(--ease-out-expo), transform 0.85s var(--ease-out-expo);
 }
 
-.reveal-scale {
+html.reveal-anim .reveal-scale {
   opacity: 0;
   transform: scale(0.92);
   transition: opacity 0.75s var(--ease-out-expo), transform 0.75s var(--ease-out-expo);
 }
 
-.reveal-left.is-visible,
-.reveal-right.is-visible,
-.reveal-scale.is-visible {
+html.reveal-anim .reveal-left.is-visible,
+html.reveal-anim .reveal-right.is-visible,
+html.reveal-anim .reveal-scale.is-visible {
   opacity: 1;
   transform: translateX(0) scale(1);
 }
 
-/* Hero: visible on load */
-.hero .reveal,
-.hero .reveal-stagger > * {
-  opacity: 0;
-  transform: translateY(28px);
-}
-
-.page-loaded .hero .reveal,
-.page-loaded .hero .reveal-stagger.is-visible > *,
-.page-loaded .hero .reveal-stagger > * {
+/* Hero: sempre visibile dopo page-loaded (specificità > reveal-anim) */
+html.reveal-anim body.page-loaded .hero .reveal,
+html.reveal-anim body.page-loaded .hero .reveal-stagger.is-visible > *,
+html.reveal-anim body.page-loaded .hero .reveal-stagger > *,
+body.page-loaded .hero .reveal,
+body.page-loaded .hero .reveal-stagger.is-visible > *,
+body.page-loaded .hero .reveal-stagger > * {
   opacity: 1;
   transform: translateY(0);
 }
 
-.page-loaded .hero .reveal { transition-delay: 0.1s; }
-.page-loaded .hero .reveal-delay-2 { transition-delay: 0.35s; }
-.page-loaded .hero .reveal-stagger > *:nth-child(1) { transition-delay: 0.25s; }
-.page-loaded .hero .reveal-stagger > *:nth-child(2) { transition-delay: 0.35s; }
-.page-loaded .hero .reveal-stagger > *:nth-child(3) { transition-delay: 0.45s; }
-.page-loaded .hero .reveal-stagger > *:nth-child(4) { transition-delay: 0.55s; }
+body.page-loaded .hero .reveal { transition-delay: 0.1s; }
+body.page-loaded .hero .reveal-delay-2 { transition-delay: 0.35s; }
+body.page-loaded .hero .reveal-stagger > *:nth-child(1) { transition-delay: 0.25s; }
+body.page-loaded .hero .reveal-stagger > *:nth-child(2) { transition-delay: 0.35s; }
+body.page-loaded .hero .reveal-stagger > *:nth-child(3) { transition-delay: 0.45s; }
+body.page-loaded .hero .reveal-stagger > *:nth-child(4) { transition-delay: 0.55s; }
 
 /* ========== Header ========== */
 .header {
@@ -295,6 +303,11 @@ body:has(.article-main) .header {
   gap: 0.5rem;
   flex-shrink: 0;
   margin-left: auto;
+}
+
+.header-actions .nav-toggle {
+  order: 99;
+  margin-left: 0;
 }
 
 .nav {
