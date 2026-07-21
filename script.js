@@ -1,12 +1,56 @@
 (function () {
   'use strict';
 
+  document.body.classList.add('page-loaded');
   requestAnimationFrame(function () {
     document.body.classList.add('page-loaded');
   });
 
   var STORAGE_KEY_BLOG = 'blog_articoli';
   var STORAGE_KEY_RICETTE = 'ricette';
+  var revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger';
+  var revealObserver = null;
+
+  function revealIfInView(el) {
+    if (!el || el.classList.contains('is-visible') || el.closest('.hero')) return false;
+    var rect = el.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+    if (rect.height <= 0 && rect.width <= 0) return false;
+    if (rect.bottom > 0 && rect.top < vh + 80) {
+      el.classList.add('is-visible');
+      if (revealObserver) {
+        try { revealObserver.unobserve(el); } catch (e) {}
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function revealElementsInView() {
+    document.querySelectorAll(revealSelector).forEach(revealIfInView);
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function bgImageStyle(url) {
+    if (!url) return '';
+    var safe = String(url)
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/[\r\n\u2028\u2029]/g, '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;');
+    return (
+      ' style="background-image:url(&quot;' +
+      safe +
+      '&quot;);background-size:cover;background-position:center;"'
+    );
+  }
 
   function getBlogPosts() {
     try {
@@ -26,23 +70,23 @@
     }
   }
 
-  function escapeHtml(text) {
-    if (!text) return '';
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
   function getPublishedBlogPosts() {
     return getBlogPosts().filter(function (post) {
       return post && String(post.title || '').trim();
     });
   }
 
-  function setBlogNavVisible(visible) {
-    document.querySelectorAll('a[href="#blog"]').forEach(function (link) {
+  function getPublishedRecipes() {
+    return getRecipes().filter(function (recipe) {
+      return recipe && String(recipe.title || '').trim();
+    });
+  }
+
+  /** Voce Blog sempre visibile in navbar/footer (non dipende dai contenuti). */
+  function setBlogNavVisible() {
+    document.querySelectorAll('a[href="#blog"], a[href$="#blog"], a[href="blog.html"], a[href="/blog"]').forEach(function (link) {
       var li = link.closest('li');
-      if (li) li.hidden = !visible;
+      if (li) li.hidden = false;
     });
   }
 
@@ -53,65 +97,108 @@
     section.setAttribute('aria-hidden', visible ? 'false' : 'true');
   }
 
+  function getHomepageBlogItems() {
+    var items = [];
+    getPublishedBlogPosts().forEach(function (post) {
+      items.push({
+        type: 'post',
+        createdAt: post.createdAt || 0,
+        post: post
+      });
+    });
+    getPublishedRecipes().forEach(function (recipe) {
+      items.push({
+        type: 'recipe',
+        createdAt: recipe.createdAt || 0,
+        recipe: recipe
+      });
+    });
+    items.sort(function (a, b) {
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+    return items.slice(0, 6);
+  }
+
   function renderBlogGrid() {
     var grid = document.getElementById('blogGrid');
-    var posts = getPublishedBlogPosts();
-    if (posts.length === 0) {
+    var items = getHomepageBlogItems();
+    setBlogNavVisible();
+    if (items.length === 0) {
       setBlogSectionVisible(false);
       if (grid) grid.innerHTML = '';
-      setBlogNavVisible(false);
       return;
     }
     setBlogSectionVisible(true);
-    setBlogNavVisible(true);
     if (!grid) return;
     var html = '';
     var imageClasses = ['', ' blog-card-image--2', ' blog-card-image--3'];
-    posts.forEach(function (post, i) {
-      var imgStyle = post.imageUrl ? ' style="background-image: url(' + escapeHtml(post.imageUrl) + '); background-size: cover;"' : '';
+    items.forEach(function (item, i) {
       var imgClass = 'blog-card-image' + (imageClasses[i % 3] || '');
-      html += '<article class="blog-card">' +
-        '<div class="' + imgClass + '"' + imgStyle + '></div>' +
+      if (item.type === 'recipe') {
+        var recipe = item.recipe;
+        var recipeImgStyle = recipe.imageUrl ? bgImageStyle(recipe.imageUrl) : '';
+        var recipeHref = '/ricetta?id=' + encodeURIComponent(recipe.id);
+        var recipeMeta = recipe.category || recipe.tag || 'Ricetta';
+        html +=
+          '<a href="' +
+          recipeHref +
+          '" class="blog-card blog-card--recipe blog-card--link">' +
+          '<div class="' +
+          imgClass +
+          '"' +
+          recipeImgStyle +
+          '></div>' +
+          '<div class="blog-card-content">' +
+          '<span class="blog-meta">' +
+          escapeHtml(recipeMeta) +
+          '</span>' +
+          '<h3>' +
+          escapeHtml(recipe.title) +
+          '</h3>' +
+          '<p>' +
+          escapeHtml(recipe.excerpt || '') +
+          '</p>' +
+          '<span class="blog-link">Leggi la ricetta →</span>' +
+          '</div></a>';
+        return;
+      }
+      var post = item.post;
+      var imgStyle = post.imageUrl ? bgImageStyle(post.imageUrl) : '';
+      var href = '/blog?id=' + encodeURIComponent(post.id);
+      html +=
+        '<a href="' +
+        href +
+        '" class="blog-card blog-card--link">' +
+        '<div class="' +
+        imgClass +
+        '"' +
+        imgStyle +
+        '></div>' +
         '<div class="blog-card-content">' +
-        '<span class="blog-meta">' + escapeHtml(post.meta || '') + '</span>' +
-        '<h3>' + escapeHtml(post.title) + '</h3>' +
-        '<p>' + escapeHtml(post.excerpt || '') + '</p>' +
-        '<a href="blog.html?id=' + encodeURIComponent(post.id) + '" class="blog-link">Leggi l\'articolo →</a>' +
-        '</div></article>';
+        '<span class="blog-meta">' +
+        escapeHtml(post.meta || '') +
+        '</span>' +
+        '<h3>' +
+        escapeHtml(post.title) +
+        '</h3>' +
+        '<p>' +
+        escapeHtml(post.excerpt || '') +
+        '</p>' +
+        '<span class="blog-link">Leggi l\'articolo →</span>' +
+        '</div></a>';
     });
-    grid.innerHTML = html;
-    if (typeof initRevealAnimations === 'function') initRevealAnimations();
-  }
-
-  function renderRecipesGrid() {
-    var grid = document.getElementById('recipesGrid');
-    if (!grid) return;
-    var recipes = getRecipes();
-    if (recipes.length === 0) return;
-    var html = '';
-    var imageClasses = [' recipe-card-image--1', ' recipe-card-image--2', ' recipe-card-image--3'];
-    recipes.forEach(function (recipe, i) {
-      var imgStyle = recipe.imageUrl ? ' style="background-image: url(' + escapeHtml(recipe.imageUrl) + '); background-size: cover;"' : '';
-      var imgClass = 'recipe-card-image' + (imageClasses[i % 3] || '');
-      var link = 'ricetta.html?id=' + encodeURIComponent(recipe.id);
-      html += '<article class="recipe-card">' +
-        '<div class="' + imgClass + '"' + imgStyle + '></div>' +
-        '<div class="recipe-card-content">' +
-        '<span class="recipe-tag">' + escapeHtml(recipe.category || recipe.tag || '') + '</span>' +
-        '<h3>' + escapeHtml(recipe.title) + '</h3>' +
-        '<p>' + escapeHtml(recipe.excerpt || '') + '</p>' +
-        '<a href="' + link + '" class="recipe-link">Vedi ricetta →</a>' +
-        '</div></article>';
-    });
+    html +=
+      '<p class="blog-section-footer">' +
+      '<a href="blog.html" class="blog-link blog-link--all">Vedi tutto il blog →</a>' +
+      '</p>';
     grid.innerHTML = html;
     if (typeof initRevealAnimations === 'function') initRevealAnimations();
   }
 
   renderBlogGrid();
   window.addEventListener('storage', function (e) {
-    if (e.key === STORAGE_KEY_BLOG) renderBlogGrid();
+    if (e.key === STORAGE_KEY_BLOG || e.key === STORAGE_KEY_RICETTE) renderBlogGrid();
   });
-  renderRecipesGrid();
 
   const header = document.querySelector('.header');
   const navToggle = document.getElementById('navToggle');
@@ -167,20 +254,75 @@
     });
   }
 
-  // Prenota: scelta sede (Milano, Modena, Trezzo, Online) poi mostra il calendario
-  var prenotaScelta = document.getElementById('prenotaScelta');
-  var calendari = {
-    milano: document.getElementById('calendarioMilano'),
-    modena: document.getElementById('calendarioModena'),
-    trezzo: document.getElementById('calendarioTrezzo'),
-    online: document.getElementById('calendarioOnline')
-  };
+  // Prenota: sedi dinamiche, Calendly in popup
+  var prenotaSediEl = document.getElementById('prenotaSedi');
   var CALENDLY_SCRIPT_URL = 'https://assets.calendly.com/assets/external/widget.js';
   var calendlyScriptPromise = null;
-  var calendlyPanelsPreloaded = false;
+  var prenotaEventsBound = false;
+
+  var ICON_LOCATION = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  var ICON_VIDEO = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
+
+  function getActiveSedi() {
+    if (window.PriscillaSedi) return window.PriscillaSedi.getActiveSedi();
+    return [];
+  }
+
+  function isCalendlyUrl(url) {
+    if (window.PriscillaSedi) return window.PriscillaSedi.isCalendlyUrl(url);
+    return /calendly\.com/i.test(url || '');
+  }
+
+  function trackSedeClick(el) {
+    if (!window.PriscillaAnalytics || !el) return;
+    var sedeId = el.getAttribute('data-sede') || '';
+    var sedeName = el.getAttribute('data-sede-name') || '';
+    var online = el.getAttribute('data-sede-online') === '1';
+    var url = el.getAttribute('data-url') || el.getAttribute('href') || '';
+    if (!sedeName && sedeId) {
+      var match = getActiveSedi().find(function (s) { return s.id === sedeId; });
+      if (match) {
+        sedeName = match.name || '';
+        online = !!match.online;
+        url = url || match.url || '';
+      }
+    }
+    window.PriscillaAnalytics.trackSedeClick(sedeId, sedeName, url, online);
+  }
+
+  function buildSedeCardHtml(sede) {
+    var online = !!sede.online;
+    var calendly = isCalendlyUrl(sede.url);
+    var cardClass = 'prenota-sede-card' + (online ? ' prenota-sede-card--online' : '');
+    var badgeClass = 'prenota-sede-badge' + (online ? ' prenota-sede-badge--online' : '');
+    var badge = online ? 'Online' : 'In presenza';
+    var icon = online ? ICON_VIDEO : ICON_LOCATION;
+    var inner =
+      '<span class="prenota-sede-icon" aria-hidden="true">' + icon + '</span>' +
+      '<span class="' + badgeClass + '">' + escapeHtml(badge) + '</span>' +
+      '<span class="prenota-sede-nome">' + escapeHtml(sede.name) + '</span>' +
+      '<span class="prenota-sede-indirizzo">' + escapeHtml(sede.address) + '</span>';
+
+    if (calendly) {
+      return '<button type="button" class="' + cardClass + '" data-sede="' + escapeHtml(sede.id) + '" data-sede-name="' + escapeHtml(sede.name) + '" data-sede-online="' + (online ? '1' : '0') + '" data-url="' + escapeHtml(sede.url) + '">' + inner + '</button>';
+    }
+    return '<a href="' + escapeHtml(sede.url) + '" class="' + cardClass + '" target="_blank" rel="noopener noreferrer" data-sede="' + escapeHtml(sede.id) + '" data-sede-name="' + escapeHtml(sede.name) + '" data-sede-online="' + (online ? '1' : '0') + '">' + inner + '</a>';
+  }
+
+  function renderFooterSedi() {
+    var list = document.getElementById('footerSediList');
+    if (!list) return;
+    var html = '';
+    getActiveSedi().forEach(function (sede) {
+      if (sede.online || !sede.address) return;
+      var label = sede.name ? sede.name + ' — ' + sede.address : sede.address;
+      html += '<li>' + escapeHtml(label) + '</li>';
+    });
+    list.innerHTML = html;
+  }
 
   function ensureCalendlyScript() {
-    if (typeof window.Calendly !== 'undefined' && window.Calendly.initInlineWidget) {
+    if (typeof window.Calendly !== 'undefined' && window.Calendly.initPopupWidget) {
       return Promise.resolve();
     }
     if (calendlyScriptPromise) return calendlyScriptPromise;
@@ -188,7 +330,9 @@
     calendlyScriptPromise = new Promise(function (resolve, reject) {
       var existing = document.querySelector('script[src*="assets/external/widget.js"]');
       if (existing) {
-        if (existing.getAttribute('data-calendly-ready') === 'true') {
+        if (existing.getAttribute('data-calendly-ready') === 'true' ||
+            (typeof window.Calendly !== 'undefined' && window.Calendly.initPopupWidget)) {
+          existing.setAttribute('data-calendly-ready', 'true');
           resolve();
           return;
         }
@@ -214,338 +358,68 @@
     return calendlyScriptPromise;
   }
 
-  function preparePanelForPreload(panel) {
-    if (!panel) return;
-    panel.hidden = false;
-    panel.classList.add('prenota-calendario-wrap--preload');
-  }
-
-  function isCalendlyRendered(widgetEl, minHeight) {
-    if (!widgetEl) return false;
-    if (widgetEl.getAttribute('data-calendly-rendered') === 'true') return true;
-    var iframe = widgetEl.querySelector('iframe');
-    return !!(iframe && iframe.offsetHeight >= (minHeight || 320));
-  }
-
-  function markCalendlyRendered(widgetEl) {
-    if (!widgetEl) return;
-    widgetEl.setAttribute('data-calendly-rendered', 'true');
-  }
-
-  function applyCalendlyHeight(widgetEl, height) {
-    if (!widgetEl || !height) return;
-    var px = Math.ceil(height) + 'px';
-    var wrap = widgetEl.closest('.calendly-wrap');
-    widgetEl.style.height = px;
-    widgetEl.style.minHeight = px;
-    if (wrap) wrap.style.minHeight = px;
-    var iframe = widgetEl.querySelector('iframe');
-    if (iframe) iframe.style.height = px;
-  }
-
-  var calendlyResizeListenerBound = false;
-
-  function ensureCalendlyResizeListener() {
-    if (calendlyResizeListenerBound) return;
-    calendlyResizeListenerBound = true;
-
-    window.addEventListener('message', function (event) {
-      if (event.origin !== 'https://calendly.com') return;
-      if (!event.data || event.data.event !== 'calendly.page_height') return;
-      var height = event.data.payload && event.data.payload.height;
-      if (!height || height < 200) return;
-
-      document.querySelectorAll('.calendly-inline-widget iframe').forEach(function (iframe) {
-        if (iframe.contentWindow !== event.source) return;
-        var widgetEl = iframe.closest('.calendly-inline-widget');
-        applyCalendlyHeight(widgetEl, height);
-      });
-    });
-  }
-
-  function preloadCalendlyPanel(panel) {
-    if (!panel) return;
-    var widgetEl = panel.querySelector('.calendly-inline-widget');
-    if (isCalendlyRendered(widgetEl)) return;
-    preparePanelForPreload(panel);
-    initCalendlyInPanel(panel, { silent: true });
-  }
-
-  function preloadAllCalendlyPanels() {
-    if (calendlyPanelsPreloaded || !prenotaScelta) return;
-    calendlyPanelsPreloaded = true;
-
+  function openCalendlyPopup(url) {
+    if (!url) return;
     ensureCalendlyScript().then(function () {
-      preloadCalendlyPanel(calendari.milano);
-      ['modena', 'trezzo', 'online'].forEach(function (key, index) {
-        setTimeout(function () {
-          preloadCalendlyPanel(calendari[key]);
-        }, (index + 1) * 250);
-      });
-    }).catch(function () {});
-  }
-
-  function scheduleCalendlyPreload() {
-    if (!prenotaScelta) return;
-    if (window.matchMedia('(prefers-reduced-data: reduce)').matches) return;
-
-    ensureCalendlyScript().then(function () {
-      preloadCalendlyPanel(calendari.milano);
-    }).catch(function () {});
-
-    function preloadRest() {
-      preloadAllCalendlyPanels();
-    }
-
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(preloadRest, { timeout: 1200 });
-    } else {
-      setTimeout(preloadRest, 300);
-    }
-
-    var prenotaSection = document.getElementById('prenota');
-    if (prenotaSection && 'IntersectionObserver' in window) {
-      var prenotaObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          preloadAllCalendlyPanels();
-          prenotaObserver.disconnect();
-        });
-      }, { rootMargin: '1200px 0px', threshold: 0 });
-      prenotaObserver.observe(prenotaSection);
-    }
-  }
-
-  function warmCalendlyOnNavIntent() {
-    ensureCalendlyScript().then(function () {
-      preloadCalendlyPanel(calendari.milano);
-    }).catch(function () {});
-  }
-
-  function ensureCalendlyLoader(wrap) {
-    if (!wrap || wrap.querySelector('.calendly-loader')) return;
-    var loader = document.createElement('div');
-    loader.className = 'calendly-loader';
-    loader.setAttribute('role', 'status');
-    loader.setAttribute('aria-live', 'polite');
-    loader.innerHTML =
-      '<div class="calendly-loader-inner">' +
-        '<div class="calendly-loader-icon" aria-hidden="true">' +
-          '<svg class="calendly-loader-calendar" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-            '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>' +
-            '<line x1="16" y1="2" x2="16" y2="6"/>' +
-            '<line x1="8" y1="2" x2="8" y2="6"/>' +
-            '<line x1="3" y1="10" x2="21" y2="10"/>' +
-            '<rect class="calendly-loader-day" x="7" y="13" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/>' +
-            '<rect class="calendly-loader-day calendly-loader-day--2" x="12" y="13" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/>' +
-            '<rect class="calendly-loader-day calendly-loader-day--3" x="17" y="13" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/>' +
-          '</svg>' +
-          '<span class="calendly-loader-ring"></span>' +
-        '</div>' +
-        '<p class="calendly-loader-text">Caricamento calendario…</p>' +
-        '<div class="calendly-loader-dots" aria-hidden="true">' +
-          '<span></span><span></span><span></span>' +
-        '</div>' +
-      '</div>';
-    wrap.insertBefore(loader, wrap.firstChild);
-  }
-
-  function setCalendlyLoading(wrap, loading) {
-    if (!wrap) return;
-    wrap.classList.toggle('calendly-wrap--loading', loading);
-  }
-
-  function waitForCalendlyRender(widgetEl, callback) {
-    var settled = false;
-    var iframeCheck = null;
-    var fallbackTimeout = null;
-    var minRenderedHeight = 320;
-
-    function cleanup() {
-      window.removeEventListener('message', onMessage);
-      if (iframeCheck) clearInterval(iframeCheck);
-      if (fallbackTimeout) clearTimeout(fallbackTimeout);
-    }
-
-    function finish() {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      markCalendlyRendered(widgetEl);
-      callback();
-    }
-
-    function onMessage(event) {
-      if (event.origin !== 'https://calendly.com') return;
-      if (!event.data || event.data.event !== 'calendly.page_height') return;
-      var height = event.data.payload && event.data.payload.height;
-      if (height) applyCalendlyHeight(widgetEl, height);
-      if (height && height >= minRenderedHeight) finish();
-    }
-
-    if (isCalendlyRendered(widgetEl, minRenderedHeight)) {
-      finish();
-      return;
-    }
-
-    window.addEventListener('message', onMessage);
-
-    iframeCheck = setInterval(function () {
-      if (isCalendlyRendered(widgetEl, minRenderedHeight)) finish();
-    }, 50);
-
-    fallbackTimeout = setTimeout(finish, 15000);
-  }
-
-  function initCalendlyInPanel(panel, options) {
-    if (!panel) return;
-    options = options || {};
-    var silent = options.silent === true;
-    var widgetEl = panel.querySelector('.calendly-inline-widget');
-    var wrap = panel.querySelector('.calendly-wrap');
-    if (!widgetEl) return;
-
-    if (!silent) {
-      ensureCalendlyLoader(wrap);
-      setCalendlyLoading(wrap, true);
-    }
-
-    function finishLoading() {
-      if (silent) return;
-      waitForCalendlyRender(widgetEl, function () {
-        setCalendlyLoading(wrap, false);
-        panel.classList.add('prenota-calendario-wrap--ready');
-      });
-    }
-
-    if (widgetEl.getAttribute('data-calendly-inited') === 'true') {
-      if (silent) {
-        if (!isCalendlyRendered(widgetEl)) {
-          waitForCalendlyRender(widgetEl, function () {});
-        }
-      } else if (isCalendlyRendered(widgetEl)) {
-        setCalendlyLoading(wrap, false);
-      } else {
-        finishLoading();
+      if (typeof window.Calendly !== 'undefined' && window.Calendly.initPopupWidget) {
+        window.Calendly.initPopupWidget({ url: url });
+        return;
       }
-      return;
-    }
-
-    var url = widgetEl.getAttribute('data-url');
-    if (!url) {
-      if (!silent) setCalendlyLoading(wrap, false);
-      return;
-    }
-
-    function doInit() {
-      if (typeof window.Calendly === 'undefined' || !window.Calendly.initInlineWidget) return false;
-      ensureCalendlyResizeListener();
-      window.Calendly.initInlineWidget({
-        url: url,
-        parentElement: widgetEl,
-        prefill: {},
-        utm: {},
-        autoLoad: true,
-        resize: true
-      });
-      widgetEl.setAttribute('data-calendly-inited', 'true');
-      finishLoading();
-      return true;
-    }
-
-    function waitAndInit() {
-      if (doInit()) return;
-      var attempts = 0;
-      var t = setInterval(function () {
-        if (doInit() || attempts++ > 100) {
-          clearInterval(t);
-          if (!silent && attempts > 100) setCalendlyLoading(wrap, false);
-        }
-      }, 30);
-    }
-
-    ensureCalendlyScript().then(waitAndInit).catch(function () {
-      if (!silent) setCalendlyLoading(wrap, false);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }).catch(function () {
+      window.open(url, '_blank', 'noopener,noreferrer');
     });
   }
 
-  function mostraCalendario(sede) {
-    if (!prenotaScelta) return;
-    prenotaScelta.hidden = true;
-    Object.keys(calendari).forEach(function (key) {
-      var el = calendari[key];
-      if (!el) return;
-      if (key !== sede) {
-        el.hidden = true;
-        el.classList.remove('prenota-calendario-wrap--preload');
-      }
-    });
-    var panel = calendari[sede];
-    if (panel) {
-      panel.hidden = false;
-      panel.classList.remove('prenota-calendario-wrap--preload');
-      var wrap = panel.querySelector('.calendly-wrap');
-      var widgetEl = panel.querySelector('.calendly-inline-widget');
-      var ready = isCalendlyRendered(widgetEl);
-      panel.classList.toggle('prenota-calendario-wrap--ready', ready);
-      if (ready) {
-        setCalendlyLoading(wrap, false);
-      } else {
-        ensureCalendlyLoader(wrap);
-        setCalendlyLoading(wrap, true);
-      }
-      initCalendlyInPanel(panel);
-    }
+  function warmCalendlyScript() {
+    ensureCalendlyScript().catch(function () {});
   }
 
+  function renderPrenotaSedi() {
+    if (!prenotaSediEl) return;
 
-  function tornaSceltaSede() {
-    if (!prenotaScelta) return;
-    prenotaScelta.hidden = false;
-    Object.keys(calendari).forEach(function (key) {
-      var el = calendari[key];
-      if (!el) return;
-      var widget = el.querySelector('.calendly-inline-widget');
-      var inited = widget && widget.getAttribute('data-calendly-inited') === 'true';
-      if (inited) {
-        el.hidden = false;
-        el.classList.add('prenota-calendario-wrap--preload');
-      } else {
-        el.hidden = true;
-        el.classList.remove('prenota-calendario-wrap--preload');
-      }
+    var cardsHtml = '';
+    getActiveSedi().forEach(function (sede) {
+      cardsHtml += buildSedeCardHtml(sede);
     });
+
+    prenotaSediEl.innerHTML = cardsHtml;
+    renderFooterSedi();
+
+    if (typeof initRevealAnimations === 'function') initRevealAnimations();
+    bindPrenotaEvents();
   }
 
-  document.getElementById('btnPrenotaMilano') && document.getElementById('btnPrenotaMilano').addEventListener('click', function () { mostraCalendario('milano'); });
-  document.getElementById('btnPrenotaModena') && document.getElementById('btnPrenotaModena').addEventListener('click', function () { mostraCalendario('modena'); });
-  document.getElementById('btnPrenotaTrezzo') && document.getElementById('btnPrenotaTrezzo').addEventListener('click', function () { mostraCalendario('trezzo'); });
-  document.getElementById('btnPrenotaOnline') && document.getElementById('btnPrenotaOnline').addEventListener('click', function () { mostraCalendario('online'); });
-  document.getElementById('btnTornaDaMilano') && document.getElementById('btnTornaDaMilano').addEventListener('click', tornaSceltaSede);
-  document.getElementById('btnTornaDaModena') && document.getElementById('btnTornaDaModena').addEventListener('click', tornaSceltaSede);
-  document.getElementById('btnTornaDaTrezzo') && document.getElementById('btnTornaDaTrezzo').addEventListener('click', tornaSceltaSede);
-  document.getElementById('btnTornaDaOnline') && document.getElementById('btnTornaDaOnline').addEventListener('click', tornaSceltaSede);
+  function bindPrenotaEvents() {
+    if (!prenotaSediEl || prenotaEventsBound) return;
+    prenotaEventsBound = true;
 
-  document.querySelectorAll('.prenota-sede-card').forEach(function (btn) {
-    function warmCalendlyOnIntent() {
-      var sede = btn.getAttribute('data-sede');
-      if (sede && calendari[sede]) preloadCalendlyPanel(calendari[sede]);
-    }
-    btn.addEventListener('mouseenter', warmCalendlyOnIntent, { once: true });
-    btn.addEventListener('focus', warmCalendlyOnIntent, { once: true });
-    btn.addEventListener('touchstart', warmCalendlyOnIntent, { once: true, passive: true });
-  });
+    prenotaSediEl.addEventListener('click', function (event) {
+      var btn = event.target.closest('[data-sede]');
+      if (!btn) return;
+      trackSedeClick(btn);
+      if (btn.tagName === 'A') return;
+      event.preventDefault();
+      openCalendlyPopup(btn.getAttribute('data-url'));
+    });
+
+    prenotaSediEl.addEventListener('mouseenter', warmCalendlyScript, { capture: true, once: true });
+    prenotaSediEl.addEventListener('focus', warmCalendlyScript, { capture: true, once: true });
+    prenotaSediEl.addEventListener('touchstart', warmCalendlyScript, { capture: true, passive: true, once: true });
+  }
 
   document.querySelectorAll('a[href="#prenota"]').forEach(function (link) {
-    link.addEventListener('mouseenter', warmCalendlyOnNavIntent, { once: true });
-    link.addEventListener('focus', warmCalendlyOnNavIntent, { once: true });
+    link.addEventListener('mouseenter', warmCalendlyScript, { once: true });
+    link.addEventListener('focus', warmCalendlyScript, { once: true });
   });
 
-  scheduleCalendlyPreload();
+  renderPrenotaSedi();
 
-  // Scroll reveal animations
-  var revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger';
-  var revealObserver = null;
+  window.addEventListener('storage', function (event) {
+    if (event.key === (window.PriscillaSedi && window.PriscillaSedi.STORAGE_KEY)) renderPrenotaSedi();
+  });
+
+  window.addEventListener('sedi-updated', renderPrenotaSedi);
 
   function initRevealAnimations() {
     var revealTargets = document.querySelectorAll(revealSelector);
@@ -568,19 +442,42 @@
             }
           });
         },
-        { root: null, rootMargin: '0px 0px -6% 0px', threshold: 0.1 }
+        { root: null, rootMargin: '0px 0px -48px 0px', threshold: 0 }
       );
     }
 
     revealTargets.forEach(function (el) {
       if (el.closest('.hero') || el.classList.contains('is-visible')) return;
-      if (el.dataset.revealObserved === 'true') return;
-      el.dataset.revealObserved = 'true';
-      revealObserver.observe(el);
+      if (el.dataset.revealObserved !== 'true') {
+        el.dataset.revealObserved = 'true';
+        revealObserver.observe(el);
+      }
+      revealIfInView(el);
     });
   }
 
   initRevealAnimations();
+  revealElementsInView();
+  [50, 200, 500, 1000].forEach(function (ms) {
+    setTimeout(revealElementsInView, ms);
+  });
+  window.addEventListener('hashchange', function () {
+    requestAnimationFrame(function () {
+      initRevealAnimations();
+      revealElementsInView();
+      setTimeout(revealElementsInView, 300);
+    });
+  });
+  window.addEventListener('load', revealElementsInView);
+  var revealScrollQueued = false;
+  window.addEventListener('scroll', function () {
+    if (revealScrollQueued) return;
+    revealScrollQueued = true;
+    requestAnimationFrame(function () {
+      revealScrollQueued = false;
+      revealElementsInView();
+    });
+  }, { passive: true });
 
   // Hero stagger: mark list visible on load
   var heroStagger = document.querySelector('.hero .reveal-stagger');
@@ -618,15 +515,18 @@
     updateParallax();
   }
 
-  // Active nav link on scroll
-  var navLinks = document.querySelectorAll('.nav a[href^="#"]');
+  // Active nav link on scroll (solo link nel menu, non CTA mobile)
+  var navLinks = document.querySelectorAll('.nav ul a[href^="#"]');
   var sections = [];
+  var seenSectionIds = Object.create(null);
 
   navLinks.forEach(function (link) {
     var id = link.getAttribute('href');
-    if (!id || id === '#') return;
+    if (!id || id === '#' || seenSectionIds[id]) return;
     var section = document.querySelector(id);
-    if (section) sections.push({ id: id, el: section, link: link });
+    if (!section) return;
+    seenSectionIds[id] = true;
+    sections.push({ id: id, el: section, link: link });
   });
 
   if (sections.length) {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it" data-seo-page="ricetta">
+<html lang="it" data-seo-page="ricette">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,16 +7,16 @@
   <link rel="icon" href="assets/favicon-32x32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="assets/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <title>Ricetta | Priscilla Castellani Tarabini</title>
-  <meta name="description" content="Ricetta salutare — Priscilla Castellani Tarabini, Biologa Nutrizionista sportiva.">
+  <title>Ricette salutari | Priscilla Castellani Tarabini</title>
+  <meta name="description" content="Ricette salutari per atleti e sportivi — Priscilla Castellani Tarabini, Biologa Nutrizionista sportiva.">
   <meta name="robots" content="index, follow">
   <meta name="author" content="Priscilla Castellani Tarabini">
   <meta name="theme-color" content="#111111">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260721c">
-  <link rel="stylesheet" href="styles-blog.css?v=20260721c">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-blog.css">
 </head>
 <body>
   <header class="header">
@@ -53,83 +53,36 @@
     <a href="index.html#prenota" class="btn btn-header-cta nav-mobile-cta">Prenota una consulenza</a>
   </nav>
 
-  <main class="article-main article-main--open">
-    <article class="article-page article-page--recipe" id="ricettaWrap">
-      <div class="article-hero">
-        <div class="article-hero-bg" aria-hidden="true">
-          <span class="article-hero-orb article-hero-orb--1"></span>
-          <span class="article-hero-orb article-hero-orb--2"></span>
-          <span class="article-hero-grain"></span>
-        </div>
-
-        <div class="article-hero-inner">
-          <a href="blog.html" class="article-back-link">
-            <span class="article-back-arrow" aria-hidden="true">←</span>
-            Torna al blog
-          </a>
-
-          <header class="article-header" id="ricettaHeader">
-            <p class="article-category" id="ricettaTag"></p>
-            <h1 class="article-title" id="ricettaTitle"></h1>
-            <p class="article-excerpt" id="ricettaExcerpt" hidden></p>
-
-            <div class="article-meta-bar">
-              <div class="article-byline">
-                <img
-                  src="assets/priscilla-portrait.png"
-                  alt=""
-                  class="article-byline-avatar"
-                  width="52"
-                  height="52"
-                >
-                <div class="article-byline-text">
-                  <p class="article-byline-name">Dott.ssa Priscilla Castellani Tarabini</p>
-                  <p class="article-byline-role">Biologa Nutrizionista</p>
-                </div>
-              </div>
-              <dl class="article-facts">
-                <div class="article-fact">
-                  <dt>Pubblicato</dt>
-                  <dd><time class="article-date" id="ricettaDate"></time></dd>
-                </div>
-                <div class="article-fact">
-                  <dt>Lettura</dt>
-                  <dd class="article-read" id="ricettaRead"></dd>
-                </div>
-              </dl>
-            </div>
-          </header>
+  <main class="ricette-main">
+    <div class="container">
+      <div class="ricette-page-header">
+        <div class="ricette-page-intro">
+          <a href="blog.html" class="article-back-link">← Blog</a>
+          <span class="section-label">Blog</span>
+          <h1 class="ricette-page-title">Ricette salutari</h1>
+          <p class="ricette-page-desc">Idee di cucina per atleti e sportivi: colazioni, snack, pre e post allenamento. Ogni ricetta è pensata per supportare performance e benessere.</p>
         </div>
       </div>
 
-      <figure class="article-cover" id="ricettaCover" hidden>
-        <img class="article-cover-img" id="ricettaCoverImg" alt="" width="1600" height="900">
-      </figure>
-
-      <div class="article-content">
-        <div class="article-body prose" id="ricettaBody"></div>
-
-        <aside class="article-cta">
-          <div class="article-cta-copy">
-            <p class="article-cta-eyebrow">Consulenza personalizzata</p>
-            <h2 class="article-cta-title">Vuoi un piano alimentare su misura?</h2>
-            <p class="article-cta-text">Prenota una consulenza in studio o online e costruiamo insieme il percorso più adatto a te.</p>
+      <div class="ricette-toolbar" id="ricetteToolbar" hidden>
+        <div class="ricette-filters">
+          <label for="filtroCategoriaRicette" class="ricette-filter-label">Categoria</label>
+          <div class="select-wrap select-wrap--filter">
+            <select id="filtroCategoriaRicette" class="select-modern select-modern--filter" aria-label="Filtra per categoria">
+              <option value="">Tutte le categorie</option>
+            </select>
+            <span class="select-chevron" aria-hidden="true"></span>
           </div>
-          <a href="index.html#prenota" class="btn btn-primary article-cta-btn">Prenota una consulenza</a>
-        </aside>
-
-        <section class="article-related" id="ricettaRelated" hidden>
-          <div class="article-related-head">
-            <span class="section-label">Altre ricette</span>
-            <h2 class="article-related-title">Potrebbero piacerti</h2>
-          </div>
-          <div class="article-related-grid" id="ricettaRelatedGrid"></div>
-        </section>
+        </div>
+        <p class="ricette-count" id="ricetteCount" aria-live="polite"></p>
       </div>
-    </article>
-    <div class="article-error" id="ricettaError" hidden>
-      <p>Ricetta non trovata.</p>
-      <a href="blog.html" class="btn btn-primary">Torna al blog</a>
+
+      <div class="blog-grid ricette-grid" id="ricetteGrid"></div>
+
+      <div class="ricette-empty" id="ricetteEmpty" hidden>
+        <p>Non ci sono ancora ricette pubblicate.</p>
+        <a href="admin/ricette.html" class="btn btn-primary">Crea la prima ricetta</a>
+      </div>
     </div>
   </main>
 
@@ -184,11 +137,10 @@
     </div>
   </footer>
 
-  <script src="config.js?v=20260721c"></script>
-  <script src="seo.js?v=20260721c"></script>
-  <script src="site-nav.js?v=20260721c"></script>
-  <script src="script.js?v=20260721c"></script>
-  <script src="content-format.js?v=20260721c"></script>
-  <script src="ricetta.js?v=20260721c"></script>
+  <script src="config.js"></script>
+  <script src="seo.js"></script>
+  <script src="site-nav.js"></script>
+  <script src="script.js"></script>
+  <script src="ricette.js"></script>
 </body>
 </html>

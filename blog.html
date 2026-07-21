@@ -7,16 +7,16 @@
   <link rel="icon" href="assets/favicon-32x32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="assets/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <title>Articolo | Priscilla Castellani Tarabini</title>
-  <meta name="description" content="Articolo di approfondimento su nutrizione sportiva e alimentazione sana — Priscilla Castellani Tarabini, Biologa Nutrizionista.">
+  <title>Blog | Priscilla Castellani Tarabini</title>
+  <meta name="description" content="Ricette salutari e approfondimenti di nutrizione sportiva — Priscilla Castellani Tarabini, Biologa Nutrizionista.">
   <meta name="robots" content="index, follow">
   <meta name="author" content="Priscilla Castellani Tarabini">
   <meta name="theme-color" content="#111111">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="styles-blog.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260721b">
+  <link rel="stylesheet" href="styles-blog.css?v=20260721b">
 </head>
 <body>
   <header class="header">
@@ -24,11 +24,17 @@
       <a href="index.html" class="header-logo" aria-label="Torna alla home">
         <img src="assets/logo-pct-header.png" alt="Priscilla Castellani Tarabini" class="logo-img" width="44" height="44">
       </a>
-      <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false" aria-controls="mainNav">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <div class="header-actions">
+        <a href="index.html#prenota" class="btn btn-header-cta" aria-label="Prenota una consulenza">
+          <span class="btn-header-cta-full">Prenota una consulenza</span>
+          <span class="btn-header-cta-short" aria-hidden="true">Prenota</span>
+        </a>
+        <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false" aria-controls="mainNav">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -36,27 +42,139 @@
   <nav class="nav" id="mainNav">
     <p class="nav-mobile-label">Navigazione</p>
     <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="index.html#blog">Blog</a></li>
-      <li><a href="scarica.html" class="nav-link-scarica">Scarica</a></li>
+      <li><a href="index.html#home">Home</a></li>
+      <li><a href="index.html#chi-siamo">Chi sono</a></li>
+      <li><a href="index.html#servizi">Servizi</a></li>
+      <li><a href="index.html#prenota">Prenota</a></li>
+      <li><a href="index.html#faq">FAQ</a></li>
+      <li><a href="index.html#blog" class="is-active">Blog</a></li>
+      <li><a href="scarica.html">Materiale</a></li>
     </ul>
     <a href="index.html#prenota" class="btn btn-header-cta nav-mobile-cta">Prenota una consulenza</a>
   </nav>
 
-  <main class="article-main">
-    <article class="article-wrap" id="articleWrap">
-      <div class="article-back">
-        <a href="index.html#blog" class="article-back-link">← Tutti gli articoli</a>
+  <!-- Elenco ricette / articoli del blog -->
+  <main class="ricette-main blog-listing" id="blogListing">
+    <header class="blog-listing-hero">
+      <div class="blog-listing-hero-bg" aria-hidden="true">
+        <span class="blog-listing-orb blog-listing-orb--1"></span>
+        <span class="blog-listing-orb blog-listing-orb--2"></span>
+        <span class="blog-listing-grain"></span>
       </div>
-      <div class="article-header" id="articleHeader">
-        <span class="article-meta" id="articleMeta"></span>
-        <h1 class="article-title" id="articleTitle"></h1>
+      <div class="container blog-listing-hero-inner">
+        <div class="blog-listing-hero-copy">
+          <a href="index.html" class="article-back-link">
+            <span class="article-back-arrow" aria-hidden="true">←</span>
+            Home
+          </a>
+          <span class="section-label">Blog</span>
+          <h1 class="ricette-page-title">Ricette e approfondimenti</h1>
+          <p class="ricette-page-desc">Idee di cucina e contenuti di nutrizione sportiva.</p>
+        </div>
       </div>
-      <div class="article-body prose" id="articleBody"></div>
+    </header>
+
+    <div class="container blog-listing-body">
+      <div class="ricette-toolbar blog-listing-toolbar" id="blogToolbar" hidden>
+        <div class="ricette-filters">
+          <label for="filtroCategoriaBlog" class="ricette-filter-label">Categoria</label>
+          <div class="select-wrap select-wrap--filter">
+            <select id="filtroCategoriaBlog" class="select-modern select-modern--filter" aria-label="Filtra per categoria">
+              <option value="">Tutte le categorie</option>
+            </select>
+            <span class="select-chevron" aria-hidden="true"></span>
+          </div>
+        </div>
+        <p class="ricette-count" id="blogCount" aria-live="polite"></p>
+      </div>
+
+      <div class="blog-grid ricette-grid blog-listing-grid" id="blogGrid"></div>
+
+      <div class="ricette-empty" id="blogEmpty" hidden>
+        <p>Non ci sono ancora ricette pubblicate.</p>
+        <a href="index.html#blog" class="btn btn-primary">Crea la prima ricetta</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Articolo singolo (solo se ?id= articolo blog) -->
+  <main class="article-main" id="articleMain" hidden>
+    <article class="article-page" id="articleWrap">
+      <div class="article-hero">
+        <div class="article-hero-bg" aria-hidden="true">
+          <span class="article-hero-orb article-hero-orb--1"></span>
+          <span class="article-hero-orb article-hero-orb--2"></span>
+          <span class="article-hero-grain"></span>
+        </div>
+
+        <div class="article-hero-inner">
+          <a href="blog.html" class="article-back-link">
+            <span class="article-back-arrow" aria-hidden="true">←</span>
+            Tutti gli articoli
+          </a>
+
+          <header class="article-header">
+            <p class="article-category" id="articleMeta"></p>
+            <h1 class="article-title" id="articleTitle"></h1>
+            <p class="article-excerpt" id="articleExcerpt" hidden></p>
+
+            <div class="article-meta-bar">
+              <div class="article-byline">
+                <img
+                  src="assets/priscilla-portrait.png"
+                  alt=""
+                  class="article-byline-avatar"
+                  width="52"
+                  height="52"
+                >
+                <div class="article-byline-text">
+                  <p class="article-byline-name">Dott.ssa Priscilla Castellani Tarabini</p>
+                  <p class="article-byline-role">Biologa Nutrizionista</p>
+                </div>
+              </div>
+              <dl class="article-facts" id="articleKicker">
+                <div class="article-fact">
+                  <dt>Pubblicato</dt>
+                  <dd><time class="article-date" id="articleDate"></time></dd>
+                </div>
+                <div class="article-fact">
+                  <dt>Lettura</dt>
+                  <dd class="article-read" id="articleRead"></dd>
+                </div>
+              </dl>
+            </div>
+          </header>
+        </div>
+      </div>
+
+      <figure class="article-cover" id="articleCover" hidden>
+        <img id="articleCoverImg" class="article-cover-img" alt="" width="1600" height="900">
+      </figure>
+
+      <div class="article-content">
+        <div class="article-body prose" id="articleBody"></div>
+
+        <aside class="article-cta">
+          <div class="article-cta-copy">
+            <p class="article-cta-eyebrow">Consulenza personalizzata</p>
+            <h2 class="article-cta-title">Vuoi un percorso nutrizionale su misura?</h2>
+            <p class="article-cta-text">Prenota una consulenza in studio o online e costruiamo insieme il piano più adatto a te.</p>
+          </div>
+          <a href="index.html#prenota" class="btn btn-primary article-cta-btn">Prenota una consulenza</a>
+        </aside>
+
+        <section class="article-related" id="articleRelated" hidden>
+          <div class="article-related-head">
+            <span class="section-label">Continua a leggere</span>
+            <h2 class="article-related-title">Altri approfondimenti</h2>
+          </div>
+          <div class="article-related-grid" id="articleRelatedGrid"></div>
+        </section>
+      </div>
     </article>
     <div class="article-error" id="articleError" hidden>
       <p>Articolo non trovato.</p>
-      <a href="index.html#blog" class="btn btn-primary">Torna al blog</a>
+      <a href="blog.html" class="btn btn-primary">Torna al blog</a>
     </div>
   </main>
 
@@ -64,7 +182,7 @@
     <div class="container">
       <div class="footer-top">
         <a href="index.html" class="footer-logo" aria-label="Torna alla home">
-          <img src="assets/logo-pct.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" width="48" height="48">
+          <img src="assets/logo-pct-header.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" width="48" height="48">
         </a>
         <p class="footer-tagline">Dott.ssa Priscilla Castellani Tarabini — Biologa Nutrizionista</p>
       </div>
@@ -72,10 +190,11 @@
         <nav class="footer-col footer-nav" aria-label="Navigazione sito">
           <h3 class="footer-col-title">Navigazione</h3>
           <ul class="footer-list">
-            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#home">Home</a></li>
             <li><a href="index.html#chi-siamo">Chi sono</a></li>
             <li><a href="index.html#servizi">Servizi</a></li>
             <li><a href="index.html#prenota">Prenota</a></li>
+            <li><a href="index.html#faq">FAQ</a></li>
             <li><a href="index.html#blog">Blog</a></li>
             <li><a href="scarica.html">Materiale</a></li>
           </ul>
@@ -91,6 +210,7 @@
           <h3 class="footer-col-title">Dove trovarmi</h3>
           <ul class="footer-list footer-list--addresses">
             <li>Via dei Fabbri 12, 20123 Milano</li>
+            <li>Centro Proxima — Corso Buenos Aires 23, 20124 Milano</li>
             <li>Via Gianfranco Miglio 5, 20056 Trezzo sull'Adda (MI)</li>
             <li>Via Tamburini 99, 41124 Modena (MO)</li>
           </ul>
@@ -109,9 +229,11 @@
     </div>
   </footer>
 
-  <script src="config.js"></script>
-  <script src="seo.js"></script>
-  <script src="script.js"></script>
-  <script src="blog.js"></script>
+  <script src="config.js?v=20260721c"></script>
+  <script src="seo.js?v=20260721c"></script>
+  <script src="site-nav.js?v=20260721c"></script>
+  <script src="script.js?v=20260721c"></script>
+  <script src="content-format.js?v=20260721c"></script>
+  <script src="blog.js?v=20260721c"></script>
 </body>
 </html>

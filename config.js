@@ -8,7 +8,7 @@ window.PriscillaConfig = {
   // Esempio: 'https://www.tuodominio.it'
   siteUrl: '',
   // Password per accedere alla sezione admin (cambiala!)
-  adminPassword: 'admin123',
+  adminPassword: 'priscilla',
   // Chiave segreta di default per scaricare i PDF (usata se l'admin non ne ha impostata una)
   defaultDownloadKey: 'priscilla2025'
 };

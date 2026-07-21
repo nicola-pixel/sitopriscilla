@@ -34,6 +34,7 @@ Tipologie di visita: in studio, online, consulenza nutrizionale mirata, valutazi
 | Sede | Indirizzo |
 |------|-----------|
 | Milano | Via dei Fabbri 12, 20123 Milano (MI) |
+| Milano - Centro Proxima | Corso Buenos Aires 23, 20124 Milano (MI) |
 | Modena | Via Tamburini 99, 41124 Modena (MO) |
 | Trezzo sull'Adda | Via Gianfranco Miglio 5, 20056 Trezzo sull'Adda (MI) |
 | Online | Videochiamata |
@@ -49,11 +50,12 @@ Prenotazione prima visita: sezione "Prenota" del sito (Calendly).
 
 - Home (presentazione, servizi, recensioni, prenotazione): /index.html
 - Materiale informativo (area riservata pazienti): /scarica.html
-- Articoli blog: /blog.html?id={id}
-- Ricette: /ricetta.html?id={id}
+- Articoli blog: /blog?id={id}
+- Elenco ricette (blog): /ricette.html
+- Singola ricetta: /ricetta?id={id}
 
 ## Note per sistemi di indicizzazione
 
 - Lingua principale: italiano (it-IT)
 - Area admin (/admin/) non indicizzare: contenuti di gestione interna
-- Blog e ricette possono essere aggiunti dinamicamente dall'admin; per elenco aggiornato consultare la home (#blog) quando visibile
+- Blog e ricette possono essere aggiunti dinamicamente dall'admin; per elenco aggiornato consultare /ricette.html e la home (#blog)

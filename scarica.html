@@ -25,11 +25,17 @@
       <a href="index.html" class="header-logo" aria-label="Torna alla home">
         <img src="assets/logo-pct-header.png" alt="Priscilla Castellani Tarabini" class="logo-img" width="44" height="44">
       </a>
-      <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false" aria-controls="mainNav">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <div class="header-actions">
+        <a href="index.html#prenota" class="btn btn-header-cta" aria-label="Prenota una consulenza">
+          <span class="btn-header-cta-full">Prenota una consulenza</span>
+          <span class="btn-header-cta-short" aria-hidden="true">Prenota</span>
+        </a>
+        <button class="nav-toggle" aria-label="Apri menu" id="navToggle" aria-expanded="false" aria-controls="mainNav">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -41,8 +47,9 @@
       <li><a href="index.html#chi-siamo">Chi sono</a></li>
       <li><a href="index.html#servizi">Servizi</a></li>
       <li><a href="index.html#prenota">Prenota</a></li>
+      <li><a href="index.html#faq">FAQ</a></li>
       <li><a href="index.html#blog">Blog</a></li>
-      <li><a href="scarica.html" class="nav-link-scarica">Materiale</a></li>
+      <li><a href="scarica.html" class="is-active">Materiale</a></li>
     </ul>
     <a href="index.html#prenota" class="btn btn-header-cta nav-mobile-cta">Prenota una consulenza</a>
   </nav>
@@ -67,7 +74,7 @@
         <header class="scarica-lista-header">
           <p class="scarica-label">Materiale</p>
           <h2 class="scarica-title">File disponibili</h2>
-          <p class="scarica-intro">Clicca su Scarica per salvare il file sul tuo dispositivo.</p>
+          <p class="scarica-intro">Apri per consultare il documento, oppure scaricalo sul tuo dispositivo.</p>
         </header>
         <ul id="listaPdf" class="lista-download"></ul>
         <footer class="scarica-lista-footer">
@@ -77,11 +84,30 @@
     </div>
   </main>
 
+  <div class="preview-modal" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewModalTitle" hidden>
+    <div class="preview-modal-overlay" id="previewModalOverlay" tabindex="-1"></div>
+    <div class="preview-modal-panel">
+      <header class="preview-modal-header">
+        <div class="preview-modal-heading">
+          <p class="preview-modal-kicker">Anteprima</p>
+          <h2 class="preview-modal-title" id="previewModalTitle">Documento</h2>
+        </div>
+        <div class="preview-modal-actions">
+          <a href="#" class="preview-modal-download" id="previewModalDownload" download data-track-download="1">Scarica</a>
+          <button type="button" class="preview-modal-close" id="previewModalClose" aria-label="Chiudi anteprima">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </header>
+      <div class="preview-modal-body" id="previewModalBody"></div>
+    </div>
+  </div>
+
   <footer class="footer">
     <div class="container">
       <div class="footer-top">
         <a href="index.html" class="footer-logo" aria-label="Torna alla home">
-          <img src="assets/logo-pct.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" width="48" height="48">
+          <img src="assets/logo-pct-header.png" alt="Priscilla Castellani Tarabini - Nutrizionista sportiva" width="48" height="48">
         </a>
         <p class="footer-tagline">Dott.ssa Priscilla Castellani Tarabini — Biologa Nutrizionista</p>
       </div>
@@ -89,12 +115,13 @@
         <nav class="footer-col footer-nav" aria-label="Navigazione sito">
           <h3 class="footer-col-title">Navigazione</h3>
           <ul class="footer-list">
-            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#home">Home</a></li>
             <li><a href="index.html#chi-siamo">Chi sono</a></li>
             <li><a href="index.html#servizi">Servizi</a></li>
             <li><a href="index.html#prenota">Prenota</a></li>
-          <li><a href="index.html#blog">Blog</a></li>
-          <li><a href="scarica.html">Materiale</a></li>
+            <li><a href="index.html#faq">FAQ</a></li>
+            <li><a href="index.html#blog">Blog</a></li>
+            <li><a href="scarica.html">Materiale</a></li>
           </ul>
         </nav>
         <div class="footer-col footer-contatti">
@@ -108,6 +135,7 @@
           <h3 class="footer-col-title">Dove trovarmi</h3>
           <ul class="footer-list footer-list--addresses">
             <li>Via dei Fabbri 12, 20123 Milano</li>
+            <li>Centro Proxima — Corso Buenos Aires 23, 20124 Milano</li>
             <li>Via Gianfranco Miglio 5, 20056 Trezzo sull'Adda (MI)</li>
             <li>Via Tamburini 99, 41124 Modena (MO)</li>
           </ul>
@@ -126,7 +154,9 @@
     </div>
   </footer>
 
+  <script src="site-nav.js"></script>
   <script src="script.js"></script>
+  <script src="analytics.js"></script>
   <script src="scarica.js"></script>
 </body>
 </html>

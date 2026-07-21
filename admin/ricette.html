@@ -11,82 +11,206 @@
   <title>Ricette | Admin Priscilla</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../styles-blog.css">
   <link rel="stylesheet" href="../styles-admin.css">
 </head>
 <body class="admin-body">
   <aside class="admin-sidebar">
     <div class="admin-sidebar-brand">
       <a href="../index.html" class="admin-sidebar-logo">Priscilla</a>
-      <span class="admin-sidebar-tag">Admin</span>
     </div>
     <nav class="admin-nav">
-      <a href="index.html" class="admin-nav-link"><span class="admin-nav-icon">◉</span> Dashboard</a>
-      <a href="impostazioni.html" class="admin-nav-link"><span class="admin-nav-icon">🔑</span> Impostazioni</a>
-      <a href="cv.html" class="admin-nav-link"><span class="admin-nav-icon">📄</span> CV</a>
-      <a href="materiale.html" class="admin-nav-link"><span class="admin-nav-icon">📁</span> Materiale</a>
-      <a href="blog.html" class="admin-nav-link"><span class="admin-nav-icon">✎</span> Blog</a>
-      <a href="ricette.html" class="admin-nav-link admin-nav-link--active"><span class="admin-nav-icon">🍽</span> Ricette</a>
+      <div class="admin-nav-group">
+        <p class="admin-nav-label">Panoramica</p>
+        <a href="/admin" class="admin-nav-link">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+          Dashboard
+        </a>
+      </div>
+      <div class="admin-nav-group">
+        <p class="admin-nav-label">Contenuti</p>
+        <a href="/admin/blog" class="admin-nav-link">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+          Blog
+        </a>
+        <a href="/admin/ricette" class="admin-nav-link admin-nav-link--active">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3v8"/><path d="M12 3v8"/><path d="M16 3v8"/><path d="M6 11h12"/><path d="M12 11v10"/></svg></span>
+          Ricette
+        </a>
+        <a href="/admin/materiale" class="admin-nav-link">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
+          Materiale
+        </a>
+        <a href="/admin/cv" class="admin-nav-link">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg></span>
+          CV
+        </a>
+        <a href="/admin/sedi" class="admin-nav-link">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          Sedi
+        </a>
+      </div>
+      <div class="admin-nav-group">
+        <p class="admin-nav-label">Configurazione</p>
+        <a href="/admin/impostazioni" class="admin-nav-link">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></span>
+          Impostazioni
+        </a>
+      </div>
     </nav>
     <div class="admin-sidebar-footer">
-      <a href="../index.html" class="admin-back-link">← Torna al sito</a>
+      <a href="../index.html" class="admin-back-link">
+        <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></span>
+        Torna al sito
+      </a>
     </div>
   </aside>
 
-  <main class="admin-main">
+  <div class="admin-workspace">
+    <header class="admin-topbar">
+      <div class="admin-topbar-profile" aria-label="Profilo admin">
+        <span class="admin-topbar-avatar">P</span>
+        Admin
+      </div>
+    </header>
+
+    <main class="admin-main">
     <header class="admin-page-header">
       <h1>Ricette</h1>
-      <p class="admin-page-desc">Pubblica e modifica le ricette mostrate in homepage.</p>
+      <p class="admin-page-desc">Pubblica ricette per il blog. Ogni ricetta ha una pagina dedicata e compare su <a href="../blog.html" target="_blank" rel="noopener">/blog.html</a> e <a href="../ricette.html" target="_blank" rel="noopener">/ricette</a>.</p>
     </header>
 
     <div class="admin-block admin-block--ricette">
       <div class="admin-block-intro">
         <h2>Nuova ricetta</h2>
-        <p>Titolo, categoria, descrizione breve e ricetta completa. La categoria aiuta i visitatori a filtrare le ricette.</p>
+        <p>Usa i blocchi Ingredienti e Procedimento per gli elenchi ordinati, aggiungi testo o immagini dove serve, e pubblica su <a href="../ricette.html" target="_blank" rel="noopener">/ricette</a> e sul blog.</p>
       </div>
       <form id="formRicetta" class="admin-form admin-form--ricette">
         <input type="hidden" id="ricettaId" name="ricettaId" value="">
-        <div class="form-row form-row--split">
-          <div class="form-group">
-            <label for="ricettaTitolo">Titolo ricetta</label>
-            <input type="text" id="ricettaTitolo" name="ricettaTitolo" placeholder="es. Porridge energetico" required>
-          </div>
-          <div class="form-group form-group--select">
-            <label for="ricettaCategoria">Categoria</label>
-            <div class="select-wrap">
-              <select id="ricettaCategoria" name="ricettaCategoria" class="select-modern" aria-label="Categoria ricetta">
-                <option value="">Scegli categoria</option>
-                <!-- Opzioni populate da admin.js -->
-              </select>
-              <span class="select-chevron" aria-hidden="true"></span>
+        <input type="hidden" id="ricettaImmagine" name="ricettaImmagine" value="">
+
+        <div class="recipe-composer">
+          <div class="recipe-composer-main">
+            <div class="form-group form-group--cover">
+              <label id="recipeCoverLabel">Foto di copertina <span class="label-hint">(card e pagina)</span></label>
+              <div
+                class="recipe-cover-upload"
+                id="recipeCoverUpload"
+                role="button"
+                tabindex="0"
+                aria-labelledby="recipeCoverLabel"
+                aria-describedby="recipeCoverHint"
+              >
+                <input
+                  type="file"
+                  id="ricettaImmagineFile"
+                  name="ricettaImmagineFile"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  aria-label="Carica foto della ricetta"
+                >
+                <div class="recipe-cover-empty" id="recipeCoverEmpty">
+                  <span class="recipe-cover-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="36" height="36">
+                      <path d="M4 16l4.5-4.5a2 2 0 012.8 0L16 16"/>
+                      <path d="M14 14l1.5-1.5a2 2 0 012.8 0L20 15"/>
+                      <rect x="3" y="5" width="18" height="14" rx="2.5"/>
+                      <circle cx="8.5" cy="9.5" r="1.2"/>
+                    </svg>
+                  </span>
+                  <span class="recipe-cover-title">Trascina qui la foto</span>
+                  <span class="recipe-cover-sub">oppure <strong>clicca per scegliere</strong> dal computer</span>
+                </div>
+                <div class="recipe-cover-preview" id="recipeCoverPreview" hidden>
+                  <img id="recipeCoverImg" alt="Anteprima foto ricetta">
+                  <div class="recipe-cover-overlay">
+                    <button type="button" class="btn btn-sm recipe-cover-btn" id="btnCambiaCover">Cambia foto</button>
+                    <button type="button" class="btn btn-sm btn-outline recipe-cover-btn recipe-cover-btn--ghost" id="btnRimuoviCover">Rimuovi</button>
+                  </div>
+                </div>
+                <p class="recipe-cover-status" id="recipeCoverStatus" hidden></p>
+              </div>
+              <p class="form-hint" id="recipeCoverHint">JPG, PNG o WebP · ottimizzata automaticamente · senza foto resta lo sfondo predefinito</p>
+            </div>
+
+            <div class="form-row form-row--split">
+              <div class="form-group">
+                <label for="ricettaTitolo">Titolo ricetta</label>
+                <input type="text" id="ricettaTitolo" name="ricettaTitolo" placeholder="es. Porridge energetico" required>
+              </div>
+              <div class="form-group form-group--select">
+                <label for="ricettaCategoria">Categoria</label>
+                <div class="select-wrap">
+                  <select id="ricettaCategoria" name="ricettaCategoria" class="select-modern" aria-label="Categoria ricetta">
+                    <option value="">Scegli categoria</option>
+                  </select>
+                  <span class="select-chevron" aria-hidden="true"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="ricettaEstratto">Descrizione breve <span class="label-hint">(card e SEO)</span></label>
+              <textarea id="ricettaEstratto" name="ricettaEstratto" rows="2" placeholder="Una frase che appare nella card e nei risultati di ricerca..."></textarea>
+            </div>
+
+            <div class="form-group form-group--blocks">
+              <div class="block-editor-head">
+                <label>Contenuto ricetta</label>
+                <p class="form-hint">Usa i blocchi Ingredienti e Procedimento per l’elenco ordinato. Aggiungi testo o immagini dove serve.</p>
+              </div>
+              <div id="recipeBlocks" class="block-editor" aria-label="Blocchi contenuto ricetta"></div>
+              <div class="block-editor-add">
+                <button type="button" class="btn btn-outline btn-sm" id="btnAddIngredientsBlock">+ Ingredienti</button>
+                <button type="button" class="btn btn-outline btn-sm" id="btnAddStepsBlock">+ Procedimento</button>
+                <button type="button" class="btn btn-outline btn-sm" id="btnAddTextBlock">+ Testo</button>
+                <button type="button" class="btn btn-outline btn-sm" id="btnAddImageBlock">+ Immagine</button>
+              </div>
+            </div>
+
+            <details class="recipe-cats-panel">
+              <summary>
+                <span class="recipe-cats-panel-title">Gestione categorie</span>
+                <span class="recipe-cats-panel-hint">Aggiungi Primi, Dessert, Zuppe…</span>
+              </summary>
+              <div class="recipe-cats-panel-body">
+                <p class="form-hint">Nel menu categoria trovi già Pre-workout, Post-workout, Colazione, ecc. Qui puoi crearne di nuove.</p>
+                <div class="categorie-add-row">
+                  <input type="text" id="nuovaCategoriaInput" placeholder="es. Primi, Dessert, Zuppe..." class="input-inline" autocomplete="off">
+                  <button type="button" id="btnAggiungiCategoria" class="btn btn-outline btn-sm">Aggiungi</button>
+                </div>
+                <ul id="listaCategorieRicette" class="categorie-list"></ul>
+              </div>
+            </details>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="btnSalvaRicetta">Pubblica ricetta</button>
+              <button type="button" class="btn btn-outline" id="btnAnnullaRicetta" style="display: none;">Annulla</button>
             </div>
           </div>
-        </div>
-        <div class="form-group form-group--categorie">
-          <label class="form-label-inline">Gestione categorie</label>
-          <p class="form-hint">Nel menu sopra ci sono già Pre-workout, Post-workout, Colazione, ecc. Aggiungi altre categorie qui sotto (es. Primi, Secondi, Contorni, Dessert).</p>
-          <div class="categorie-add-row">
-            <input type="text" id="nuovaCategoriaInput" placeholder="es. Primi, Dessert, Zuppe..." class="input-inline" autocomplete="off">
-            <button type="button" id="btnAggiungiCategoria" class="btn btn-outline btn-sm">Aggiungi categoria</button>
-          </div>
-          <ul id="listaCategorieRicette" class="categorie-list"></ul>
-        </div>
-        <div class="form-group">
-          <label for="ricettaEstratto">Descrizione breve <span class="label-hint">(visibile nella card)</span></label>
-          <textarea id="ricettaEstratto" name="ricettaEstratto" rows="2" placeholder="Una frase che appare nella card sulla homepage..."></textarea>
-        </div>
-        <div class="form-group">
-          <label for="ricettaContenuto">Ricetta completa <span class="label-hint">(ingredienti e procedimento)</span></label>
-          <textarea id="ricettaContenuto" name="ricettaContenuto" rows="10" placeholder="Scrivi ingredienti e procedimento. Puoi andare a capo; le righe saranno mostrate come paragrafi."></textarea>
-        </div>
-        <div class="form-group">
-          <label for="ricettaImmagine">URL immagine <span class="label-hint">(opzionale)</span></label>
-          <input type="text" id="ricettaImmagine" name="ricettaImmagine" placeholder="https://... oppure lascia vuoto per sfondo predefinito">
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" id="btnSalvaRicetta">Pubblica ricetta</button>
-          <button type="button" class="btn btn-outline" id="btnAnnullaRicetta" style="display: none;">Annulla</button>
+
+          <aside class="recipe-composer-preview" aria-label="Anteprima pagina ricetta">
+            <div class="recipe-preview-sticky">
+              <div class="recipe-preview-label">
+                <span>Anteprima pagina</span>
+                <span class="recipe-preview-label-hint">come apparirà su /ricetta</span>
+              </div>
+              <div class="recipe-preview-card" id="recipePreview">
+                <div class="recipe-preview-cover" id="recipePreviewCover" hidden>
+                  <img id="recipePreviewCoverImg" alt="">
+                </div>
+                <div class="recipe-preview-header">
+                  <span class="recipe-preview-meta" id="recipePreviewMeta">Categoria</span>
+                  <h3 class="recipe-preview-title" id="recipePreviewTitle">Titolo della ricetta</h3>
+                  <p class="recipe-preview-excerpt" id="recipePreviewExcerpt" hidden></p>
+                </div>
+                <div class="recipe-preview-body article-body prose" id="recipePreviewBody">
+                  <p class="recipe-preview-placeholder">Aggiungi testo o immagini per vedere l’anteprima…</p>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </form>
       <p id="msgRicetta" class="msg" hidden></p>
@@ -123,8 +247,12 @@
       </div>
     </div>
   </main>
+  </div>
 
   <script src="../config.js"></script>
+  <script src="../impostazioni.js"></script>
+  <script src="../admin-auth.js"></script>
+  <script src="../content-format.js"></script>
   <script src="../admin.js"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
   'use strict';
 
   var STORAGE_KEY_RICETTE = 'ricette';
+  var fmt = window.PriscillaContentFormat;
 
   function getRecipes() {
     try {
@@ -18,15 +19,102 @@
   }
 
   function escapeHtml(text) {
-    if (!text) return '';
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return fmt ? fmt.escapeHtml(text) : String(text || '');
   }
 
-  function textToHtml(text) {
-    if (!text) return '';
-    return escapeHtml(text).replace(/\n/g, '<br>');
+  function setHidden(el, hidden) {
+    if (!el) return;
+    el.hidden = !!hidden;
+  }
+
+  function bgImageStyle(url) {
+    if (!url) return '';
+    var safe = String(url)
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/[\r\n\u2028\u2029]/g, '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;');
+    return (
+      ' style="background-image:url(&quot;' +
+      safe +
+      '&quot;);background-size:cover;background-position:center;"'
+    );
+  }
+
+  function formatDate(ts) {
+    if (!ts) return '';
+    try {
+      var d = new Date(ts);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('it-IT', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function toIsoDate(ts) {
+    try {
+      var d = new Date(ts);
+      if (isNaN(d.getTime())) return '';
+      return d.toISOString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function revealPage() {
+    document.body.classList.add('page-loaded');
+  }
+
+  /** Garantisce che titolo/corpo siano leggibili anche con CSS in cache vecchio. */
+  function forceContentVisible() {
+    var style = document.getElementById('ricetta-visibility-fix');
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'ricetta-visibility-fix';
+      style.textContent =
+        '.article-header,.article-title,.article-excerpt,.article-category,.article-body.prose,.article-cover{' +
+        'opacity:1!important;transform:none!important;animation:none!important;visibility:visible!important}' +
+        '.article-title,.article-body.prose{color:#111!important}';
+      document.head.appendChild(style);
+    }
+  }
+
+  function plainTextFromRecipe(recipe) {
+    if (!recipe) return '';
+    if (Array.isArray(recipe.blocks) && recipe.blocks.length) {
+      return recipe.blocks
+        .map(function (b) {
+          if (!b) return '';
+          if (b.type === 'text') return String(b.content || '').trim();
+          if (b.type === 'ingredients' || b.type === 'steps') {
+            return (Array.isArray(b.items) ? b.items : [])
+              .map(function (item) {
+                return String(item || '').trim();
+              })
+              .filter(Boolean)
+              .join(' ');
+          }
+          return '';
+        })
+        .filter(Boolean)
+        .join(' ');
+    }
+    return recipe.body || '';
+  }
+
+  function readingMinutes(recipe) {
+    var text = plainTextFromRecipe(recipe);
+    var words = text
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
+    return Math.max(1, Math.round(words / 180));
   }
 
   function applySeo(recipe, id) {
@@ -36,7 +124,7 @@
     var description =
       (recipe && recipe.excerpt && String(recipe.excerpt).trim()) ||
       'Ricetta salutare di ' + seo.SITE_NAME + ', Biologa Nutrizionista sportiva.';
-    var path = '/ricetta.html?id=' + encodeURIComponent(id);
+    var path = '/ricetta?id=' + encodeURIComponent(id);
     seo.applyPageMeta({
       title: title + ' | ' + seo.SITE_NAME,
       description: description,
@@ -52,39 +140,178 @@
     });
   }
 
-  var id = getParam('id');
-  var wrap = document.getElementById('ricettaWrap');
-  var errorEl = document.getElementById('ricettaError');
-  var titleEl = document.getElementById('ricettaTitle');
-  var tagEl = document.getElementById('ricettaTag');
-  var excerptEl = document.getElementById('ricettaExcerpt');
-  var bodyEl = document.getElementById('ricettaBody');
+  function getPublishedRecipes() {
+    return getRecipes()
+      .filter(function (recipe) {
+        return recipe && String(recipe.title || '').trim();
+      })
+      .sort(function (a, b) {
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+  }
 
-  if (!id) {
-    if (wrap) wrap.hidden = true;
-    if (errorEl) {
-      errorEl.hidden = false;
-      errorEl.querySelector('p').textContent = 'Nessuna ricetta selezionata.';
+  function renderRelated(currentId) {
+    var relatedSection = document.getElementById('ricettaRelated');
+    var relatedGrid = document.getElementById('ricettaRelatedGrid');
+    if (!relatedSection || !relatedGrid) return;
+
+    var others = getPublishedRecipes()
+      .filter(function (recipe) {
+        return recipe.id !== currentId;
+      })
+      .slice(0, 3);
+
+    if (!others.length) {
+      setHidden(relatedSection, true);
+      relatedGrid.innerHTML = '';
+      return;
     }
-  } else {
-    var recipes = getRecipes();
-    var recipe = recipes.find(function (r) {
-      return r.id === id;
+
+    var html = '';
+    var imageClasses = ['', ' blog-card-image--2', ' blog-card-image--3'];
+    others.forEach(function (recipe, i) {
+      var hasImage = !!recipe.imageUrl;
+      var imgClass = 'blog-card-image' + (imageClasses[i % 3] || '');
+      var imgStyle = hasImage ? bgImageStyle(recipe.imageUrl) : '';
+      html +=
+        '<a class="article-related-card' +
+        (hasImage ? '' : ' article-related-card--text') +
+        '" href="/ricetta?id=' +
+        encodeURIComponent(recipe.id) +
+        '">' +
+        (hasImage ? '<div class="' + imgClass + '"' + imgStyle + '></div>' : '') +
+        '<div class="article-related-card-body">' +
+        '<span class="blog-meta">' +
+        escapeHtml(recipe.category || recipe.tag || 'Ricetta') +
+        '</span>' +
+        '<h3>' +
+        escapeHtml(recipe.title) +
+        '</h3>' +
+        '<span class="article-related-link">Apri ricetta →</span>' +
+        '</div></a>';
     });
-    if (!recipe) {
-      if (wrap) wrap.hidden = true;
-      if (errorEl) errorEl.hidden = false;
-    } else {
+    relatedGrid.innerHTML = html;
+    setHidden(relatedSection, false);
+  }
+
+  function renderRecipe(id) {
+    var wrap = document.getElementById('ricettaWrap');
+    var errorEl = document.getElementById('ricettaError');
+    var titleEl = document.getElementById('ricettaTitle');
+    var tagEl = document.getElementById('ricettaTag');
+    var excerptEl = document.getElementById('ricettaExcerpt');
+    var bodyEl = document.getElementById('ricettaBody');
+    var coverEl = document.getElementById('ricettaCover');
+    var coverImg = document.getElementById('ricettaCoverImg');
+    var dateEl = document.getElementById('ricettaDate');
+    var readEl = document.getElementById('ricettaRead');
+
+    try {
+      if (!id) {
+        if (wrap) wrap.hidden = true;
+        if (errorEl) {
+          errorEl.hidden = false;
+          var msg = errorEl.querySelector('p');
+          if (msg) msg.textContent = 'Nessuna ricetta selezionata.';
+        }
+        return;
+      }
+
+      var recipes = getRecipes();
+      var recipe = recipes.find(function (r) {
+        return r.id === id;
+      });
+
+      if (!recipe) {
+        if (wrap) wrap.hidden = true;
+        if (errorEl) errorEl.hidden = false;
+        return;
+      }
+
       if (errorEl) errorEl.hidden = true;
       if (wrap) wrap.hidden = false;
       applySeo(recipe, id);
+
       if (titleEl) titleEl.textContent = recipe.title || '';
-      if (tagEl) tagEl.textContent = recipe.category || recipe.tag || '';
-      if (excerptEl) {
-        excerptEl.textContent = recipe.excerpt || '';
-        excerptEl.style.display = recipe.excerpt ? '' : 'none';
+      if (tagEl) {
+        var cat = recipe.category || recipe.tag || 'Ricetta';
+        tagEl.textContent = cat;
+        setHidden(tagEl, !cat);
       }
-      if (bodyEl) bodyEl.innerHTML = textToHtml(recipe.body || '');
+
+      var excerpt = String(recipe.excerpt || '').trim();
+      if (excerptEl) {
+        if (excerpt) {
+          excerptEl.textContent = excerpt;
+          setHidden(excerptEl, false);
+        } else {
+          excerptEl.textContent = '';
+          setHidden(excerptEl, true);
+        }
+      }
+
+      var dateLabel = formatDate(recipe.createdAt);
+      var dateIso = dateLabel ? toIsoDate(recipe.createdAt) : '';
+      if (dateEl) {
+        if (dateLabel && dateIso) {
+          dateEl.textContent = dateLabel;
+          dateEl.setAttribute('datetime', dateIso);
+          setHidden(dateEl, false);
+        } else {
+          dateEl.textContent = '';
+          dateEl.removeAttribute('datetime');
+          setHidden(dateEl, true);
+        }
+      }
+
+      if (readEl) {
+        var mins = readingMinutes(recipe);
+        readEl.textContent = mins + ' min';
+      }
+
+      if (coverEl && coverImg) {
+        if (recipe.imageUrl) {
+          coverImg.src = recipe.imageUrl;
+          coverImg.alt = recipe.title ? 'Copertina: ' + recipe.title : '';
+          coverEl.classList.add('is-visible');
+          setHidden(coverEl, false);
+        } else {
+          coverImg.removeAttribute('src');
+          coverImg.alt = '';
+          coverEl.classList.remove('is-visible');
+          setHidden(coverEl, true);
+        }
+      }
+
+      if (bodyEl && fmt) {
+        bodyEl.innerHTML = fmt.renderBodyHtml(recipe);
+      } else if (bodyEl) {
+        bodyEl.textContent = plainTextFromRecipe(recipe);
+      }
+
+      renderRelated(id);
+    } catch (err) {
+      console.error('Errore rendering ricetta', err);
+      if (wrap) wrap.hidden = true;
+      if (errorEl) {
+        errorEl.hidden = false;
+        var errMsg = errorEl.querySelector('p');
+        if (errMsg) errMsg.textContent = 'Impossibile caricare la ricetta.';
+      }
+    } finally {
+      forceContentVisible();
+      revealPage();
     }
   }
+
+  forceContentVisible();
+  renderRecipe(getParam('id'));
+  // Failsafe: se qualcosa blocca il render, mostra comunque header/contenuti
+  setTimeout(revealPage, 1200);
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === STORAGE_KEY_RICETTE) {
+      renderRecipe(getParam('id'));
+    }
+  });
 })();

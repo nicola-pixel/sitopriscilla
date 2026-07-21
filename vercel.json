@@ -1,4 +1,11 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/impostazioni",
+      "destination": "/admin/impostazioni",
+      "permanent": false
+    }
+  ]
 }

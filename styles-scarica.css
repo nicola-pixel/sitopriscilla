@@ -3,11 +3,13 @@
 .main-scarica {
   padding: 7rem 0 5rem;
   min-height: 85vh;
-  background: var(--color-bg);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(42, 38, 36, 0.04), transparent 55%),
+    var(--color-bg);
 }
 
 .container-scarica {
-  max-width: 440px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
@@ -38,6 +40,8 @@
 
 .scarica-card--access {
   text-align: center;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
 .scarica-title {
@@ -144,125 +148,189 @@
 
 .scarica-lista-header .scarica-title {
   margin-bottom: 0.5rem;
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
 }
 
 .scarica-lista-header .scarica-intro {
   margin-bottom: 0;
   margin-left: auto;
   margin-right: auto;
-  max-width: 36ch;
+  max-width: 40ch;
 }
 
 .lista-download {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 .download-card {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: stretch;
+  gap: 0;
   background: var(--color-white);
-  border-radius: 14px;
-  padding: 1.25rem 1.35rem;
+  border-radius: 16px;
   border: 1px solid var(--color-accent-soft);
   box-shadow: 0 2px 12px rgba(42, 38, 36, 0.03);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: downloadCardIn 0.45s ease forwards;
+  animation-delay: calc(var(--card-i, 0) * 60ms);
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
 }
 
-.download-card:hover {
-  border-color: rgba(154, 146, 140, 0.35);
-  box-shadow: 0 6px 20px rgba(42, 38, 36, 0.06);
-  transform: translateY(-1px);
+@keyframes downloadCardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.download-card-icon {
+.download-card:hover {
+  border-color: rgba(154, 146, 140, 0.4);
+  box-shadow: 0 10px 28px rgba(42, 38, 36, 0.07);
+  transform: translateY(-2px);
+}
+
+.download-card-badge {
   flex-shrink: 0;
-  width: 46px;
-  height: 46px;
+  width: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
-  background: var(--color-cream);
-  border-radius: 10px;
-  line-height: 1;
+  background:
+    linear-gradient(160deg, rgba(17, 17, 17, 0.04), transparent 60%),
+    var(--color-cream);
+  border-right: 1px solid var(--color-accent-soft);
 }
 
-.download-card--pdf .download-card-icon {
-  background: rgba(42, 38, 36, 0.06);
+.download-card--pdf .download-card-badge {
+  background:
+    linear-gradient(160deg, rgba(17, 17, 17, 0.07), transparent 55%),
+    #eceae6;
 }
 
-.download-card--png .download-card-icon {
-  background: rgba(42, 38, 36, 0.04);
+.download-card--png .download-card-badge {
+  background:
+    linear-gradient(160deg, rgba(17, 17, 17, 0.04), transparent 55%),
+    #f3f0eb;
+}
+
+.download-card-badge-label {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  padding: 0.35rem 0.5rem;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .download-card-body {
   flex: 1;
   min-width: 0;
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
+  padding: 1.15rem 1.25rem 1.15rem 1.35rem;
+}
+
+.download-card-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
 .download-card-title {
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: 1.05rem;
   color: var(--color-text);
-  line-height: 1.35;
-  flex: 1;
-  min-width: 0;
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.download-card-btn {
+.download-card-type {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.download-card-actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.download-card-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.9rem;
-  font-family: var(--font-heading);
+  min-height: 2.35rem;
+  padding: 0.5rem 0.95rem;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 0.8125rem;
-  color: var(--color-white);
-  background: var(--color-text);
-  border: none;
-  border-radius: 8px;
+  letter-spacing: 0.02em;
+  border-radius: 9px;
   text-decoration: none;
-  transition: background var(--transition), transform var(--transition);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
 }
 
-.download-card-btn:hover {
+.download-card-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.download-card-btn--apri {
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid rgba(17, 17, 17, 0.22);
+}
+
+.download-card-btn--apri:hover:not(:disabled) {
+  border-color: var(--color-text);
+  background: rgba(17, 17, 17, 0.04);
+  transform: translateY(-1px);
+}
+
+.download-card-btn--scarica {
+  color: var(--color-white);
+  background: var(--color-text);
+  border: 1px solid var(--color-text);
+}
+
+.download-card-btn--scarica:hover {
   background: var(--color-bg-dark);
   color: var(--color-white);
   transform: translateY(-1px);
 }
 
-.download-card-btn::after {
-  content: "↓";
-  font-size: 0.85em;
-  opacity: 0.9;
-}
-
 .download-empty {
-  grid-column: 1 / -1;
   text-align: center;
   padding: 3rem 2rem;
   color: var(--color-text-muted);
   font-size: 0.9375rem;
   font-style: italic;
   background: var(--color-white);
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px dashed var(--color-accent-soft);
 }
 
@@ -297,7 +365,224 @@
   color: var(--color-text) !important;
 }
 
+/* ---------- Modal anteprima documento ---------- */
+.preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.preview-modal[hidden] {
+  display: none !important;
+}
+
+.preview-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 12, 12, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: previewFadeIn 0.22s ease;
+}
+
+.preview-modal-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(1120px, 94vw);
+  height: min(90vh, 920px);
+  max-height: 90vh;
+  background: #111;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+  animation: previewPanelIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.preview-modal-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1.1rem 0.95rem 1.35rem;
+  background: #161616;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.preview-modal-heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.preview-modal-kicker {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.preview-modal-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.preview-modal-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111;
+  background: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.preview-modal-download:hover {
+  background: #f0ede8;
+  transform: translateY(-1px);
+}
+
+.preview-modal-close {
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.preview-modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.preview-modal-close:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.preview-modal-body {
+  flex: 1;
+  min-height: 0;
+  background: #1a1a1a;
+  position: relative;
+}
+
+.preview-modal-body--pdf {
+  background: #2a2a2a;
+}
+
+.preview-modal-body--image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  overflow: auto;
+  background:
+    linear-gradient(45deg, #222 25%, transparent 25%),
+    linear-gradient(-45deg, #222 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #222 75%),
+    linear-gradient(-45deg, transparent 75%, #222 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-color: #1a1a1a;
+}
+
+.preview-modal-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #525659;
+}
+
+.preview-modal-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+body.preview-modal-open {
+  overflow: hidden;
+}
+
+@keyframes previewFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes previewPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .download-card-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1.1rem 1.15rem;
+  }
+
+  .download-card-actions {
+    width: 100%;
+  }
+
+  .download-card-btn {
+    flex: 1;
+  }
+
+  .download-card-title {
+    white-space: normal;
+  }
+}
+
 @media (max-width: 640px) {
   .main-scarica {
     padding: 5.5rem 0 3.5rem;
@@ -317,24 +602,51 @@
     font-size: 1.35rem;
   }
 
-  .lista-download {
-    grid-template-columns: 1fr;
-    gap: 0.875rem;
-  }
-
   .download-card {
-    padding: 1.1rem 1.25rem;
-    border-radius: 12px;
+    border-radius: 14px;
   }
 
-  .download-card-icon {
-    width: 42px;
-    height: 42px;
-    font-size: 1.25rem;
+  .download-card-badge {
+    width: 58px;
   }
 
   .scarica-lista-footer {
     margin-top: 2rem;
     padding-top: 1.5rem;
+  }
+
+  .preview-modal {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .preview-modal-panel {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .preview-modal-header {
+    padding: 0.85rem 0.9rem 0.85rem 1rem;
+  }
+
+  .preview-modal-title {
+    font-size: 0.95rem;
+  }
+
+  .preview-modal-download {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-card,
+  .preview-modal-overlay,
+  .preview-modal-panel {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }

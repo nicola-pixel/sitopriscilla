@@ -8,7 +8,7 @@
   <link rel="icon" href="../assets/favicon-32x32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="../assets/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-  <title>CV | Admin Priscilla</title>
+  <title>Sedi | Admin Priscilla</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -42,11 +42,11 @@
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
           Materiale
         </a>
-        <a href="/admin/cv" class="admin-nav-link admin-nav-link--active">
+        <a href="/admin/cv" class="admin-nav-link">
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg></span>
           CV
         </a>
-        <a href="/admin/sedi" class="admin-nav-link">
+        <a href="/admin/sedi" class="admin-nav-link admin-nav-link--active">
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
           Sedi
         </a>
@@ -77,59 +77,35 @@
 
     <main class="admin-main">
     <header class="admin-page-header">
-      <h1>CV</h1>
-      <p class="admin-page-desc">Gestisci il curriculum: contenuto del modal in homepage e PDF scaricabile.</p>
+      <h1>Sedi</h1>
+      <p class="admin-page-desc">Gestisci le sedi della sezione Prenota: nome, indirizzo, link e ordine di visualizzazione.</p>
     </header>
 
-    <div class="admin-block admin-block--cv-content">
-      <h2>Contenuto curriculum</h2>
-      <p>Modifica le voci mostrate cliccando &ldquo;Scopri il curriculum&rdquo; nella sezione Chi siamo.</p>
-      <form id="formCvEntry">
-        <input type="hidden" id="cvEntryId" value="">
-        <input type="hidden" id="cvEntrySectionKey" value="education">
-        <label for="cvEntrySectionSelect">Sezione</label>
-        <select id="cvEntrySectionSelect" name="cvEntrySectionSelect">
-          <option value="education">Istruzione e formazione</option>
-          <option value="experience">Esperienze professionali</option>
-          <option value="courses">Corsi e certificazioni</option>
-        </select>
-        <label for="cvEntryOrg">Titolo / Ente</label>
-        <input type="text" id="cvEntryOrg" name="cvEntryOrg" placeholder="es. Università degli Studi di Milano" required>
-        <div id="cvEntryDetailWrap">
-          <label for="cvEntryDetail">Dettaglio (es. titolo di studio)</label>
-          <input type="text" id="cvEntryDetail" name="cvEntryDetail" placeholder="es. Corso di Laurea Triennale in Dietistica">
-        </div>
-        <label for="cvEntryDate">Data / Periodo</label>
-        <input type="text" id="cvEntryDate" name="cvEntryDate" placeholder="es. 2017 – 2020">
-        <label for="cvEntryTexts">Descrizione (un paragrafo per riga, opzionale)</label>
-        <textarea id="cvEntryTexts" name="cvEntryTexts" rows="5" placeholder="Scrivi qui i paragrafi descrittivi..."></textarea>
+    <div class="admin-block admin-block--sedi">
+      <h2>Nuova sede</h2>
+      <p>Inserisci l'URL Calendly per aprire la prenotazione in popup, oppure un link esterno (es. MioDottore) per aprirla in una nuova scheda.</p>
+      <form id="formSede">
+        <input type="hidden" id="sedeId" name="sedeId" value="">
+        <label for="sedeNome">Nome sede</label>
+        <input type="text" id="sedeNome" name="sedeNome" placeholder="es. Milano - Centro Proxima" required>
+        <label for="sedeIndirizzo">Indirizzo (via e città)</label>
+        <input type="text" id="sedeIndirizzo" name="sedeIndirizzo" placeholder="es. Corso Buenos Aires 23, 20124 Milano (MI)" required>
+        <label for="sedeUrl">URL di destinazione</label>
+        <input type="url" id="sedeUrl" name="sedeUrl" placeholder="https://calendly.com/... oppure https://www.miodottore.it/..." required>
+        <label for="sedePosizione">Posizione in elenco</label>
+        <input type="number" id="sedePosizione" name="sedePosizione" min="1" step="1" placeholder="1 = prima card">
+        <label class="admin-checkbox-label">
+          <input type="checkbox" id="sedeOnline" name="sedeOnline">
+          Modalità online (card centrata sotto le sedi in presenza)
+        </label>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" id="btnSalvaCvEntry">Salva voce</button>
-          <button type="button" class="btn btn-outline" id="btnAnnullaCvEntry" style="display: none;">Annulla</button>
+          <button type="submit" class="btn btn-primary" id="btnSalvaSede">Salva sede</button>
+          <button type="button" class="btn btn-outline" id="btnAnnullaSede" style="display: none;">Annulla</button>
         </div>
       </form>
-      <p id="msgCvEntry" class="msg" hidden></p>
-      <div id="cvSectionsAdmin" class="cv-sections-admin"></div>
-    </div>
-
-    <div class="admin-block">
-      <h2>PDF scaricabile</h2>
-      <p>Il CV apparirà come pulsante "Scarica CV" nella sezione Chi siamo della homepage.</p>
-      <form id="formUploadCv">
-        <label>File CV (solo PDF)</label>
-        <div class="upload-zone upload-zone--cv" id="uploadZoneCv">
-          <input type="file" id="cvFile" name="cvFile" accept=".pdf,application/pdf">
-          <div class="upload-zone-text">
-            <span class="upload-zone-icon">📄</span>
-            <span>Trascina qui il PDF del CV oppure <strong>clicca per scegliere</strong></span>
-          </div>
-          <p class="upload-zone-files" id="uploadZoneCvFiles"></p>
-        </div>
-        <button type="submit" class="btn btn-primary" id="btnUploadCv">Carica CV</button>
-      </form>
-      <p id="msgCv" class="msg" hidden></p>
-      <p id="cvStatus" class="cv-status"></p>
-      <button type="button" class="btn btn-remove-cv" id="btnRemoveCv" style="display: none; margin-top: 0.75rem;">Rimuovi CV</button>
+      <p id="msgSede" class="msg" hidden></p>
+      <h3 class="admin-subtitle">Sedi attive</h3>
+      <ul id="listaSediAdmin" class="lista-articoli-admin lista-sedi-admin"></ul>
     </div>
   </main>
   </div>
@@ -137,7 +113,7 @@
   <script src="../config.js"></script>
   <script src="../impostazioni.js"></script>
   <script src="../admin-auth.js"></script>
-  <script src="../cv.js"></script>
+  <script src="../sedi.js"></script>
   <script src="../admin.js"></script>
 </body>
 </html>

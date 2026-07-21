@@ -168,6 +168,18 @@
             },
             {
               '@type': 'Place',
+              name: 'Centro Proxima',
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: 'Corso Buenos Aires 23',
+                addressLocality: 'Milano',
+                postalCode: '20124',
+                addressRegion: 'MI',
+                addressCountry: 'IT',
+              },
+            },
+            {
+              '@type': 'Place',
               name: 'Studio Modena',
               address: {
                 '@type': 'PostalAddress',
@@ -220,7 +232,7 @@
               name: 'Dove si trovano gli studi e come prenotare?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Riceve a Milano (Via dei Fabbri 12), Modena (Via Tamburini 99) e Trezzo sull\'Adda (Via Gianfranco Miglio 5), oppure online in videochiamata. Per la prima visita usa la sezione Prenota con prenotazione tramite Calendly.',
+                text: 'Riceve a Milano (Via dei Fabbri 12 e Centro Proxima, Corso Buenos Aires 23), Modena (Via Tamburini 99) e Trezzo sull\'Adda (Via Gianfranco Miglio 5), oppure online in videochiamata. Per la prima visita usa la sezione Prenota con prenotazione tramite Calendly.',
               },
             },
             {
@@ -285,6 +297,7 @@
     });
     injectBreadcrumbSchema([
       { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/blog.html' },
       { name: opts.breadcrumbLabel || 'Articolo', path: opts.path },
     ]);
   }
@@ -302,8 +315,31 @@
     });
     injectBreadcrumbSchema([
       { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/blog.html' },
+      { name: 'Ricette', path: '/ricette.html' },
       { name: opts.title || 'Ricetta', path: opts.path },
     ]);
+  }
+
+  function injectItemListSchema(opts) {
+    var items = (opts.items || []).map(function (item, index) {
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        url: absoluteUrl(item.url),
+        description: item.description || undefined,
+      };
+    });
+    injectJsonLd('schema-org-itemlist', {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: opts.name,
+      description: opts.description,
+      url: absoluteUrl(opts.path),
+      numberOfItems: items.length,
+      itemListElement: items,
+    });
   }
 
   global.PriscillaSeo = {
@@ -320,6 +356,7 @@
     injectHomeSchema: injectHomeSchema,
     injectArticleSchema: injectArticleSchema,
     injectRecipeSchema: injectRecipeSchema,
+    injectItemListSchema: injectItemListSchema,
     injectBreadcrumbSchema: injectBreadcrumbSchema,
   };
 
@@ -337,19 +374,38 @@
     });
   } else if (page === 'blog') {
     applyPageMeta({
-      title: 'Articoli e approfondimenti | ' + SITE_NAME,
+      title: 'Blog — ricette e approfondimenti | ' + SITE_NAME,
       description:
-        'Articoli su nutrizione sportiva, alimentazione sana e benessere — ' + SITE_NAME + '.',
+        'Ricette salutari e approfondimenti di nutrizione sportiva — ' + SITE_NAME + '.',
       path: '/blog.html',
       type: 'website',
     });
+    injectBreadcrumbSchema([
+      { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/blog.html' },
+    ]);
   } else if (page === 'ricetta') {
+    applyPageMeta({
+      title: 'Ricetta | ' + SITE_NAME,
+      description:
+        'Ricetta salutare — ' + SITE_NAME + ', Biologa Nutrizionista sportiva.',
+      path: '/ricetta.html',
+      type: 'article',
+    });
+  } else if (page === 'ricette') {
     applyPageMeta({
       title: 'Ricette salutari | ' + SITE_NAME,
       description:
-        'Ricette salutari per atleti e sportivi — ' + SITE_NAME + ', Biologa Nutrizionista.',
-      path: '/ricetta.html',
+        'Ricette salutari per atleti e sportivi: colazioni, snack, pre e post allenamento — ' +
+        SITE_NAME +
+        ', Biologa Nutrizionista.',
+      path: '/ricette.html',
       type: 'website',
     });
+    injectBreadcrumbSchema([
+      { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/blog.html' },
+      { name: 'Ricette', path: '/ricette.html' },
+    ]);
   }
 })(window);
