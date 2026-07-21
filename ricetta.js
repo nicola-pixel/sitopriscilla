@@ -71,6 +71,18 @@
     document.body.classList.add('page-loaded');
   }
 
+  function setRecipeLoading(loading) {
+    var main = document.getElementById('ricettaMain') || document.querySelector('.article-main');
+    var skeleton = document.getElementById('ricettaSkeleton');
+    var loadingLabel = document.getElementById('ricettaLoadingLabel');
+    if (main) {
+      main.classList.toggle('is-loading', !!loading);
+      main.setAttribute('aria-busy', loading ? 'true' : 'false');
+    }
+    if (skeleton) setHidden(skeleton, !loading);
+    if (loadingLabel) setHidden(loadingLabel, !loading);
+  }
+
   /** Garantisce che titolo/corpo siano leggibili anche con CSS in cache vecchio. */
   function forceContentVisible() {
     var style = document.getElementById('ricetta-visibility-fix');
@@ -281,6 +293,7 @@
 
     try {
       if (!id) {
+        setRecipeLoading(false);
         if (wrap) wrap.hidden = true;
         if (errorEl) {
           errorEl.hidden = false;
@@ -296,6 +309,7 @@
       });
 
       if (!recipe) {
+        setRecipeLoading(false);
         if (wrap) wrap.hidden = true;
         if (errorEl) errorEl.hidden = false;
         return;
@@ -379,8 +393,10 @@
       }
 
       renderRelated(id);
+      setRecipeLoading(false);
     } catch (err) {
       console.error('Errore rendering ricetta', err);
+      setRecipeLoading(false);
       if (wrap) wrap.hidden = true;
       if (errorEl) {
         errorEl.hidden = false;
@@ -394,6 +410,7 @@
   }
 
   forceContentVisible();
+  setRecipeLoading(true);
 
   function bootRicetta() {
     renderRecipe(getParam('id'));

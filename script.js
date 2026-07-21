@@ -119,13 +119,44 @@
     return items.slice(0, 6);
   }
 
+  function homepageBlogSkeletonHtml() {
+    var html = '';
+    var i;
+    for (i = 0; i < 3; i++) {
+      html +=
+        '<div class="blog-card blog-card--skeleton" aria-hidden="true">' +
+        '<div class="content-skeleton content-skeleton--media"></div>' +
+        '<div class="blog-card-content">' +
+        '<span class="content-skeleton content-skeleton--chip"></span>' +
+        '<span class="content-skeleton content-skeleton--title"></span>' +
+        '<span class="content-skeleton content-skeleton--line"></span>' +
+        '<span class="content-skeleton content-skeleton--line content-skeleton--line-short"></span>' +
+        '</div></div>';
+    }
+    return html;
+  }
+
+  function showHomepageBlogSkeleton() {
+    var grid = document.getElementById('blogGrid');
+    if (!grid || !document.getElementById('blog')) return;
+    setBlogNavVisible();
+    setBlogSectionVisible(true);
+    grid.setAttribute('aria-busy', 'true');
+    grid.innerHTML = homepageBlogSkeletonHtml();
+  }
+
   function renderBlogGrid() {
+    // Solo homepage: evita di sovrascrivere la griglia di blog.html / altre pagine
+    if (!document.getElementById('blog')) return;
     var grid = document.getElementById('blogGrid');
     var items = getHomepageBlogItems();
     setBlogNavVisible();
     if (items.length === 0) {
       setBlogSectionVisible(false);
-      if (grid) grid.innerHTML = '';
+      if (grid) {
+        grid.innerHTML = '';
+        grid.removeAttribute('aria-busy');
+      }
       return;
     }
     setBlogSectionVisible(true);
@@ -235,10 +266,12 @@
       '<a href="blog.html" class="blog-link blog-link--all">Vedi tutto il blog →</a>' +
       '</p>';
     grid.innerHTML = html;
+    grid.removeAttribute('aria-busy');
     if (typeof initRevealAnimations === 'function') initRevealAnimations();
   }
 
   function loadHomepageBlog() {
+    showHomepageBlogSkeleton();
     var store = window.PriscillaContent;
     if (store && typeof store.load === 'function') {
       store.load().then(renderBlogGrid).catch(renderBlogGrid);

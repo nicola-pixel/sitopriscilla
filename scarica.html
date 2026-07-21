@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260721g">
-  <link rel="stylesheet" href="styles-scarica.css?v=20260721n">
+  <link rel="stylesheet" href="styles-scarica.css?v=20260721o">
 </head>
 <body>
   <header class="header is-scrolled">
@@ -59,7 +59,7 @@
         <div class="scarica-card scarica-card--access">
           <p class="scarica-label">Accesso riservato</p>
           <h1 class="scarica-title">Area download</h1>
-          <p class="scarica-intro">Devi inserire la chiave fornita per accedere ai materiali informativi riservati ai pazienti.</p>
+          <p class="scarica-intro">Devi inserire la chiave fornita per accedere ai materiali e ai codici sconto riservati ai pazienti.</p>
           <form id="formChiave" class="form-chiave">
             <label for="chiave">Chiave segreta</label>
             <input type="password" id="chiave" name="chiave" placeholder="Inserisci la chiave" required autocomplete="off">
@@ -70,17 +70,50 @@
       </section>
 
       <section class="scarica-section scarica-lista" id="scarica-lista-section" hidden>
-        <header class="scarica-lista-header">
-          <p class="scarica-label">Materiale</p>
-          <h2 class="scarica-title">Materiale disponibile</h2>
-          <p class="scarica-intro">I documenti sono organizzati in cartelle. Puoi aprire i singoli file oppure scaricare l’intera cartella.</p>
-        </header>
-        <div class="lista-download-shell">
-          <ul id="listaPdf" class="lista-download"></ul>
+        <div class="scarica-area">
+          <aside class="scarica-sidebar" aria-label="Sezioni area riservata">
+            <p class="scarica-sidebar-label">Area riservata</p>
+            <nav class="scarica-side-nav">
+              <button type="button" class="scarica-side-link is-active" data-scarica-panel="materiale" aria-controls="panel-materiale" aria-current="page">
+                <span class="scarica-side-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                </span>
+                Materiale
+              </button>
+              <button type="button" class="scarica-side-link" data-scarica-panel="codici" aria-controls="panel-codici">
+                <span class="scarica-side-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20.6 12.6a2 2 0 0 0 0-2.8l-6.4-6.4a2 2 0 0 0-2.8 0L4 10.6a2 2 0 0 0 0 2.8l6.4 6.4a2 2 0 0 0 2.8 0Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/></svg>
+                </span>
+                Codici sconto
+              </button>
+            </nav>
+            <button type="button" class="btn btn-esci scarica-side-esci" id="btnEsci">Esci</button>
+          </aside>
+
+          <div class="scarica-panels">
+            <div class="scarica-panel is-active" id="panel-materiale" data-panel="materiale" role="tabpanel">
+              <header class="scarica-lista-header">
+                <p class="scarica-label">Materiale</p>
+                <h2 class="scarica-title">Materiale disponibile</h2>
+                <p class="scarica-intro">I documenti sono organizzati in cartelle. Puoi aprire i singoli file oppure scaricare l’intera cartella.</p>
+              </header>
+              <div class="lista-download-shell">
+                <ul id="listaPdf" class="lista-download"></ul>
+              </div>
+            </div>
+
+            <div class="scarica-panel" id="panel-codici" data-panel="codici" role="tabpanel" hidden>
+              <header class="scarica-lista-header">
+                <p class="scarica-label">Codici sconto</p>
+                <h2 class="scarica-title">Codici disponibili</h2>
+                <p class="scarica-intro">Usa questi codici per le promozioni e i partner riservati ai pazienti.</p>
+              </header>
+              <div class="lista-download-shell">
+                <ul id="listaCodici" class="lista-codici"></ul>
+              </div>
+            </div>
+          </div>
         </div>
-        <footer class="scarica-lista-footer">
-          <button type="button" class="btn btn-esci" id="btnEsci">Esci dall'area download</button>
-        </footer>
       </section>
     </div>
   </main>
@@ -164,6 +197,7 @@
   <script src="script.js"></script>
   <script src="analytics.js"></script>
   <script src="materiale-store.js?v=20260721m"></script>
-  <script src="scarica.js?v=20260721n"></script>
+  <script src="codici-store.js"></script>
+  <script src="scarica.js?v=20260721o"></script>
 </body>
 </html>

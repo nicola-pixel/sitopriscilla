@@ -4,10 +4,12 @@
   var STORAGE_KEY_UNLOCK = 'scarica_unlocked';
   var STORAGE_KEY_DOWNLOAD_KEY = 'download_secret';
   var materialeStore = window.PriscillaMateriale || null;
+  var codiciStore = window.PriscillaCodici || null;
   var cachedPdfs = [];
   var cachedFolders = [];
   var flatPreviewItems = [];
   var folderGroupsById = {};
+  var activePanel = 'materiale';
 
   var formSection = document.getElementById('scarica-form-section');
   var listaSection = document.getElementById('scarica-lista-section');
@@ -15,7 +17,9 @@
   var chiaveInput = document.getElementById('chiave');
   var erroreChiave = document.getElementById('erroreChiave');
   var listaPdf = document.getElementById('listaPdf');
+  var listaCodici = document.getElementById('listaCodici');
   var btnEsci = document.getElementById('btnEsci');
+  var sideNav = document.querySelector('.scarica-side-nav');
 
   var previewModal = document.getElementById('previewModal');
   var previewOverlay = document.getElementById('previewModalOverlay');
@@ -467,9 +471,80 @@
     });
   }
 
+  function renderListaCodiciFromItems(items) {
+    if (!listaCodici) return;
+    listaCodici.innerHTML = '';
+    var list = Array.isArray(items) ? items : [];
+
+    if (!list.length) {
+      listaCodici.innerHTML =
+        '<li class="download-empty">' +
+          '<span class="download-empty-icon" aria-hidden="true"></span>' +
+          '<span class="download-empty-title">Nessun codice disponibile</span>' +
+          '<span class="download-empty-text">Al momento non ci sono codici sconto in quest’area.</span>' +
+        '</li>';
+      return;
+    }
+
+    list.forEach(function (item, index) {
+      var li = document.createElement('li');
+      li.className = 'codice-card';
+      li.style.setProperty('--card-i', String(index));
+      li.innerHTML =
+        '<div class="codice-card-body">' +
+          '<div class="codice-card-copy">' +
+            '<span class="codice-card-label">Nome</span>' +
+            '<span class="codice-card-name">' + escapeHtml(item.name || 'Codice sconto') + '</span>' +
+          '</div>' +
+          '<div class="codice-card-code-wrap">' +
+            '<span class="codice-card-label">Codice</span>' +
+            '<code class="codice-card-code">' + escapeHtml(item.code || '') + '</code>' +
+            '<button type="button" class="codice-card-copy-btn" data-copy-code="' + escapeHtml(item.code || '') + '">Copia</button>' +
+          '</div>' +
+        '</div>';
+      listaCodici.appendChild(li);
+    });
+  }
+
+  function renderListaCodici() {
+    if (!listaCodici) return Promise.resolve();
+    listaCodici.innerHTML = '<li class="download-empty">Caricamento codici…</li>';
+    if (!codiciStore) {
+      renderListaCodiciFromItems([]);
+      return Promise.resolve();
+    }
+    return codiciStore.list().then(function (result) {
+      renderListaCodiciFromItems(result && result.items ? result.items : []);
+    }).catch(function () {
+      renderListaCodiciFromItems([]);
+    });
+  }
+
+  function setActivePanel(panelId) {
+    activePanel = panelId === 'codici' ? 'codici' : 'materiale';
+    var links = document.querySelectorAll('[data-scarica-panel]');
+    var panels = document.querySelectorAll('.scarica-panel');
+
+    links.forEach(function (link) {
+      var isActive = link.getAttribute('data-scarica-panel') === activePanel;
+      link.classList.toggle('is-active', isActive);
+      if (isActive) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+
+    panels.forEach(function (panel) {
+      var isActive = panel.getAttribute('data-panel') === activePanel;
+      panel.classList.toggle('is-active', isActive);
+      panel.hidden = !isActive;
+    });
+  }
+
   function showForm() {
     formSection.hidden = false;
     listaSection.hidden = true;
+    if (document.querySelector('.container-scarica')) {
+      document.querySelector('.container-scarica').classList.remove('container-scarica--unlocked');
+    }
     erroreChiave.hidden = true;
     chiaveInput.value = '';
     closePreview();
@@ -478,7 +553,12 @@
   function showLista() {
     formSection.hidden = true;
     listaSection.hidden = false;
+    if (document.querySelector('.container-scarica')) {
+      document.querySelector('.container-scarica').classList.add('container-scarica--unlocked');
+    }
+    setActivePanel(activePanel);
     renderListaPdf();
+    renderListaCodici();
   }
 
   if (listaPdf) {
@@ -557,7 +637,38 @@
   if (btnEsci) {
     btnEsci.addEventListener('click', function () {
       setUnlocked(false);
+      setActivePanel('materiale');
       showForm();
+    });
+  }
+
+  if (sideNav) {
+    sideNav.addEventListener('click', function (e) {
+      var link = e.target.closest('[data-scarica-panel]');
+      if (!link) return;
+      e.preventDefault();
+      setActivePanel(link.getAttribute('data-scarica-panel'));
+    });
+  }
+
+  if (listaCodici) {
+    listaCodici.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-copy-code]');
+      if (!btn) return;
+      var code = btn.getAttribute('data-copy-code') || '';
+      if (!code) return;
+      var original = btn.textContent;
+      function done(ok) {
+        btn.textContent = ok ? 'Copiato' : 'Errore';
+        setTimeout(function () {
+          btn.textContent = original;
+        }, 1400);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(function () { done(true); }).catch(function () { done(false); });
+      } else {
+        done(false);
+      }
     });
   }
 

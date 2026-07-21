@@ -2249,6 +2249,77 @@ body.cv-modal-open {
   padding: 1.65rem 1.75rem 1.85rem;
 }
 
+@keyframes contentSkeletonShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.content-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    rgba(17, 17, 17, 0.06) 0%,
+    rgba(17, 17, 17, 0.035) 40%,
+    rgba(17, 17, 17, 0.06) 80%
+  );
+  background-size: 220% 100%;
+  animation: contentSkeletonShimmer 1.35s ease-in-out infinite;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.content-skeleton--media {
+  width: 100%;
+  height: 180px;
+  border-radius: 0;
+}
+
+.content-skeleton--chip {
+  width: 4.5rem;
+  height: 0.7rem;
+  margin-bottom: 0.75rem;
+}
+
+.content-skeleton--title {
+  width: 78%;
+  height: 1.05rem;
+  margin-bottom: 0.65rem;
+}
+
+.content-skeleton--line {
+  width: 100%;
+  height: 0.65rem;
+  margin-bottom: 0.45rem;
+}
+
+.content-skeleton--line-short {
+  width: 58%;
+  margin-bottom: 0;
+}
+
+.blog-card--skeleton {
+  pointer-events: none;
+  cursor: default;
+  box-shadow: none;
+}
+
+.blog-card--skeleton:hover {
+  transform: none;
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-skeleton {
+    animation: none;
+    background: rgba(17, 17, 17, 0.07);
+  }
+}
+
 .blog-meta {
   font-size: 0.72rem;
   font-weight: 500;
