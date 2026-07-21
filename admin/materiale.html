@@ -137,18 +137,24 @@
       <form id="formEditMateriale" class="admin-edit-materiale-form">
         <input type="hidden" id="editMaterialeId" value="">
         <input type="hidden" id="editMaterialeIndex" value="">
-        <label for="editMaterialeFolder">Cartella</label>
-        <select id="editMaterialeFolder" name="editMaterialeFolder" required>
-          <option value="">Seleziona una cartella…</option>
-        </select>
-        <label for="editMaterialeTitleInput">Titolo (visibile ai clienti)</label>
-        <input type="text" id="editMaterialeTitleInput" name="editMaterialeTitleInput" placeholder="es. Guida alimentare" required>
-        <label for="editMaterialeDescription">Descrizione (visibile ai clienti)</label>
-        <textarea id="editMaterialeDescription" name="editMaterialeDescription" rows="3" placeholder="es. Breve spiegazione del contenuto (opzionale)"></textarea>
+        <div class="admin-edit-field">
+          <label for="editMaterialeFolder">Cartella</label>
+          <select id="editMaterialeFolder" name="editMaterialeFolder" required>
+            <option value="">Seleziona una cartella…</option>
+          </select>
+        </div>
+        <div class="admin-edit-field">
+          <label for="editMaterialeTitleInput">Titolo (visibile ai clienti)</label>
+          <input type="text" id="editMaterialeTitleInput" name="editMaterialeTitleInput" placeholder="es. Guida alimentare" required>
+        </div>
+        <div class="admin-edit-field">
+          <label for="editMaterialeDescription">Descrizione (visibile ai clienti)</label>
+          <textarea id="editMaterialeDescription" name="editMaterialeDescription" rows="3" placeholder="es. Breve spiegazione del contenuto (opzionale)"></textarea>
+        </div>
         <p id="msgEditMateriale" class="msg" hidden></p>
         <div class="admin-confirm-actions">
-          <button type="button" class="btn" data-edit-dismiss>Annulla</button>
-          <button type="submit" class="btn btn-primary" id="btnSalvaMateriale">Salva</button>
+          <button type="button" class="admin-modal-btn admin-modal-btn--ghost" data-edit-dismiss>Annulla</button>
+          <button type="submit" class="admin-modal-btn admin-modal-btn--primary" id="btnSalvaMateriale">Salva</button>
         </div>
       </form>
     </div>
