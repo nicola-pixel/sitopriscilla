@@ -354,11 +354,20 @@
     });
   }
 
-  // Prenota: sedi dinamiche, Calendly in popup
+  // Prenota: sedi dinamiche, Calendly in modal brandizzato
   var prenotaSediEl = document.getElementById('prenotaSedi');
   var CALENDLY_SCRIPT_URL = 'https://assets.calendly.com/assets/external/widget.js';
   var calendlyScriptPromise = null;
   var prenotaEventsBound = false;
+  var calendlyModal = document.getElementById('calendlyModal');
+  var calendlyModalOverlay = document.getElementById('calendlyModalOverlay');
+  var calendlyModalClose = document.getElementById('calendlyModalClose');
+  var calendlyModalTitle = document.getElementById('calendlyModalTitle');
+  var calendlyModalMeta = document.getElementById('calendlyModalMeta');
+  var calendlyModalLoading = document.getElementById('calendlyModalLoading');
+  var calendlyInline = document.getElementById('calendlyInline');
+  var calendlyModalLastFocus = null;
+  var calendlyLoadingTimer = null;
 
   var ICON_LOCATION = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
   var ICON_VIDEO = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
@@ -371,6 +380,10 @@
   function isCalendlyUrl(url) {
     if (window.PriscillaSedi) return window.PriscillaSedi.isCalendlyUrl(url);
     return /calendly\.com/i.test(url || '');
+  }
+
+  function isCalendlyReady() {
+    return typeof window.Calendly !== 'undefined' && typeof window.Calendly.initInlineWidget === 'function';
   }
 
   function trackSedeClick(el) {
@@ -402,11 +415,16 @@
       '<span class="' + badgeClass + '">' + escapeHtml(badge) + '</span>' +
       '<span class="prenota-sede-nome">' + escapeHtml(sede.name) + '</span>' +
       '<span class="prenota-sede-indirizzo">' + escapeHtml(sede.address) + '</span>';
+    var attrs =
+      ' data-sede="' + escapeHtml(sede.id) + '"' +
+      ' data-sede-name="' + escapeHtml(sede.name) + '"' +
+      ' data-sede-address="' + escapeHtml(sede.address || '') + '"' +
+      ' data-sede-online="' + (online ? '1' : '0') + '"';
 
     if (calendly) {
-      return '<button type="button" class="' + cardClass + '" data-sede="' + escapeHtml(sede.id) + '" data-sede-name="' + escapeHtml(sede.name) + '" data-sede-online="' + (online ? '1' : '0') + '" data-url="' + escapeHtml(sede.url) + '">' + inner + '</button>';
+      return '<button type="button" class="' + cardClass + '"' + attrs + ' data-url="' + escapeHtml(sede.url) + '">' + inner + '</button>';
     }
-    return '<a href="' + escapeHtml(sede.url) + '" class="' + cardClass + '" target="_blank" rel="noopener noreferrer" data-sede="' + escapeHtml(sede.id) + '" data-sede-name="' + escapeHtml(sede.name) + '" data-sede-online="' + (online ? '1' : '0') + '">' + inner + '</a>';
+    return '<a href="' + escapeHtml(sede.url) + '" class="' + cardClass + '" target="_blank" rel="noopener noreferrer"' + attrs + '>' + inner + '</a>';
   }
 
   function renderFooterSedi() {
@@ -422,7 +440,7 @@
   }
 
   function ensureCalendlyScript() {
-    if (typeof window.Calendly !== 'undefined' && window.Calendly.initPopupWidget) {
+    if (isCalendlyReady()) {
       return Promise.resolve();
     }
     if (calendlyScriptPromise) return calendlyScriptPromise;
@@ -430,8 +448,7 @@
     calendlyScriptPromise = new Promise(function (resolve, reject) {
       var existing = document.querySelector('script[src*="assets/external/widget.js"]');
       if (existing) {
-        if (existing.getAttribute('data-calendly-ready') === 'true' ||
-            (typeof window.Calendly !== 'undefined' && window.Calendly.initPopupWidget)) {
+        if (existing.getAttribute('data-calendly-ready') === 'true' || isCalendlyReady()) {
           existing.setAttribute('data-calendly-ready', 'true');
           resolve();
           return;
@@ -458,15 +475,91 @@
     return calendlyScriptPromise;
   }
 
-  function openCalendlyPopup(url) {
+  function buildCalendlyEmbedUrl(url) {
+    try {
+      var u = new URL(url, window.location.origin);
+      u.searchParams.set('hide_gdpr_banner', '1');
+      u.searchParams.set('hide_event_type_details', '1');
+      u.searchParams.set('hide_landing_page_details', '1');
+      u.searchParams.set('primary_color', '6b8cff');
+      u.searchParams.set('text_color', '111111');
+      u.searchParams.set('background_color', 'ffffff');
+      u.searchParams.set('locale', 'it');
+      return u.toString();
+    } catch (err) {
+      return url;
+    }
+  }
+
+  function setCalendlyLoading(isLoading) {
+    if (!calendlyModalLoading) return;
+    calendlyModalLoading.classList.toggle('is-hidden', !isLoading);
+  }
+
+  function closeCalendlyModal() {
+    if (!calendlyModal || calendlyModal.hidden) return;
+    calendlyModal.hidden = true;
+    document.body.classList.remove('calendly-modal-open');
+    if (calendlyLoadingTimer) {
+      clearTimeout(calendlyLoadingTimer);
+      calendlyLoadingTimer = null;
+    }
+    if (calendlyInline) calendlyInline.innerHTML = '';
+    setCalendlyLoading(true);
+    if (calendlyModalLastFocus && typeof calendlyModalLastFocus.focus === 'function') {
+      calendlyModalLastFocus.focus();
+    }
+  }
+
+  function openCalendlyPopup(options) {
+    var url = typeof options === 'string' ? options : (options && options.url);
     if (!url) return;
+
+    var name = typeof options === 'object' && options ? (options.name || '') : '';
+    var address = typeof options === 'object' && options ? (options.address || '') : '';
+    var online = typeof options === 'object' && options ? !!options.online : false;
+
+    if (!calendlyModal || !calendlyInline) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    calendlyModalLastFocus = document.activeElement;
+    if (calendlyModalTitle) {
+      calendlyModalTitle.textContent = name || 'Scegli data e orario';
+    }
+    if (calendlyModalMeta) {
+      calendlyModalMeta.textContent = online
+        ? (address || 'Videochiamata')
+        : (address || '');
+    }
+
+    setCalendlyLoading(true);
+    if (calendlyInline) calendlyInline.innerHTML = '';
+    calendlyModal.hidden = false;
+    document.body.classList.add('calendly-modal-open');
+    if (calendlyModalClose) calendlyModalClose.focus();
+
     ensureCalendlyScript().then(function () {
-      if (typeof window.Calendly !== 'undefined' && window.Calendly.initPopupWidget) {
-        window.Calendly.initPopupWidget({ url: url });
+      if (!isCalendlyReady() || calendlyModal.hidden) {
+        closeCalendlyModal();
+        window.open(url, '_blank', 'noopener,noreferrer');
         return;
       }
-      window.open(url, '_blank', 'noopener,noreferrer');
+
+      calendlyInline.style.minWidth = '320px';
+      calendlyInline.style.height = '100%';
+      window.Calendly.initInlineWidget({
+        url: buildCalendlyEmbedUrl(url),
+        parentElement: calendlyInline
+      });
+
+      if (calendlyLoadingTimer) clearTimeout(calendlyLoadingTimer);
+      calendlyLoadingTimer = setTimeout(function () {
+        setCalendlyLoading(false);
+      }, 900);
     }).catch(function () {
+      closeCalendlyModal();
       window.open(url, '_blank', 'noopener,noreferrer');
     });
   }
@@ -500,13 +593,39 @@
       trackSedeClick(btn);
       if (btn.tagName === 'A') return;
       event.preventDefault();
-      openCalendlyPopup(btn.getAttribute('data-url'));
+      openCalendlyPopup({
+        url: btn.getAttribute('data-url'),
+        name: btn.getAttribute('data-sede-name') || '',
+        address: btn.getAttribute('data-sede-address') || '',
+        online: btn.getAttribute('data-sede-online') === '1'
+      });
     });
 
     prenotaSediEl.addEventListener('mouseenter', warmCalendlyScript, { capture: true, once: true });
     prenotaSediEl.addEventListener('focus', warmCalendlyScript, { capture: true, once: true });
     prenotaSediEl.addEventListener('touchstart', warmCalendlyScript, { capture: true, passive: true, once: true });
   }
+
+  if (calendlyModalClose) {
+    calendlyModalClose.addEventListener('click', closeCalendlyModal);
+  }
+  if (calendlyModalOverlay) {
+    calendlyModalOverlay.addEventListener('click', closeCalendlyModal);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && calendlyModal && !calendlyModal.hidden) {
+      closeCalendlyModal();
+    }
+  });
+  window.addEventListener('message', function (event) {
+    if (!calendlyModal || calendlyModal.hidden) return;
+    if (event.origin !== 'https://calendly.com') return;
+    var data = event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.event === 'calendly.event_type_viewed' || data.event === 'calendly.date_and_time_selected') {
+      setCalendlyLoading(false);
+    }
+  });
 
   document.querySelectorAll('a[href="#prenota"]').forEach(function (link) {
     link.addEventListener('mouseenter', warmCalendlyScript, { once: true });

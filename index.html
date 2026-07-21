@@ -25,7 +25,7 @@
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
   <link rel="preload" href="https://assets.calendly.com/assets/external/widget.js" as="script">
   <script defer src="https://assets.calendly.com/assets/external/widget.js"></script>
-  <link rel="stylesheet" href="styles.css?v=20260721t">
+  <link rel="stylesheet" href="styles.css?v=20260721u">
 </head>
 <body>
   <header class="header">
@@ -834,13 +834,39 @@
     </div>
   </div>
 
+  <div class="calendly-modal" id="calendlyModal" role="dialog" aria-modal="true" aria-labelledby="calendlyModalTitle" hidden>
+    <div class="calendly-modal-overlay" id="calendlyModalOverlay" tabindex="-1"></div>
+    <div class="calendly-modal-panel">
+      <div class="calendly-modal-accent" aria-hidden="true"></div>
+      <header class="calendly-modal-header">
+        <div class="calendly-modal-heading">
+          <p class="calendly-modal-kicker">Prenota la visita</p>
+          <h2 class="calendly-modal-title" id="calendlyModalTitle">Scegli data e orario</h2>
+          <p class="calendly-modal-meta" id="calendlyModalMeta"></p>
+        </div>
+        <button type="button" class="calendly-modal-close" id="calendlyModalClose" aria-label="Chiudi calendario">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+            <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </header>
+      <div class="calendly-modal-body">
+        <div class="calendly-modal-loading" id="calendlyModalLoading" aria-live="polite">
+          <span class="calendly-modal-spinner" aria-hidden="true"></span>
+          <span>Caricamento calendario…</span>
+        </div>
+        <div class="calendly-inline-host" id="calendlyInline"></div>
+      </div>
+    </div>
+  </div>
+
   <script src="analytics.js"></script>
   <script src="sedi.js"></script>
   <script src="cv.js"></script>
   <script src="site-nav.js"></script>
   <script src="content-store.js?v=20260721m"></script>
   <script src="content-format.js?v=20260721s"></script>
-  <script src="script.js?v=20260721t"></script>
+  <script src="script.js?v=20260721u"></script>
   <script>
     (function() {
       var STORAGE_KEY_CV = 'scarica_cv';
