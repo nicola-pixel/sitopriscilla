@@ -21,6 +21,7 @@
   var previewOverlay = document.getElementById('previewModalOverlay');
   var previewBody = document.getElementById('previewModalBody');
   var previewTitle = document.getElementById('previewModalTitle');
+  var previewDescription = document.getElementById('previewModalDescription');
   var previewDownload = document.getElementById('previewModalDownload');
   var previewClose = document.getElementById('previewModalClose');
   var previewObjectUrl = null;
@@ -105,12 +106,20 @@
     );
   }
 
+  function fileDescription(item, meta) {
+    var description = (item && item.description ? String(item.description) : '').trim();
+    if (description) return description;
+    var label = (meta && meta.label) || 'PDF';
+    return 'Formato ' + label + ' · documento pronto da aprire in anteprima oppure da scaricare sul tuo dispositivo.';
+  }
+
   function closePreview() {
     if (!previewModal || previewModal.hidden) return;
     previewModal.hidden = true;
     document.body.classList.remove('preview-modal-open');
     revokePreviewUrl();
     if (previewBody) previewBody.innerHTML = '';
+    if (previewDescription) previewDescription.textContent = '';
     if (previewDownload) {
       previewDownload.removeAttribute('href');
       previewDownload.removeAttribute('download');
@@ -129,7 +138,9 @@
 
     var mime = item.mimeType || 'application/pdf';
     var isPng = mime === 'image/png';
+    var meta = fileMeta(item);
     var title = item.title || 'Documento ' + (index + 1);
+    var description = fileDescription(item, meta);
     var ext = isPng ? '.png' : '.pdf';
     var filename = (item.filename || item.title || 'documento') + ext;
 
@@ -142,6 +153,7 @@
     }
 
     if (previewTitle) previewTitle.textContent = title;
+    if (previewDescription) previewDescription.textContent = description;
 
     if (previewDownload) {
       previewDownload.href = item.url || src;
@@ -383,7 +395,7 @@
         var isPng = meta.kind === 'png';
         var ext = isPng ? '.png' : '.pdf';
         var title = item.title || 'Documento ' + (previewIndex + 1);
-        var description = (item.description || '').trim();
+        var description = fileDescription(item, meta);
         var filename = (item.filename || item.title || 'documento') + ext;
         var href = itemHref(item);
         var canPreview = itemCanPreview(item);
@@ -411,9 +423,7 @@
                 '<span class="download-card-pill download-card-pill--lock">Riservato</span>' +
               '</div>' +
               '<span class="download-card-title">' + escapeHtml(title) + '</span>' +
-              (description
-                ? '<p class="download-card-description">' + escapeHtml(description) + '</p>'
-                : '<span class="download-card-type">Formato ' + meta.label + ' · pronto da aprire o scaricare</span>') +
+              '<p class="download-card-description">' + escapeHtml(description) + '</p>' +
             '</div>' +
             '<div class="download-card-actions">' +
               '<button type="button" class="download-card-btn download-card-btn--apri"' +

@@ -569,25 +569,21 @@
 }
 
 .download-card-description {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   margin: 0;
   max-width: 36rem;
+  height: calc(1.45em * 2);
+  overflow: hidden;
   font-family: var(--font-body);
   font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.45;
-  color: var(--color-text);
+  color: var(--color-text-muted);
   white-space: normal;
   overflow-wrap: anywhere;
-}
-
-.download-card-type {
-  font-family: var(--font-body);
-  font-size: 0.8125rem;
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--color-text-muted);
 }
 
 .download-card-actions {
@@ -779,7 +775,7 @@
 .preview-modal-header {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   padding: 1.05rem 1.2rem 1.05rem 1.45rem;
@@ -816,11 +812,30 @@
   white-space: nowrap;
 }
 
+.preview-modal-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  margin: 0.35rem 0 0;
+  max-width: 40rem;
+  height: calc(1.45em * 2);
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .preview-modal-actions {
   display: flex;
   align-items: center;
   gap: 0.55rem;
   flex-shrink: 0;
+  margin-top: 0.15rem;
 }
 
 .preview-modal-download {
