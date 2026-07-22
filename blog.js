@@ -860,6 +860,14 @@
     }
     renderRelated(id);
 
+    if (window.PriscillaAnalytics && typeof window.PriscillaAnalytics.trackBlogView === 'function') {
+      window.PriscillaAnalytics.trackBlogView(
+        post.id,
+        post.title || '',
+        post.category || ''
+      );
+    }
+
     document.body.classList.add('page-loaded');
     requestAnimationFrame(function () {
       window.dispatchEvent(new Event('resize'));

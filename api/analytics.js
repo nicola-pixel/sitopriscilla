@@ -12,7 +12,9 @@ var ALLOWED_TYPES = {
   download: true,
   cv_download: true,
   sede_click: true,
-  area_unlock: true
+  area_unlock: true,
+  blog_view: true,
+  recipe_view: true
 };
 
 function cors(res) {

@@ -393,6 +393,15 @@
       }
 
       renderRelated(id);
+
+      if (window.PriscillaAnalytics && typeof window.PriscillaAnalytics.trackRecipeView === 'function') {
+        window.PriscillaAnalytics.trackRecipeView(
+          recipe.id,
+          recipe.title || '',
+          recipe.category || ''
+        );
+      }
+
       setRecipeLoading(false);
     } catch (err) {
       console.error('Errore rendering ricetta', err);

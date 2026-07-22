@@ -179,6 +179,10 @@
     var unlockFails = periodEvents.filter(function (ev) {
       return ev.type === 'area_unlock' && ev.meta && !ev.meta.success;
     });
+    var blogViews = periodEvents.filter(function (ev) { return ev.type === 'blog_view'; });
+    var prevBlogViews = prevPeriodEvents.filter(function (ev) { return ev.type === 'blog_view'; });
+    var recipeViews = periodEvents.filter(function (ev) { return ev.type === 'recipe_view'; });
+    var prevRecipeViews = prevPeriodEvents.filter(function (ev) { return ev.type === 'recipe_view'; });
 
     var byFile = groupCount(downloads, function (ev) {
       return (ev.meta && (ev.meta.fileTitle || ev.meta.fileName)) || 'Documento';
@@ -195,6 +199,40 @@
       return { name: name, count: bySede[name] };
     }).sort(function (a, b) { return b.count - a.count; });
 
+    function contentRanking(events) {
+      var map = {};
+      events.forEach(function (ev) {
+        var meta = ev.meta || {};
+        var id = meta.id || '';
+        var title = meta.title || id || 'Senza titolo';
+        var key = id || title;
+        if (!key) return;
+        if (!map[key]) {
+          map[key] = {
+            id: id,
+            name: title,
+            category: meta.category || '',
+            count: 0
+          };
+        }
+        map[key].count += 1;
+        if (title) map[key].name = title;
+        if (meta.category) map[key].category = meta.category;
+      });
+      return Object.keys(map).map(function (key) {
+        return map[key];
+      }).sort(function (a, b) { return b.count - a.count; });
+    }
+
+    function categoryRanking(events) {
+      var byCat = groupCount(events, function (ev) {
+        return (ev.meta && ev.meta.category) || 'Senza categoria';
+      });
+      return Object.keys(byCat).map(function (name) {
+        return { name: name, count: byCat[name] };
+      }).sort(function (a, b) { return b.count - a.count; });
+    }
+
     return {
       periodDays: days,
       source: 'local',
@@ -203,18 +241,35 @@
         sedeClicks: sedeClicks.length,
         unlocks: unlocks.length,
         unlockFails: unlockFails.length,
+        blogViews: blogViews.length,
+        recipeViews: recipeViews.length,
+        contentViews: blogViews.length + recipeViews.length,
         allTimeDownloads: countByType(allEvents, 'download') + countByType(allEvents, 'cv_download'),
         allTimeSedeClicks: countByType(allEvents, 'sede_click'),
+        allTimeBlogViews: countByType(allEvents, 'blog_view'),
+        allTimeRecipeViews: countByType(allEvents, 'recipe_view'),
+        allTimeContentViews: countByType(allEvents, 'blog_view') + countByType(allEvents, 'recipe_view'),
         allTimeEvents: allEvents.length
       },
       trends: {
         downloads: downloads.length - prevDownloads.length,
-        sedeClicks: sedeClicks.length - prevSedeClicks.length
+        sedeClicks: sedeClicks.length - prevSedeClicks.length,
+        blogViews: blogViews.length - prevBlogViews.length,
+        recipeViews: recipeViews.length - prevRecipeViews.length,
+        contentViews: (blogViews.length + recipeViews.length) -
+          (prevBlogViews.length + prevRecipeViews.length)
       },
       downloadsOverTime: buildDailySeries(allEvents, ['download', 'cv_download'], days || 90),
       sedeClicksOverTime: buildDailySeries(allEvents, ['sede_click'], days || 90),
+      blogViewsOverTime: buildDailySeries(allEvents, ['blog_view'], days || 90),
+      recipeViewsOverTime: buildDailySeries(allEvents, ['recipe_view'], days || 90),
+      contentViewsOverTime: buildDailySeries(allEvents, ['blog_view', 'recipe_view'], days || 90),
       fileRanking: fileRanking,
       sedeRanking: sedeRanking,
+      blogRanking: contentRanking(blogViews),
+      recipeRanking: contentRanking(recipeViews),
+      blogCategoryRanking: categoryRanking(blogViews),
+      recipeCategoryRanking: categoryRanking(recipeViews),
       recentEvents: periodEvents.slice().sort(function (a, b) { return b.ts - a.ts; }).slice(0, 30)
     };
   }
@@ -320,9 +375,21 @@
       download: 'Download file',
       cv_download: 'Download CV',
       sede_click: 'Click sede',
-      area_unlock: 'Sblocco area'
+      area_unlock: 'Sblocco area',
+      blog_view: 'Visita articolo blog',
+      recipe_view: 'Visita ricetta'
     };
     return map[type] || type || 'sconosciuto';
+  }
+
+  function oncePerSession(key) {
+    try {
+      if (global.sessionStorage.getItem(key)) return false;
+      global.sessionStorage.setItem(key, '1');
+      return true;
+    } catch (e) {
+      return true;
+    }
   }
 
   function excelCell(value, style, type) {
@@ -402,7 +469,7 @@
 
     var coverRows = [
       excelRow([excelCell('Analytics — Priscilla Castellani', 'sTitle')], 32),
-      excelRow([excelCell('Report scarichi, sedi e accessi area riservata', 'sSubtitle')], 20),
+      excelRow([excelCell('Report scarichi, sedi, blog, ricette e accessi area riservata', 'sSubtitle')], 20),
       excelEmptyRow(),
       excelRow([excelCell('Generato il', 'sLabel'), excelCell(exportedAtIt, 'sValue')]),
       excelRow([excelCell('Fonte dati', 'sLabel'), excelCell(sourceLabel, 'sValue')]),
@@ -429,6 +496,16 @@
         excelCell('Click sulle sedi', 'sPlain'),
         excelCell(summaryAll.totals.allTimeSedeClicks, 'sNum', 'Number'),
         excelCell('Link sedi / online', 'sPlain')
+      ]),
+      excelRow([
+        excelCell('Visite articoli blog', 'sAlt'),
+        excelCell(summaryAll.totals.allTimeBlogViews, 'sAltNum', 'Number'),
+        excelCell('Pagine articolo aperte', 'sAlt')
+      ]),
+      excelRow([
+        excelCell('Visite ricette', 'sPlain'),
+        excelCell(summaryAll.totals.allTimeRecipeViews, 'sNum', 'Number'),
+        excelCell('Pagine ricetta aperte', 'sPlain')
       ]),
       excelRow([
         excelCell('Sblocchi area riusciti', 'sAlt'),
@@ -461,7 +538,7 @@
 
     coverRows.push(excelEmptyRow());
     coverRows.push(excelRow([
-      excelCell('Fogli inclusi: Riepilogo · File · Sedi · Serie giornaliera · Log eventi', 'sMuted')
+      excelCell('Fogli inclusi: Riepilogo · File · Sedi · Blog · Ricette · Serie giornaliera · Log eventi', 'sMuted')
     ]));
 
     var fileRows = [
@@ -512,15 +589,87 @@
       sedeRows.push(excelRow([excelCell('—', 'sMuted'), excelCell('Nessun click sede registrato', 'sMuted')]));
     }
 
+    function rankingSheetRows(ranking, emptyLabel) {
+      var rows = [
+        excelRow([
+          excelCell('#', 'sHeader'),
+          excelCell('Titolo', 'sHeader'),
+          excelCell('Categoria', 'sHeader'),
+          excelCell('Visite', 'sHeader'),
+          excelCell('% sul totale', 'sHeader')
+        ])
+      ];
+      var total = ranking.reduce(function (sum, row) { return sum + row.count; }, 0) || 1;
+      ranking.forEach(function (row, i) {
+        var style = i % 2 ? 'sAlt' : 'sPlain';
+        var numStyle = i % 2 ? 'sAltNum' : 'sNum';
+        var pct = Math.round((row.count / total) * 1000) / 10;
+        rows.push(excelRow([
+          excelCell(i + 1, numStyle, 'Number'),
+          excelCell(row.name, style),
+          excelCell(row.category || '—', style),
+          excelCell(row.count, numStyle, 'Number'),
+          excelCell(pct, numStyle, 'Number')
+        ]));
+      });
+      if (!ranking.length) {
+        rows.push(excelRow([excelCell('—', 'sMuted'), excelCell(emptyLabel, 'sMuted')]));
+      }
+      return rows;
+    }
+
+    var blogRows = rankingSheetRows(summaryAll.blogRanking, 'Nessuna visita articolo registrata');
+    var recipeRows = rankingSheetRows(summaryAll.recipeRanking, 'Nessuna visita ricetta registrata');
+
+    var seriesBlog = buildDailySeries(events, ['blog_view'], spanDays);
+    var seriesRecipes = buildDailySeries(events, ['recipe_view'], spanDays);
     var seriesByDate = {};
     seriesDownloads.forEach(function (row) {
-      seriesByDate[row.date] = { date: row.date, downloads: row.count, sedeClicks: 0 };
+      seriesByDate[row.date] = {
+        date: row.date,
+        downloads: row.count,
+        sedeClicks: 0,
+        blogViews: 0,
+        recipeViews: 0
+      };
     });
     seriesSedi.forEach(function (row) {
       if (!seriesByDate[row.date]) {
-        seriesByDate[row.date] = { date: row.date, downloads: 0, sedeClicks: row.count };
+        seriesByDate[row.date] = {
+          date: row.date,
+          downloads: 0,
+          sedeClicks: row.count,
+          blogViews: 0,
+          recipeViews: 0
+        };
       } else {
         seriesByDate[row.date].sedeClicks = row.count;
+      }
+    });
+    seriesBlog.forEach(function (row) {
+      if (!seriesByDate[row.date]) {
+        seriesByDate[row.date] = {
+          date: row.date,
+          downloads: 0,
+          sedeClicks: 0,
+          blogViews: row.count,
+          recipeViews: 0
+        };
+      } else {
+        seriesByDate[row.date].blogViews = row.count;
+      }
+    });
+    seriesRecipes.forEach(function (row) {
+      if (!seriesByDate[row.date]) {
+        seriesByDate[row.date] = {
+          date: row.date,
+          downloads: 0,
+          sedeClicks: 0,
+          blogViews: 0,
+          recipeViews: row.count
+        };
+      } else {
+        seriesByDate[row.date].recipeViews = row.count;
       }
     });
 
@@ -529,6 +678,8 @@
         excelCell('Data', 'sHeader'),
         excelCell('Download', 'sHeader'),
         excelCell('Click sedi', 'sHeader'),
+        excelCell('Visite blog', 'sHeader'),
+        excelCell('Visite ricette', 'sHeader'),
         excelCell('Totale giorno', 'sHeader')
       ])
     ];
@@ -536,11 +687,14 @@
       var row = seriesByDate[key];
       var style = i % 2 ? 'sAlt' : 'sPlain';
       var numStyle = i % 2 ? 'sAltNum' : 'sNum';
-      var total = (row.downloads || 0) + (row.sedeClicks || 0);
+      var total = (row.downloads || 0) + (row.sedeClicks || 0) +
+        (row.blogViews || 0) + (row.recipeViews || 0);
       seriesRows.push(excelRow([
         excelCell(row.date, style),
         excelCell(row.downloads || 0, numStyle, 'Number'),
         excelCell(row.sedeClicks || 0, numStyle, 'Number'),
+        excelCell(row.blogViews || 0, numStyle, 'Number'),
+        excelCell(row.recipeViews || 0, numStyle, 'Number'),
         excelCell(total, numStyle, 'Number')
       ]));
     });
@@ -608,8 +762,14 @@
       excelWorksheet('Sedi', [
         excelCol(40), excelCol(280), excelCol(90), excelCol(100)
       ], sedeRows),
+      excelWorksheet('Blog', [
+        excelCol(40), excelCol(320), excelCol(140), excelCol(90), excelCol(100)
+      ], blogRows),
+      excelWorksheet('Ricette', [
+        excelCol(40), excelCol(320), excelCol(140), excelCol(90), excelCol(100)
+      ], recipeRows),
       excelWorksheet('Serie giornaliera', [
-        excelCol(110), excelCol(100), excelCol(100), excelCol(110)
+        excelCol(110), excelCol(100), excelCol(100), excelCol(100), excelCol(110), excelCol(110)
       ], seriesRows),
       excelWorksheet('Log eventi', [
         excelCol(150), excelCol(90), excelCol(110), excelCol(130), excelCol(420), excelCol(200)
@@ -690,6 +850,24 @@
     },
     trackAreaUnlock: function (success) {
       track('area_unlock', { success: !!success });
+    },
+    trackBlogView: function (id, title, category) {
+      if (!id) return;
+      if (!oncePerSession('analytics_blog_view_' + id)) return;
+      track('blog_view', {
+        id: String(id),
+        title: title || '',
+        category: category || ''
+      });
+    },
+    trackRecipeView: function (id, title, category) {
+      if (!id) return;
+      if (!oncePerSession('analytics_recipe_view_' + id)) return;
+      track('recipe_view', {
+        id: String(id),
+        title: title || '',
+        category: category || ''
+      });
     },
     getEvents: getEvents,
     getSummary: getSummary,

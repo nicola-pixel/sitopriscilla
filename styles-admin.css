@@ -3095,6 +3095,27 @@ body.admin-confirm-open {
   margin-bottom: 1.5rem;
 }
 
+.dash-content-section--analytics {
+  margin-top: 0.25rem;
+  margin-bottom: 2rem;
+}
+
+.dash-section-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--admin-muted, #6b7280);
+  max-width: 42rem;
+}
+
+.dash-content-section--analytics .dash-widgets-head {
+  margin-bottom: 1rem;
+}
+
+.dash-content-section--analytics .admin-dashboard-stats {
+  margin-bottom: 1.25rem;
+}
+
 .admin-dashboard-stats--content {
   margin-bottom: 0;
 }

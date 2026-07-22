@@ -47,9 +47,18 @@
     var periodLabel = currentPeriod ? 'negli ultimi ' + currentPeriod + ' giorni' : 'nel periodo selezionato';
     var downloadWord = t.downloads === 1 ? 'scarico' : 'scarichi';
     var clickWord = t.sedeClicks === 1 ? 'click' : 'click';
+    var viewWord = t.contentViews === 1 ? 'visita' : 'visite';
     var items = [
       'Hai registrato <strong>' + formatNumber(t.downloads) + ' ' + downloadWord + '</strong> ' + periodLabel +
         (tr.downloads ? ' (' + (tr.downloads > 0 ? '+' : '') + formatNumber(tr.downloads) + ' vs periodo precedente).' : '.'),
+      'Blog e ricette: <strong>' + formatNumber(t.contentViews || 0) + ' ' + viewWord + '</strong>' +
+        (summary.blogRanking && summary.blogRanking[0]
+          ? ', articolo top «' + escapeHtml(summary.blogRanking[0].name) + '»'
+          : '') +
+        (summary.recipeRanking && summary.recipeRanking[0]
+          ? (summary.blogRanking && summary.blogRanking[0] ? ' e' : ',') +
+            ' ricetta top «' + escapeHtml(summary.recipeRanking[0].name) + '».'
+          : '.'),
       'Le sedi hanno ricevuto <strong>' + formatNumber(t.sedeClicks) + ' ' + clickWord + '</strong>' +
         (summary.sedeRanking[0] ? ', con «' + escapeHtml(summary.sedeRanking[0].name) + '» in testa.' : '.'),
       'Area download: <strong>' + formatNumber(t.unlocks) + (t.unlocks === 1 ? ' accesso' : ' accessi') + '</strong>' +
@@ -76,6 +85,10 @@
         return 'Click su sede «' + (meta.sedeName || meta.sedeId || 'sede') + '»';
       case 'area_unlock':
         return meta.success ? 'Accesso area download riuscito' : 'Tentativo accesso fallito';
+      case 'blog_view':
+        return 'Articolo letto «' + (meta.title || meta.id || 'articolo') + '»';
+      case 'recipe_view':
+        return 'Ricetta aperta «' + (meta.title || meta.id || 'ricetta') + '»';
       default:
         return ev.type;
     }
@@ -87,8 +100,21 @@
       case 'cv_download': return '📄';
       case 'sede_click': return '📍';
       case 'area_unlock': return '🔑';
+      case 'blog_view': return '✎';
+      case 'recipe_view': return '🍽';
       default: return '•';
     }
+  }
+
+  function rankingWithCategory(items) {
+    return (items || []).map(function (item) {
+      return {
+        name: item.category
+          ? item.name + ' · ' + item.category
+          : item.name,
+        count: item.count
+      };
+    });
   }
 
   var chartGradId = 0;
@@ -253,9 +279,10 @@
       { id: 'kpiUnlocks', value: t.unlocks, label: 'Accessi area download', sub: t.unlockFails ? t.unlockFails + ' tentativi falliti' : '', icon: '⌁' }
     ];
 
-    var kpiEl = $('dashboardKpis');
-    if (kpiEl) {
-      kpiEl.innerHTML = kpiHtml.map(function (k) {
+    function renderKpis(elId, items) {
+      var el = $(elId);
+      if (!el) return;
+      el.innerHTML = items.map(function (k) {
         return '<article class="admin-stat admin-stat--kpi">' +
           '<span class="admin-stat-icon" aria-hidden="true">' + k.icon + '</span>' +
           '<span class="admin-stat-value">' + formatNumber(k.value) + '</span>' +
@@ -266,9 +293,47 @@
       }).join('');
     }
 
+    renderKpis('dashboardKpis', kpiHtml);
+    renderKpis('dashboardContentKpis', [
+      {
+        value: t.blogViews || 0,
+        label: 'Visite articoli',
+        trend: tr.blogViews || 0,
+        icon: '✎'
+      },
+      {
+        value: t.recipeViews || 0,
+        label: 'Visite ricette',
+        trend: tr.recipeViews || 0,
+        icon: '🍽'
+      },
+      {
+        value: t.contentViews || 0,
+        label: 'Visite contenuti',
+        trend: tr.contentViews || 0,
+        icon: '◉'
+      },
+      {
+        value: t.allTimeContentViews || 0,
+        label: 'Visite totali contenuti',
+        sub: 'blog + ricette dall\'avvio',
+        icon: 'Σ'
+      }
+    ]);
+
+    var heroContentVal = $('heroContentViewsValue');
+    if (heroContentVal) heroContentVal.textContent = formatNumber(t.contentViews || 0);
+    var heroContentTrend = $('heroContentViewsTrend');
+    if (heroContentTrend) heroContentTrend.innerHTML = formatTrend(tr.contentViews || 0);
+
     var downloadsChart = $('chartDownloads');
     if (downloadsChart) {
       downloadsChart.innerHTML = buildLineChart(summary.downloadsOverTime, { color: '#3b82f6', height: 140 });
+    }
+
+    var contentViewsChart = $('chartContentViews');
+    if (contentViewsChart) {
+      contentViewsChart.innerHTML = buildLineChart(summary.contentViewsOverTime || [], { color: '#c2410c', height: 140 });
     }
 
     var sedeTimeChart = $('chartSediTime');
@@ -286,10 +351,40 @@
       sediChart.innerHTML = buildBarChart(summary.sedeRanking, { color: '#0d9488', limit: 8 });
     }
 
+    var blogChart = $('chartBlog');
+    if (blogChart) {
+      blogChart.innerHTML = buildBarChart(rankingWithCategory(summary.blogRanking || []), { color: '#c2410c', limit: 8 });
+    }
+
+    var recipesChart = $('chartRecipes');
+    if (recipesChart) {
+      recipesChart.innerHTML = buildBarChart(rankingWithCategory(summary.recipeRanking || []), { color: '#b45309', limit: 8 });
+    }
+
+    var blogCatsChart = $('chartBlogCats');
+    if (blogCatsChart) {
+      blogCatsChart.innerHTML = buildBarChart(summary.blogCategoryRanking || [], { color: '#ea580c', limit: 6 });
+    }
+
+    var recipeCatsChart = $('chartRecipeCats');
+    if (recipeCatsChart) {
+      recipeCatsChart.innerHTML = buildBarChart(summary.recipeCategoryRanking || [], { color: '#d97706', limit: 6 });
+    }
+
+    var blogTimeChart = $('chartBlogTime');
+    if (blogTimeChart) {
+      blogTimeChart.innerHTML = buildColumnChart(summary.blogViewsOverTime || [], { color: '#c2410c', height: 140 });
+    }
+
+    var recipeTimeChart = $('chartRecipeTime');
+    if (recipeTimeChart) {
+      recipeTimeChart.innerHTML = buildColumnChart(summary.recipeViewsOverTime || [], { color: '#b45309', height: 140 });
+    }
+
     var activityEl = $('dashboardActivity');
     if (activityEl) {
       if (!summary.recentEvents.length) {
-        activityEl.innerHTML = '<li class="dash-activity-empty">Nessuna attività registrata. Gli eventi compariranno quando gli utenti scaricano materiali o cliccano sulle sedi.</li>';
+        activityEl.innerHTML = '<li class="dash-activity-empty">Nessuna attività registrata. Gli eventi compariranno quando gli utenti leggono articoli, aprono ricette, scaricano materiali o cliccano sulle sedi.</li>';
       } else {
         activityEl.innerHTML = summary.recentEvents.map(function (ev) {
           return '<li class="dash-activity-item">' +
