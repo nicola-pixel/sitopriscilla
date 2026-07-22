@@ -6,7 +6,7 @@
  *
  * Ogni file ha:
  *   materiale/files/{id}.{ext}  → contenuto
- *   materiale/meta/{id}.json    → metadati (immutabili, niente overwrite → niente cache stale)
+ *   materiale/meta/{id}.json    → metadati (overwrite + Cache-Control: max-age=0)
  *
  * Ogni cartella ha:
  *   materiale/folders/{id}.json → metadati cartella
@@ -373,21 +373,17 @@ module.exports = async function handler(req, res) {
           pathname: existingMeta.pathname || '',
           size: existingMeta.size || 0,
           createdAt: existingMeta.createdAt || Date.now(),
-          folderId: updatedFolderId
+          folderId: updatedFolderId,
+          updatedAt: Date.now()
         };
 
-        // Meta immutabili: elimina e riscrivi per evitare cache stale
-        try {
-          await blob.del(existingMetaUrl || metaPath(idToUpdate));
-        } catch (delMetaErr) {
-          console.warn('[materiale] update delete meta', delMetaErr);
-        }
-
+        // Overwrite diretto (come content/spesa): evita race delete→put e meta stale in lista
         await blob.put(metaPath(idToUpdate), JSON.stringify(updatedItem), {
           access: 'public',
           addRandomSuffix: false,
+          allowOverwrite: true,
           contentType: 'application/json',
-          cacheControlMaxAge: 60
+          cacheControlMaxAge: 0
         });
 
         cleanupLegacyIndex(blob);
@@ -464,8 +460,9 @@ module.exports = async function handler(req, res) {
       await blob.put(metaPath(id), JSON.stringify(item), {
         access: 'public',
         addRandomSuffix: false,
+        allowOverwrite: true,
         contentType: 'application/json',
-        cacheControlMaxAge: 60
+        cacheControlMaxAge: 0
       });
 
       cleanupLegacyIndex(blob);

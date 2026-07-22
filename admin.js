@@ -673,13 +673,35 @@
     }
   }
 
+  function mergePreferMaterialeItems(items, preferItems) {
+    var list = Array.isArray(items) ? items.slice() : [];
+    if (!Array.isArray(preferItems) || !preferItems.length) return list;
+    preferItems.forEach(function (pref) {
+      if (!pref || !pref.id) return;
+      var found = false;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] && String(list[i].id) === String(pref.id)) {
+          list[i] = Object.assign({}, list[i], pref);
+          found = true;
+          break;
+        }
+      }
+      if (!found) list.push(pref);
+    });
+    return list;
+  }
+
   function renderListaPdfAdmin(options) {
     options = options || {};
     var keepIfEmpty = Array.isArray(options.keepIfEmpty) ? options.keepIfEmpty : null;
+    var preferItems = Array.isArray(options.preferItems) ? options.preferItems : null;
     var keepFolders = Array.isArray(options.keepFolders) ? options.keepFolders : null;
     if (!listaPdfAdmin) return Promise.resolve();
     if (!materialeStore) {
-      renderListaPdfAdminFromItems(keepIfEmpty || [], keepFolders || materialeAdminFolders);
+      renderListaPdfAdminFromItems(
+        mergePreferMaterialeItems(keepIfEmpty || [], preferItems),
+        keepFolders || materialeAdminFolders
+      );
       return Promise.resolve();
     }
     return materialeStore.list().then(function (result) {
@@ -696,6 +718,7 @@
           if (it && it.id && !ids[String(it.id)]) items.push(it);
         });
       }
+      items = mergePreferMaterialeItems(items, preferItems);
       if (folders.length === 0 && keepFolders && keepFolders.length) {
         folders = keepFolders;
       } else if (keepFolders && keepFolders.length) {
@@ -710,7 +733,10 @@
       renderListaPdfAdminFromItems(items, folders);
       updateMaterialeStorageHint(result);
     }).catch(function () {
-      renderListaPdfAdminFromItems(keepIfEmpty || [], keepFolders || materialeAdminFolders);
+      renderListaPdfAdminFromItems(
+        mergePreferMaterialeItems(keepIfEmpty || [], preferItems),
+        keepFolders || materialeAdminFolders
+      );
     });
   }
 
@@ -4263,8 +4289,9 @@
       }
       var id = (editMaterialeIdInput && editMaterialeIdInput.value || '').trim();
       var idx = parseInt(editMaterialeIndexInput && editMaterialeIndexInput.value, 10);
-      var item = (!isNaN(idx) && materialeAdminItems[idx]) ||
-        materialeAdminItems.find(function (it) { return it && it.id === id; });
+      // Preferisci l'id del form: l'indice può diventare obsoleto se la lista si riordina
+      var item = (id && materialeAdminItems.find(function (it) { return it && it.id === id; })) ||
+        (!isNaN(idx) ? materialeAdminItems[idx] : null);
       if (!item) {
         if (msgEditMateriale) {
           msgEditMateriale.textContent = 'File non trovato.';
@@ -4303,7 +4330,7 @@
         title: title,
         description: description,
         folderId: folderId
-      }).then(function () {
+      }).then(function (updated) {
         closeEditMaterialeModal();
         if (msgUpload) {
           msgUpload.textContent = 'Materiale aggiornato.';
@@ -4311,7 +4338,22 @@
           msgUpload.classList.add('msg-ok');
           msgUpload.hidden = false;
         }
-        return renderListaPdfAdmin();
+        var prefer = updated ? [updated] : [{
+          id: item.id,
+          title: title,
+          description: description,
+          folderId: folderId
+        }];
+        // Mostra subito i campi salvati (la lista Blob può restare stale per qualche secondo)
+        renderListaPdfAdminFromItems(
+          mergePreferMaterialeItems(materialeAdminItems, prefer),
+          materialeAdminFolders
+        );
+        return renderListaPdfAdmin({ preferItems: prefer }).then(function () {
+          setTimeout(function () {
+            renderListaPdfAdmin({ preferItems: prefer });
+          }, 1200);
+        });
       }).catch(function (err) {
         if (msgEditMateriale) {
           msgEditMateriale.textContent = (err && err.message) || 'Impossibile aggiornare il materiale.';

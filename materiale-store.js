@@ -518,7 +518,9 @@
       return updateLocal(id, patch);
     }
     return updateRemote(id, patch).catch(function (err) {
-      if (err && (err.code === 'remote_unavailable' || err.code === 'not_found')) {
+      // Solo offline/503 → localStorage. not_found remoto non va "salvato" in locale
+      // (altrimenti l'admin vede successo ma Blob resta invariato).
+      if (err && err.code === 'remote_unavailable') {
         return updateLocal(id, patch);
       }
       if (remoteAvailable !== true && err && /failed to fetch|networkerror|load failed/i.test(String(err.message || err))) {
