@@ -38,10 +38,41 @@
   var previewObjectUrl = null;
   var lastFocusEl = null;
 
-  function getDownloadKey() {
-    return localStorage.getItem(STORAGE_KEY_DOWNLOAD_KEY) ||
+  var cachedServerDownloadKey = null;
+  var downloadKeyPromise = null;
+
+  function getFallbackDownloadKey() {
+    return (
       (window.PriscillaConfig && window.PriscillaConfig.defaultDownloadKey) ||
-      '';
+      localStorage.getItem(STORAGE_KEY_DOWNLOAD_KEY) ||
+      ''
+    );
+  }
+
+  function loadDownloadKey() {
+    if (cachedServerDownloadKey !== null) {
+      return Promise.resolve(cachedServerDownloadKey || getFallbackDownloadKey());
+    }
+    if (downloadKeyPromise) return downloadKeyPromise;
+
+    downloadKeyPromise = fetch('/api/settings', { cache: 'no-store' })
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && data.ok && data.downloadKey) {
+          cachedServerDownloadKey = String(data.downloadKey).trim();
+          return cachedServerDownloadKey;
+        }
+        cachedServerDownloadKey = '';
+        return getFallbackDownloadKey();
+      })
+      .catch(function () {
+        cachedServerDownloadKey = '';
+        return getFallbackDownloadKey();
+      });
+
+    return downloadKeyPromise;
   }
 
   function isUnlocked() {
@@ -788,17 +819,18 @@
     formChiave.addEventListener('submit', function (e) {
       e.preventDefault();
       var key = (chiaveInput.value || '').trim();
-      var expected = getDownloadKey();
       erroreChiave.hidden = true;
-      if (key && expected && key === expected) {
-        setUnlocked(true);
-        if (window.PriscillaAnalytics) window.PriscillaAnalytics.trackAreaUnlock(true);
-        showLista();
-      } else {
-        if (window.PriscillaAnalytics) window.PriscillaAnalytics.trackAreaUnlock(false);
-        erroreChiave.hidden = false;
-        chiaveInput.focus();
-      }
+      loadDownloadKey().then(function (expected) {
+        if (key && expected && key === expected) {
+          setUnlocked(true);
+          if (window.PriscillaAnalytics) window.PriscillaAnalytics.trackAreaUnlock(true);
+          showLista();
+        } else {
+          if (window.PriscillaAnalytics) window.PriscillaAnalytics.trackAreaUnlock(false);
+          erroreChiave.hidden = false;
+          chiaveInput.focus();
+        }
+      });
     });
   }
 

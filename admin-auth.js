@@ -3,14 +3,21 @@
 
   var STORAGE_KEY_AUTH = 'admin_authenticated';
   var STORAGE_KEY_ADMIN_PASSWORD = 'admin_password';
+  var SETTINGS_API = '/api/settings';
 
-  function getAdminPassword() {
+  function getLocalExpectedPassword() {
     try {
       var stored = (global.localStorage.getItem(STORAGE_KEY_ADMIN_PASSWORD) || '').trim();
       if (stored) return stored;
     } catch (e) {}
     var config = global.PriscillaConfig || {};
     return (config.adminPassword || '').trim();
+  }
+
+  function storeAdminPassword(password) {
+    try {
+      global.localStorage.setItem(STORAGE_KEY_ADMIN_PASSWORD, password);
+    } catch (e) {}
   }
 
   function isAuthenticated() {
@@ -37,6 +44,36 @@
     body.classList.add('admin-authenticated');
     var gate = document.getElementById('adminLoginGate');
     if (gate) gate.remove();
+  }
+
+  function verifyPassword(password) {
+    return fetch(SETTINGS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify', password: password }),
+      cache: 'no-store'
+    })
+      .then(function (res) {
+        return res
+          .json()
+          .then(function (data) {
+            return { res: res, data: data || {} };
+          })
+          .catch(function () {
+            return { res: res, data: {} };
+          });
+      })
+      .then(function (result) {
+        if (result.data && result.data.ok) return true;
+        // Locale senza API: fallback a config.js / localStorage
+        if (result.res.status === 404 || result.res.status === 405) {
+          return password === getLocalExpectedPassword();
+        }
+        return false;
+      })
+      .catch(function () {
+        return password === getLocalExpectedPassword();
+      });
   }
 
   function showLoginGate() {
@@ -73,20 +110,25 @@
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         var password = (input.value || '').trim();
-        var expected = getAdminPassword();
-
-        if (!expected || password !== expected) {
-          if (error) error.hidden = false;
-          input.value = '';
-          input.focus();
-          return;
-        }
-
+        var submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
         if (error) error.hidden = true;
-        setAuthenticated(true);
-        showAuthenticatedShell();
-        initMobileNav();
-        addLogoutControl();
+
+        verifyPassword(password).then(function (ok) {
+          if (!ok) {
+            if (error) error.hidden = false;
+            input.value = '';
+            input.focus();
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+
+          storeAdminPassword(password);
+          setAuthenticated(true);
+          showAuthenticatedShell();
+          initMobileNav();
+          addLogoutControl();
+        });
       });
 
       global.setTimeout(function () {

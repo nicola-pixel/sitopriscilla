@@ -35,13 +35,7 @@ function blobConfigured() {
   return !!(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 }
 
-function getExpectedAdminPassword() {
-  return (
-    process.env.ADMIN_PASSWORD ||
-    process.env.PRISCILLA_ADMIN_PASSWORD ||
-    ''
-  ).trim();
-}
+var settingsLib = require('../lib/site-settings');
 
 function readAdminPassword(req, body) {
   var header = (req.headers['x-admin-password'] || '').toString().trim();
@@ -50,11 +44,8 @@ function readAdminPassword(req, body) {
   return '';
 }
 
-function isAuthorized(req, body) {
-  var expected = getExpectedAdminPassword();
-  var provided = readAdminPassword(req, body);
-  if (!expected) return !!provided;
-  return provided === expected;
+async function isAuthorized(req, body, blob) {
+  return settingsLib.isValidAdminPassword(blob, readAdminPassword(req, body));
 }
 
 function parseBody(req) {
@@ -312,7 +303,7 @@ module.exports = async function handler(req, res) {
     }
 
     var body = parseBody(req);
-    if (!isAuthorized(req, body)) {
+    if (!(await isAuthorized(req, body, blob))) {
       json(res, 401, { ok: false, error: 'Password admin non valida.' });
       return;
     }

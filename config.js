@@ -7,8 +7,9 @@ window.PriscillaConfig = {
   // Aggiornare anche robots.txt e sitemap.xml con lo stesso dominio in produzione.
   // Esempio: 'https://www.tuodominio.it'
   siteUrl: '',
-  // Password per accedere alla sezione admin (cambiala!)
+  // Password admin di bootstrap (usata finché non la cambi da Impostazioni, dove viene salvata sul server).
+  // In produzione puoi anche impostare ADMIN_PASSWORD su Vercel.
   adminPassword: 'priscilla',
-  // Chiave segreta di default per scaricare i PDF (usata se l'admin non ne ha impostata una)
+  // Chiave segreta di default per scaricare i PDF (usata se l'admin non ne ha impostata una da Impostazioni)
   defaultDownloadKey: 'priscilla2025'
 };

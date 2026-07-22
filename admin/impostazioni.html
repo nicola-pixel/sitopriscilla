@@ -91,7 +91,7 @@
 
     <div class="admin-block">
       <h2>Chiave segreta per i clienti</h2>
-      <p>Questa è la chiave che i clienti devono inserire nella pagina <a href="../scarica.html">Scarica</a> per vedere e scaricare i PDF.</p>
+      <p>Questa è la chiave che i clienti devono inserire nella pagina <a href="../scarica.html">Scarica</a> per vedere e scaricare i PDF. Viene salvata sul server e vale per tutti.</p>
       <form id="formChiaveDownload">
         <label for="downloadKey">Chiave segreta download</label>
         <input type="text" id="downloadKey" name="downloadKey" placeholder="es. priscilla2025" autocomplete="off">
@@ -105,12 +105,14 @@
 
     <div class="admin-block">
       <h2>Password admin</h2>
-      <p>Password per accedere al pannello di amministrazione. Se non la modifichi qui, resta quella impostata in <code>config.js</code>.</p>
+      <p>Password per accedere al pannello di amministrazione. Viene salvata sul server e vale su tutti i dispositivi. Finché non la modifichi, resta quella di <code>config.js</code> (o la variabile <code>ADMIN_PASSWORD</code> su Vercel).</p>
       <form id="formAdminPassword">
+        <label for="adminPasswordCurrent">Password attuale</label>
+        <input type="password" id="adminPasswordCurrent" name="adminPasswordCurrent" autocomplete="current-password" required>
         <label for="adminPassword">Nuova password admin</label>
-        <input type="password" id="adminPassword" name="adminPassword" autocomplete="new-password" minlength="6">
+        <input type="password" id="adminPassword" name="adminPassword" autocomplete="new-password" minlength="6" required>
         <label for="adminPasswordConfirm">Conferma password</label>
-        <input type="password" id="adminPasswordConfirm" name="adminPasswordConfirm" autocomplete="new-password" minlength="6">
+        <input type="password" id="adminPasswordConfirm" name="adminPasswordConfirm" autocomplete="new-password" minlength="6" required>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Salva password</button>
         </div>
@@ -121,7 +123,7 @@
   </div>
 
   <script src="../config.js"></script>
-  <script src="../impostazioni.js"></script>
-  <script src="../admin-auth.js?v=20260722a"></script>
+  <script src="../impostazioni.js?v=20260722b"></script>
+  <script src="../admin-auth.js?v=20260722b"></script>
 </body>
 </html>
