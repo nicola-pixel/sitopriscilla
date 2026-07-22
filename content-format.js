@@ -182,7 +182,7 @@
         para.push(next);
         i += 1;
       }
-      html += '<p>' + escapeHtml(para.join(' ')) + '</p>';
+      html += '<p>' + escapeHtml(para.join('\n')).replace(/\n/g, '<br>') + '</p>';
     }
 
     return html;
