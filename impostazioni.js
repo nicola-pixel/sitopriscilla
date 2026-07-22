@@ -64,30 +64,40 @@
     });
   }
 
+  function renderStoredDownloadKey(key) {
+    var valueEl = document.getElementById('downloadKeyStoredValue');
+    if (!valueEl) return;
+    var stored = (key || '').trim();
+    var fallback = getDefaultDownloadKey();
+    if (stored) {
+      valueEl.textContent = stored;
+    } else if (fallback) {
+      valueEl.textContent = fallback + ' (predefinita)';
+    } else {
+      valueEl.textContent = 'nessuna';
+    }
+  }
+
   function initDownloadKeyForm() {
     var form = document.getElementById('formChiaveDownload');
     var input = document.getElementById('downloadKey');
     var msg = document.getElementById('msgChiave');
-    var hint = document.getElementById('downloadKeyHint');
     if (!form || !input) return;
 
-    var fallback = getDefaultDownloadKey();
-    if (hint) {
-      hint.textContent = fallback
-        ? 'Se il campo è vuoto, i clienti useranno la chiave predefinita: «' + fallback + '».'
-        : 'Imposta una chiave: senza di essa l\'area Scarica resterà inaccessibile.';
-    }
+    renderStoredDownloadKey('');
 
     fetch(SETTINGS_API, { cache: 'no-store' })
       .then(function (res) {
         return res.json();
       })
       .then(function (data) {
-        if (data && data.ok && data.downloadKey) {
-          input.value = data.downloadKey;
-        }
+        var key = data && data.ok ? (data.downloadKey || '') : '';
+        if (key) input.value = key;
+        renderStoredDownloadKey(key);
       })
-      .catch(function () {});
+      .catch(function () {
+        renderStoredDownloadKey('');
+      });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -109,6 +119,7 @@
                 global.localStorage.removeItem(STORAGE_KEY_DOWNLOAD);
               }
             } catch (err) {}
+            renderStoredDownloadKey(key);
             showMessage(
               msg,
               key

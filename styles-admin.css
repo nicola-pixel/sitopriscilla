@@ -2468,6 +2468,21 @@ html:has(body.admin-body) {
   font-size: 0.875rem;
 }
 
+.admin-stored-value {
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--admin-bg);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--admin-text-secondary);
+  word-break: break-all;
+}
+
+.admin-stored-value strong {
+  color: var(--admin-text);
+  font-weight: 600;
+}
+
 .cv-status {
   margin-top: 0.75rem;
   font-size: 0.875rem;
